@@ -83,6 +83,9 @@
     - 事実更新（パス/設定値/コマンド/型/エンドポイント）
     - 手順更新（setup/run/test）
     - 仕様サマリ更新（specification_summary は該当箇所のみ）
+- **L0_concept の扱い**: `/docs-sync` では L0_concept（concept.md / policy.md）を更新しない
+    - L0 は「意思決定の記録」であり、git diff から機械的に追従できる性質ではないため
+    - L0 の更新が必要と判断した場合は、その旨をユーザーに報告して /init-docs を促す
 - docs/.ai/repo.profile.json 更新要否を判定する
     - 原則更新しない
     - .github/workflows / 実行定義 / lockfile 変更がある場合のみ差分更新を検討する
