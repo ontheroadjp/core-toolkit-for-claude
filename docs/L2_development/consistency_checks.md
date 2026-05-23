@@ -1,45 +1,81 @@
 # Consistency Checks
 
-このファイルは `init-docs` の Phase 2.5 実行結果を記録する。
+このファイルは `/init-docs` Phase 4 の整合性検証結果を記録する。
 
-## 2.5-1 docs -> 実体検証
+最終実行: 2026-05-23
 
-- 本 docs で参照した主要パスは実在する。
-  - `init-docs.md`, `docs-sync.md`, `task.md`, `fix.md`, `init-git.md`, `init-test.md`, `issue.md`, `own-task.md`, `git-clean.md`, `test-balance.md`, `repo.profile.json`, `AGENTS.md`
-- `main/app/server` 形式の実装エントリは未確認として分離した。
-  - 根拠: `init-docs.md:102`, `init-docs.md:110`
+---
 
-## 2.5-2 repo.profile.json <-> docs 突合
+## 4-1. docs → 実体 の検証
 
-- `repo.profile.json.doc_roots` は `docs/L1_project`, `docs/L2_development`, `docs/L3_implementation` で、docs 実構造と一致。
-  - 根拠: `repo.profile.json`
-- `repo.profile.json.commands` は空であり、本 docs 側でも repo 実行コマンドを断定していない。
-  - 根拠: `repo.profile.json`
-- docs 内で扱っている `git` / `gh` / `npm` 等は「仕様中に登場する外部CLI」として記述し、repo 固有 commands としては登録していない。
-  - 根拠: `init-git.md:14`, `init-git.md:15`, `init-test.md:76`, `init-test.md:109`
+### 参照パスの実在確認
 
-## 2.5-3 CI 整合性
+| docs で参照したパス | 実在 | 備考 |
+|---------------------|------|------|
+| `task.md` | ✅ | ルート直下に実在 |
+| `patch.md` | ✅ | ルート直下に実在 |
+| `docs-sync.md` | ✅ | ルート直下に実在 |
+| `init-docs.md` | ✅ | ルート直下に実在 |
+| `repo.profile.json` | ✅ | ルート直下に実在 |
+| `templates/issue.md` | ✅ | templates/ 下に実在 |
+| `templates/pr.md` | ✅ | templates/ 下に実在 |
+| `~/.claude/commands/` | ✅ | シンボリックリンク群として実在（グローバルデプロイ先） |
+| `docs/L1_project/` | ✅ | 実在 |
+| `docs/L2_development/` | ✅ | 実在 |
+| `docs/L3_implementation/` | ✅ | 実在 |
+| `legacy/` | ✅ | 14 ファイルが実在 |
 
-- `.github/workflows/**/*.yml` は未観測（ファイル未確認）。
-- したがって CI との一致は「未確認」とし、CI 手順の断定は行っていない。
-  - 根拠: CI 定義ファイル不在（要再観測）
+### 旧 docs で参照していたが現在は legacy/ に移動済みのファイル
 
-## 2.5-4 根拠表記
+以下のファイルはルート直下に存在しない（legacy/ に移動済み）:
+- `fix.md`, `create-test.md`, `init-test.md`, `test-balance.md`
+- `init-git.md`, `git-clean.md`, `own-task.md`, `issue.md`
 
-- 断定文には可能な範囲で `ファイル:行` を記載済み。
-  - 根拠要求: `init-docs.md:142`, `init-docs.md:146`, `init-docs.md:152`
+新 docs はこれらへの参照を含まない。
 
-## 2.5-5 未確認事項
+---
 
-- CI 定義の有無と実行手順
-  - 理由: `.github/workflows` が未観測
-  - 確定に必要: `.github/workflows/**/*.yml`
-- 実行ランタイム/言語スタック
-  - 理由: `package.json`, `pyproject.toml`, `Makefile` 等の実体が未観測
-  - 確定に必要: 実行定義ファイルの追加または検出
+## 4-2. repo.profile.json ↔ docs の突合
 
-## 2.5-6 判定
+- `repo.profile.json.doc_roots`: `docs/L1_project`, `docs/L2_development`, `docs/L3_implementation` — docs 構造と一致 ✅
+- `repo.profile.json.commands`: 空 — docs でも「実行コマンドなし」と記述（一致） ✅
+- `repo.profile.json.active_commands`: task.md, patch.md, docs-sync.md, init-docs.md — docs で同一の 4 本を記述 ✅
+- `repo.profile.json.external_cli_deps`: git, gh — docs でも外部 CLI 依存として記述 ✅
+- `repo.profile.json.deploy.method`: symlink — docs で `.claude/commands/` のシンボリックリンクとして記述 ✅
 
-- `init-docs` Done Criteria に対し、現時点は「部分完了」。
-  - 理由: CI 整合性を確認できる定義ファイルが未確認。
-  - 根拠: `init-docs.md:163`, `init-docs.md:169`, `init-docs.md:173`
+---
+
+## 4-3. CI 定義との整合性確認
+
+- `.github/workflows/` は存在しない（CI なし）。確認済み。
+- CI との整合性チェック対象なし。
+
+---
+
+## 4-4. 根拠表記の正規化
+
+- docs 内の断定文には `ファイル名:行番号` または `ファイル名:セクション名` の形式で根拠を記載済み。
+- 根拠を示せない断定は記載していない。
+
+---
+
+## 4-5. 未確認事項
+
+現時点で未確認の事項はない。
+
+以前の版で「未確認」としていた以下の事項は解消済み:
+- CI 定義: `.github/workflows/` の不在を直接確認 → CI なし（確定）
+- 実行ランタイム: このリポジトリは Markdown 仕様のみ → ランタイムなし（確定）
+
+---
+
+## 4-6. フェーズ完了条件（Done Criteria）判定
+
+| 条件 | 判定 |
+|------|------|
+| docs に記載された事実が実体と矛盾していない | ✅ |
+| repo.profile.json と docs が相互に説明可能 | ✅ |
+| CI 定義と docs の手順が一致している | ✅（CI なし、docs も CI 手順を断定しない） |
+| 未確認事項が明示的に分離されている | ✅（未確認事項なし） |
+
+**判定: 完了**
