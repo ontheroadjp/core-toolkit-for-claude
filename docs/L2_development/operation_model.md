@@ -42,7 +42,7 @@
 /docs-sync 呼び出し
 → git diff --name-only で変更ファイル確定
 → HARD STOP 判定（全体再構築が必要か）
-→ 対象 docs を最小更新
+→ 対象 docs および README.md を最小更新
 → ドラフト PR を公開（ready）
 ```
 根拠: `docs-sync.md:各所`
