@@ -29,7 +29,7 @@ patch.md のワークフローを実行（G-2 通過済みとして扱う）
 - Step 0: issue 確認または自動生成（`commands/templates/issue.md` 使用）
 - Step 1: 現状調査（スキップ不可）
 - Step 2: プラン策定（ユーザー許可必須）
-- Step 3: 実装・コミット（`<type>(#<issue>): <short description>`）
+- Step 3: 実装・コミット（コミット前チェック実施 → `<type>(#<issue>): <short description>`）
 - 根拠: `commands/task.md`（Phase 1 節）
 
 ### task フロー（Phase 2）
@@ -57,7 +57,7 @@ patch.md のワークフローを実行（G-2 通過済みとして扱う）
 ### ワークフロー
 1. ルーティング判定（docs 変更が必要なら `/task` へ誘導して終了）
 2. branch 作成（`patch/<slug>`）
-3. 変更・コミット（複数 OK、Conventional Commits 形式）
+3. 変更・コミット（コミット前チェック実施 → 複数 OK、Conventional Commits 形式）
 4. ユーザーに ff-merge 手順を通知して main に戻る
 - 根拠: `commands/patch.md`（Phase 1–3）
 
@@ -89,7 +89,7 @@ git diff を事実として docs および README.md を最小更新し、ドラ
 3. PR 本文から `/docs-sync への引き継ぎ事項` を読み取る
 4. 対象ファイルの targeted diff を取得し、docs・README.md 更新対象を確定
 5. HARD STOP 判定（全体再構築が必要な場合は `/init-docs` を促して終了）
-6. docs・README.md を最小更新
+6. docs・README.md を最小更新（コミット前チェック実施 → コミット）
 7. ドラフト PR を公開（`gh pr ready`）
 - 根拠: `commands/docs-sync.md`（各フェーズ）
 
