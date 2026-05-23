@@ -29,6 +29,15 @@ A collection of custom slash commands for [Claude Code](https://claude.ai/code) 
 
 > **Symlink-only principle:** All files placed under `~/.claude/` must be symlinks pointing to this repository — never actual file copies. This repo is the single source of truth; `~/.claude/` is just a reference point.
 
+### 0. Symlink the shared templates (required by all tools)
+
+```bash
+mkdir -p ~/.config/claude-code-kit
+ln -s /path/to/claude-code-kit/commands/templates ~/.config/claude-code-kit/templates
+```
+
+Templates are stored in `~/.config/claude-code-kit/templates/` so both Claude Code and Codex CLI can reference them from a single location.
+
 ### 1. Symlink the commands (global — all repos)
 
 ```bash
@@ -36,7 +45,6 @@ ln -s /path/to/claude-code-kit/commands/task.md       ~/.claude/commands/task.md
 ln -s /path/to/claude-code-kit/commands/patch.md      ~/.claude/commands/patch.md
 ln -s /path/to/claude-code-kit/commands/docs-sync.md  ~/.claude/commands/docs-sync.md
 ln -s /path/to/claude-code-kit/commands/init-docs.md  ~/.claude/commands/init-docs.md
-ln -s /path/to/claude-code-kit/commands/templates     ~/.claude/commands/templates
 ```
 
 The commands are now available as `/task`, `/patch`, `/docs-sync`, and `/init-docs` in any Claude Code session.
@@ -78,6 +86,18 @@ At the end of every Claude Code session, token usage is appended to `~/.claude/t
 
 ```
 [2026-05-23 20:54:56] session=abc123  input=  1411  output=445336  cache_read=80565208  cache_create=1092677  total=1539424
+```
+
+### Codex CLI (optional)
+
+After completing Steps 0–2 above, symlink for Codex CLI:
+
+```bash
+ln -s /path/to/claude-code-kit/commands/task.md       ~/.codex/prompts/task.md
+ln -s /path/to/claude-code-kit/commands/patch.md      ~/.codex/prompts/patch.md
+ln -s /path/to/claude-code-kit/commands/docs-sync.md  ~/.codex/prompts/docs-sync.md
+ln -s /path/to/claude-code-kit/commands/init-docs.md  ~/.codex/prompts/init-docs.md
+ln -s /path/to/claude-code-kit/AGENTS.md              ~/.codex/AGENTS.md
 ```
 
 ## Repository Structure

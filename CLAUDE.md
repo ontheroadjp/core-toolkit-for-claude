@@ -29,8 +29,8 @@ Claude Code 向けのカスタムスラッシュコマンド仕様（Markdown）
 
 ## テンプレートの場所
 
-- `commands/templates/issue.md` → `~/.claude/commands/templates/issue.md` としても参照可能
-- `commands/templates/pr.md` → `~/.claude/commands/templates/pr.md` としても参照可能
+- `commands/templates/issue.md` → `~/.config/claude-code-kit/templates/issue.md` としても参照可能
+- `commands/templates/pr.md` → `~/.config/claude-code-kit/templates/pr.md` としても参照可能
 
 ## リポジトリへの操作ルール（必須）
 

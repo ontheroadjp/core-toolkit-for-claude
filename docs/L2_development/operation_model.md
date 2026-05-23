@@ -75,12 +75,15 @@
 全成果物はシンボリックリンクでグローバルデプロイされる:
 
 ```bash
-# commands
+# 共通テンプレート（Claude / Codex 両ツールが参照）
+mkdir -p ~/.config/claude-code-kit
+ln -s <repo>/commands/templates ~/.config/claude-code-kit/templates
+
+# commands（Claude Code）
 ln -s <repo>/commands/task.md       ~/.claude/commands/task.md
 ln -s <repo>/commands/patch.md      ~/.claude/commands/patch.md
 ln -s <repo>/commands/docs-sync.md  ~/.claude/commands/docs-sync.md
 ln -s <repo>/commands/init-docs.md  ~/.claude/commands/init-docs.md
-ln -s <repo>/commands/templates     ~/.claude/commands/templates
 
 # CLAUDE.md（全セッション自動ロード）
 ln -s <repo>/CLAUDE.md              ~/.claude/CLAUDE.md
