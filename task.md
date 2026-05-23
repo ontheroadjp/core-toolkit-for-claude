@@ -10,7 +10,7 @@
 
 ```
 Phase 1: 実装（コード変更を完結させる）
-Phase 2: ドラフト PR 作成（/docs-sync への引き継ぎ）
+Phase 2: ドラフト PR 作成 → /docs-sync 自動実行
 Phase 3: 最終報告
 ```
 
@@ -201,7 +201,9 @@ Phase 3: 最終報告
     [~/.claude/commands/templates/pr.md の内容を実際の値で埋めたものを展開]
     EOF
     ```
-- 作成完了後、Phase 3 へ進む
+- 作成完了後、`/docs-sync` を自動実行する（docs 同期 → PR 公開まで完結させる）
+- `/docs-sync` が HARD STOP した場合はそこで処理が止まり、ユーザーへ報告される
+- `/docs-sync` 完了後、Phase 3 へ進む
 
 ---
 
@@ -211,8 +213,7 @@ A. 実装したファイル（テストを除く）
 B. 作成/更新したテスト
 C. テストの実行結果
 D. issue URL
-E. ドラフト PR URL
-F. 次のステップ: `/docs-sync` を実行してドキュメントを同期し PR を公開する
+E. PR URL（/docs-sync により公開済み）
 
 #### stash の復元
 G-2 で stash を行った場合、報告後に以下を実行する:
