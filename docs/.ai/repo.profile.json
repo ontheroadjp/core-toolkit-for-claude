@@ -22,6 +22,12 @@
     "hooks/log-token-usage.sh"
   ],
   "external_cli_deps": ["git", "gh", "jq"],
+  "skills": [
+    "skills/task/SKILL.md",
+    "skills/patch/SKILL.md",
+    "skills/docs-sync/SKILL.md",
+    "skills/init-docs/SKILL.md"
+  ],
   "deploy": {
     "commands": {
       "method": "symlink",
@@ -37,6 +43,11 @@
       "method": "symlink",
       "source": "CLAUDE.md",
       "target": "~/.claude/CLAUDE.md"
+    },
+    "skills": {
+      "method": "symlink",
+      "source": "skills/",
+      "target": "~/.claude/skills/"
     }
   }
 }
