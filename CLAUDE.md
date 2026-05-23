@@ -5,7 +5,7 @@
 ## このリポジトリについて
 
 Claude Code 向けのカスタムスラッシュコマンド仕様（Markdown）のリポジトリ。
-アクティブコマンドは 4 本（task.md, patch.md, docs-sync.md, init-docs.md）。
+アクティブコマンドは 4 本（commands/task.md, commands/patch.md, commands/docs-sync.md, commands/init-docs.md）。
 `~/.claude/commands/` へのシンボリックリンクでグローバルデプロイされる。
 
 ## Custom Command の使い分け（AI 向けルール）
@@ -27,8 +27,8 @@ Claude Code 向けのカスタムスラッシュコマンド仕様（Markdown）
 
 ## テンプレートの場所
 
-- `templates/issue.md` → `~/.claude/commands/templates/issue.md` としても参照可能
-- `templates/pr.md` → `~/.claude/commands/templates/pr.md` としても参照可能
+- `commands/templates/issue.md` → `~/.claude/commands/templates/issue.md` としても参照可能
+- `commands/templates/pr.md` → `~/.claude/commands/templates/pr.md` としても参照可能
 
 ## リポジトリへの操作ルール（必須）
 
