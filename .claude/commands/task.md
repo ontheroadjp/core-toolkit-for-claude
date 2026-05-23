@@ -71,7 +71,7 @@ Phase 3: 最終報告
 3. 実行中にドキュメント変更が必要と判明した場合（エスカレーション）:
     - 現時点の変更をコミットする
     - ユーザーに報告: 「ドキュメント変更が必要なため task フローに切り替えます」
-    - `~/.claude/commands/templates/issue.md` をもとに issue ドラフトを作成してユーザーに確認・作成する
+    - `templates/issue.md` をもとに issue ドラフトを作成してユーザーに確認・作成する
         - 「patch で実施済みの変更」と「追加スコープ」を必ず記載する
     - Phase 1 Step 0 を「エスカレーション」モードで実行する（issue 番号を引き継ぐ）
     - ブランチはそのまま再利用し、Step 1 はスキップして Step 2（プラン策定）から継続する
@@ -126,7 +126,7 @@ Phase 3: 最終報告
     - 以降その issue を作業の起点とする
 
 - issue 番号が伝えられていない場合:
-    - `~/.claude/commands/templates/issue.md` をもとに issue のドラフトを作成してユーザーに提示する
+    - `templates/issue.md` をもとに issue のドラフトを作成してユーザーに提示する
     - ユーザーの OK が出たら `gh issue create` で作成する
     - 作成した issue 番号を以降の起点とする
 
@@ -194,11 +194,11 @@ Phase 3: 最終報告
 
 #### Step 1. ドラフト PR 作成
 
-- `~/.claude/commands/templates/pr.md` をもとに PR 本文を作成する
+- `templates/pr.md` をもとに PR 本文を作成する
 - PR はドラフトとして作成する。本文は `--body-file -` で標準入力から渡す:
     ```bash
     gh pr create --draft --title "#<issue番号> <PR タイトル>" --body-file - <<'EOF'
-    [~/.claude/commands/templates/pr.md の内容を実際の値で埋めたものを展開]
+    [templates/pr.md の内容を実際の値で埋めたものを展開]
     EOF
     ```
 - 作成完了後、Phase 3 へ進む

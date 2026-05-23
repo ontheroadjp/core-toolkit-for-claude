@@ -1,9 +1,25 @@
 {
+  "repo_id": "agent-custom-slash-commands",
   "package_manager": "unknown",
   "doc_roots": [
     "docs/L1_project",
     "docs/L2_development",
     "docs/L3_implementation"
   ],
-  "commands": {}
+  "commands": {},
+  "active_commands": [
+    "task.md",
+    "patch.md",
+    "docs-sync.md",
+    "init-docs.md"
+  ],
+  "templates": [
+    "templates/issue.md",
+    "templates/pr.md"
+  ],
+  "external_cli_deps": ["git", "gh"],
+  "deploy": {
+    "method": "symlink",
+    "target": "~/.claude/commands/"
+  }
 }
