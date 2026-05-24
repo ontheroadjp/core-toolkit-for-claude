@@ -32,9 +32,9 @@
 
 ## テンプレートの場所
 
-- `commands/templates/issue.md` → `~/.config/claude-code-kit/templates/issue.md` としても参照可能
-- `commands/templates/pr.md` → `~/.config/claude-code-kit/templates/pr.md` としても参照可能
-- `commands/templates/readme.md` → 新規リポジトリの README.md 雛形
+- `templates/issue.md` → `~/.config/claude-code-kit/templates/issue.md` としても参照可能
+- `templates/pr.md` → `~/.config/claude-code-kit/templates/pr.md` としても参照可能
+- `templates/readme.md` → 新規リポジトリの README.md 雛形
 
 ## リポジトリへの操作ルール（必須）
 
