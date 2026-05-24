@@ -117,7 +117,9 @@ task フローのコミットは Conventional Commits 形式を使用する:
 
 セッション終了時に Stop hook が自動実行され、`~/.claude/token-usage.log` に以下の形式で追記される:
 ```
-[timestamp] session=<id>  input=N  output=N  cache_read=N  cache_create=N  total=N
+[timestamp] session=<id>  name=<session_name>  model=<model>  turns=N  input=N  output=N  cache_read=N  cache_create=N  total=N  cache_ratio=N  cost_usd=N  branch=<branch>  cwd=<dir>
 ```
-- `total` = input + output + cache_create（cache_read は既存キャッシュの読み取りで課金対象外）
+- `name`: `/rename` コマンドで設定したセッション名（transcript の `custom-title` エントリから取得）
+- `total` = input + output + cache_create（cache_read は既存キャッシュの読み取りで新規課金なし）
+- `cost_usd`: モデル別単価（opus/haiku/sonnet）× 各トークン数で推定。cache_read コストも含む
 - 根拠: `hooks/log-token-usage.sh`, `~/.claude/settings.json:hooks.Stop`
