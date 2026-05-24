@@ -19,7 +19,7 @@ git checkout -b patch/<変更内容を表す slug>
 
 #### Step 2. 変更を実施してコミット
 - 変更を実施する（ユーザー確認不要）
-- コミットは複数回でも可。各コミットで `partials/git-commit.md` を Read し、その手順に従ってコミットする
+- コミットは複数回でも可。各コミットで `~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
     - パラメータ: `issue_number=none`, `allowed_types=[fix, refactor, chore, style, test, docs]`
     - 注: patch フローは新機能追加を行わないため `feat` は許可しない
 
