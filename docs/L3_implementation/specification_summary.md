@@ -147,9 +147,13 @@ git diff を事実として docs および README.md を最小更新し、ドラ
 ## 7. `hooks/log-token-usage.sh` — token 使用量ログ hook
 
 Claude Code の Stop hook として `~/.claude/settings.json` から呼び出される。
-- 動作: stdin から `transcript_path` / `session_id` を取得し、JSONL トランスクリプト内の全 assistant エントリの `message.usage` を集計して `~/.claude/token-usage.log` に追記する
+- 動作: stdin から `transcript_path` / `session_id` を取得し、JSONL トランスクリプトを解析して `~/.claude/token-usage.log` に追記する
+  - `custom-title` エントリから `/rename` で設定したセッション名（`name`）を抽出
+  - 全 assistant エントリの `message.usage` を集計（input / output / cache_read / cache_create）
+  - モデル名をサブストリングマッチで判定し `cost_usd` を推定（opus/haiku/その他→sonnet 単価）
+- ログフィールド: `session`, `name`, `model`, `turns`, `input`, `output`, `cache_read`, `cache_create`, `total`, `cache_ratio`, `cost_usd`, `branch`, `cwd`
 - 依存: `bash`, `jq`
-- 根拠: `hooks/log-token-usage.sh:1-28`
+- 根拠: `hooks/log-token-usage.sh`
 
 ---
 

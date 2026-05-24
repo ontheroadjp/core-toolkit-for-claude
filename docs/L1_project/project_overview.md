@@ -31,8 +31,8 @@
 
 ## hooks
 
-- `hooks/log-token-usage.sh`: Claude Code Stop hook。セッション終了時に JSONL トランスクリプトを読み取り、全ターンの token usage（input / output / cache_read / cache_create）を集計して `~/.claude/token-usage.log` に追記する。
-  - 根拠: `hooks/log-token-usage.sh:1-28`
+- `hooks/log-token-usage.sh`: Claude Code Stop hook。セッション終了時に JSONL トランスクリプトを読み取り、全ターンの token usage（input / output / cache_read / cache_create）を集計して `~/.claude/token-usage.log` に追記する。セッション名（`/rename` で設定）と推定コスト（`cost_usd`）も記録する。
+  - 根拠: `hooks/log-token-usage.sh`
 
 ## 技術スタック
 
