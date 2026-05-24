@@ -30,11 +30,12 @@ git checkout -b patch/<変更内容を表す slug>
 ユーザーに以下を報告する:
 
 - 変更内容サマリ
-- main へのマージ手順（ユーザーが実行）:
+- 必要なユーザー処理:
     ```bash
     git checkout main
     git merge --ff patch/<slug>
     git branch -d patch/<slug>
+    git push origin main
     ```
 
 報告後、`git checkout main` で main に戻る。
