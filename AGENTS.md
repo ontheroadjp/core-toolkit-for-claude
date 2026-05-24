@@ -1,25 +1,27 @@
-# AGENTS.md
+# CLAUDE.md
 
-このファイルは AI 運用の起点となる情報をまとめる。Codex がこのリポジトリで作業する際はここを先に読む。
+このファイルは AI 運用の起点となる情報をまとめる。Claude Code がこのリポジトリで作業する際はここを先に読む。
 
 ## このリポジトリについて
 
-AI 向けのカスタムプロンプト（Markdown）のリポジトリ。
-アクティブコマンドは 4 本（commands/task.md, commands/patch.md, commands/docs-sync.md, commands/init-docs.md）。
-`~/.codex/prompts/` へのシンボリックリンクでグローバルデプロイされる。
+作業開始時に `README.md` の以下のセクションを読み、リポジトリ固有のコンテキストを把握すること:
+
+- **Features / Commands**: アクティブな機能・コマンド一覧
+- **Design Principles**: 守るべき設計制約
+- **Usage**: run/test コマンド・開発手順
 
 ## Custom Command の使い分け（AI 向けルール）
 
 - **task.md**: ユーザーは常にこれを呼ぶ。内部でルーティング判定を行い、patch フローまたは task フローを実行する。
   - docs 変更不要 → patch フロー（issue/PR なし、branch + commit → ユーザーが ff-merge）
-  - docs 変更あり → task フロー（issue 自動生成 → 実装 → ドラフト PR 作成 → docs-sync へ引き継ぎ）
+  - docs 変更あり → task フロー（issue 自動生成 → 実装 → ドラフト PR 作成 → /docs-sync へ引き継ぎ）
 - **patch.md**: ドキュメント変更を伴わない軽微な修正専用コマンド。直接呼ばれることは少なく、task.md 経由が基本。
-- **docs-sync.md**: git diff を事実として docs を最小更新し、ドラフト PR を公開する。task フロー完了後に呼ぶ。HARD STOP 時は init-docs を要求して終了する。
+- **docs-sync.md**: git diff を事実として docs を最小更新し、ドラフト PR を公開する。task フロー完了後に呼ぶ。HARD STOP 時は /init-docs を要求して終了する。
 - **init-docs.md**: リポジトリ実態の全体把握と設計ドキュメント再構築。重い初期化。docs-sync が説明不能になった時点でここに戻る。
 
 ## 重要な設計原則
 
-- **symlink-only 原則**: `~/.codex/` 配下には実体ファイルを置かず、全て本リポジトリへの symlink とする。このリポジトリが single source of truth。
+- **symlink-only 原則**: `~/.claude/` 配下には実体ファイルを置かず、全て本リポジトリへの symlink とする。このリポジトリが single source of truth。
 - ルーティング判定は単一質問: 「この変更で `docs/*` への追加・変更・削除が必要か？」
 - issue は task フローのみ必須（patch フローには不要）
 - task フローのコミット形式: `<type>(#<issue number>): <short description>` (Conventional Commits)
@@ -31,10 +33,27 @@ AI 向けのカスタムプロンプト（Markdown）のリポジトリ。
 
 - `commands/templates/issue.md` → `~/.config/claude-code-kit/templates/issue.md` としても参照可能
 - `commands/templates/pr.md` → `~/.config/claude-code-kit/templates/pr.md` としても参照可能
+- `commands/templates/readme.md` → 新規リポジトリの README.md 雛形
+
+## リポジトリへの操作ルール（必須）
+
+このリポジトリに影響する操作を行う際は、以下のルールに従うこと。
+
+### /task フローで行う操作（ファイル編集・追加・削除）
+**ファイルを編集・追加・削除する際は、必ず `/task` を実行すること。**
+直接編集は禁止。`/task` 経由でルーティング判定・ブランチ作成・コミットを行う。
+
+### /task フロー対象外の操作（git 管理操作）
+以下の操作は `/task` フローに乗らないが、実行前に必ず理由を説明しユーザーの明示的な確認を取ること:
+
+- git 履歴の書き換え（`filter-repo` / `filter-branch` 等）
+- `git push --force`
+- ブランチの強制削除（`git branch -D`）
+- その他、不可逆または共有状態に影響する git 操作
 
 ## このリポジトリへの変更作業
 
-- run/build/test コマンドは存在しない（Markdown のみ）
-- ファイルを編集・追加・削除する際は、必ず task を実行すること（/task が使えない場合は task プロンプトを参照）
-- 変更後は `docs/` の更新が必要になることが多い（docs-sync を呼ぶ）
+このリポジトリ自体を変更する場合も `/task` を呼ぶ。ただし:
+- run/build/test コマンドは存在しない（Markdown + Bash のみ）
+- 変更後は `docs/` の更新が必要になることが多い（/docs-sync を呼ぶ）
 - シンボリックリンクは自動更新される（リンク先の実体を変更するだけでよい）
