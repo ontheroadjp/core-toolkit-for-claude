@@ -43,35 +43,69 @@ ln -s /path/to/claude-code-kit/CLAUDE.md ~/.claude/CLAUDE.md
 
 Claude Code auto-loads `~/.claude/CLAUDE.md` in every session, so the AI operating instructions apply to all repositories automatically. If a repo needs different instructions, place a local `CLAUDE.md` in its root — local takes precedence over global.
 
-### 3. Symlink the token usage hook (optional)
+### 3. Symlink the hooks (optional)
 
 ```bash
 mkdir -p ~/.claude/hooks
-ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh ~/.claude/hooks/log-token-usage.sh
+ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh  ~/.claude/hooks/log-token-usage.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-prompt.sh ~/.claude/hooks/log-access-prompt.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-tool.sh  ~/.claude/hooks/log-access-tool.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh  ~/.claude/hooks/log-access-stop.sh
 ```
 
 Then add the following to `~/.claude/settings.json`:
 
 ```json
 "hooks": {
+    "UserPromptSubmit": [
+        { "matcher": "", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/log-access-prompt.sh" }] }
+    ],
+    "PostToolUse": [
+        { "matcher": "", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/log-access-tool.sh" }] }
+    ],
     "Stop": [
         {
             "matcher": "",
             "hooks": [
-                {
-                    "type": "command",
-                    "command": "bash ~/.claude/hooks/log-token-usage.sh"
-                }
+                { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
+                { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" }
             ]
         }
     ]
 }
 ```
 
-At the end of every Claude Code session, token usage is appended to `~/.claude/token-usage.log`:
+**Token usage hook** — at the end of every session, token usage is appended to `~/.claude/token-usage.log`:
 
 ```
 [2026-05-23 20:54:56] session=abc123  input=  1411  output=445336  cache_read=80565208  cache_create=1092677  total=1539424
+```
+
+**File access log hooks** — when `/work` is invoked, the files accessed in each command phase are appended to `logs/YYYY-MM/access.log` in this repository:
+
+```
+---
+[日時]
+2026.05.24 15.30
+
+[ユーザーからの指示内容]
+hooks のみで work/task/patch のファイルアクセスをログに記録したい
+
+[work]
+- ~/.claude/commands/work.md
+- ~/dev/.../docs/.ai/repo.profile.json
+
+[task]
+- ~/.claude/commands/task.md
+
+[patch]
+
+[docs-sync]
+
+[init-docs]
+
+[修正したファイル]
+- ~/dev/.../hooks/log-access-tool.sh
 ```
 
 ### Codex CLI (optional)
@@ -108,7 +142,12 @@ Start every session with `/task` — it asks what you want to do and routes to t
 
 ```
 hooks/
-  log-token-usage.sh   # Stop hook — logs token usage per session to ~/.claude/token-usage.log
+  log-token-usage.sh    # Stop — logs token usage per session to ~/.claude/token-usage.log
+  log-access-prompt.sh  # UserPromptSubmit — saves user instruction for session correlation
+  log-access-tool.sh    # PostToolUse — tracks Read/Glob/Grep/Edit/Write by command phase
+  log-access-stop.sh    # Stop — appends phase-based access log to logs/YYYY-MM/access.log
+logs/
+  .gitkeep              # directory tracked; log files are gitignored
 commands/
   task.md          # Main entry point — routes to patch or task flow
   patch.md         # Lightweight fix flow

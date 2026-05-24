@@ -157,6 +157,54 @@ Claude Code の Stop hook として `~/.claude/settings.json` から呼び出さ
 
 ---
 
+## 8. `hooks/log-access-prompt.sh` — ユーザー指示保存 hook
+
+Claude Code の UserPromptSubmit hook として `~/.claude/settings.json` から呼び出される。
+- 動作: stdin から `session_id` / `prompt` を取得し、`/tmp/claude-access-sessions/{session_id}.prompt` に書き出す
+- セッション内で複数回ユーザー入力があった場合は上書き（最新プロンプトのみ保持）
+- 依存: `bash`, `jq`
+- 根拠: `hooks/log-access-prompt.sh`
+
+---
+
+## 9. `hooks/log-access-tool.sh` — フェーズ別ファイルアクセス追跡 hook
+
+Claude Code の PostToolUse hook として `~/.claude/settings.json` から呼び出される。
+- 動作: Read/Glob/Grep/Edit/Write ツール使用後に発火し、セッション状態ファイルを更新する
+  - `work.md` 読み込み時にセッション状態を初期化（以降のアクセスを追跡開始）
+  - `task.md` / `patch.md` / `docs-sync.md` / `init-docs.md` の読み込みでフェーズを切り替え
+  - Read/Glob/Grep は現在フェーズのリストに追加（重複除去）
+  - Edit/Write は `modified_files` リストに追加（重複除去）
+- セッション状態ファイル: `/tmp/claude-access-sessions/{session_id}.json`
+  - フィールド: `start_time`, `user_instruction`, `current_phase`, `work_files`, `task_files`, `patch_files`, `docs_sync_files`, `init_docs_files`, `modified_files`
+- 依存: `bash`, `jq`
+- 根拠: `hooks/log-access-tool.sh`
+
+---
+
+## 10. `hooks/log-access-stop.sh` — アクセスログ書き出し hook
+
+Claude Code の Stop hook として `~/.claude/settings.json` から呼び出される。
+- 動作: セッション状態ファイルが存在する場合のみ `logs/YYYY-MM/access.log` に追記し、一時ファイルを削除する
+  - `/work` が呼ばれなかったセッション（状態ファイルなし）では何もしない
+- ログ形式（1 エントリ）:
+  ```
+  ---
+  [日時]          yyyy.mm.dd hh.mm
+  [ユーザーからの指示内容]  ...
+  [work]          - path/to/file
+  [task]          - path/to/file
+  [patch]         - path/to/file
+  [docs-sync]     - path/to/file
+  [init-docs]     - path/to/file
+  [修正したファイル] - path/to/file
+  ```
+- 出力先: `{repo}/logs/YYYY-MM/access.log`（`logs/` は `.gitignore` 対象）
+- 依存: `bash`, `jq`
+- 根拠: `hooks/log-access-stop.sh`
+
+---
+
 ## 未確認事項
 
 - CI 定義: `.github/workflows/` が存在しない（CI なし）。確認済み。
