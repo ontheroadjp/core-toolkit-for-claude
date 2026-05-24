@@ -192,7 +192,7 @@ Phase 3: 最終報告
             - Example: `feat(#23): implement user auth endpoint`
             - Conventional Commits types: `feat` / `fix` / `refactor` / `chore` / `style` / `test` / `docs`
         - 作業内容を対象 issue のコメントとして投稿する
-        - Phase 2 へ進む
+        - ユーザー確認なしに即座に Phase 2 へ進む
 
 ---
 
@@ -214,7 +214,10 @@ Phase 3: 最終報告
     [~/.config/claude-code-kit/templates/pr.md の内容を実際の値で埋めたものを展開]
     EOF
     ```
-- 作成完了後、`/docs-sync` を自動実行する（docs 同期 → PR 公開まで完結させる）
+- 作成完了後、ユーザーに確認する:
+    **「追加の変更はありますか？」**
+    - あり → Step 3 に戻って実装・コミットする（`git push` で PR に自動反映される）
+    - なし → `/docs-sync` を自動実行する（docs 同期 → PR 公開まで完結させる）
 - `/docs-sync` が HARD STOP した場合はそこで処理が止まり、ユーザーへ報告される
 - `/docs-sync` 完了後、Phase 3 へ進む
 
