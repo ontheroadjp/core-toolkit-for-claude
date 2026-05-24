@@ -207,7 +207,7 @@ docs 内で事実を断定する箇所には可能な限り以下の形式で根
 
 ### Phase 5: README.md の検証・scaffold
 
-`commands/templates/readme.md` を基準として、現在のリポジトリの `README.md` を確認する。
+`~/.config/claude-code-kit/templates/readme.md` を基準として、現在のリポジトリの `README.md` を確認する。
 
 #### 必須セクションの存在確認
 以下のセクションが存在しない場合は scaffold（追加）する:
