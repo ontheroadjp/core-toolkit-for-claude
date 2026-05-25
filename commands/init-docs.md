@@ -93,10 +93,12 @@
 }
 ```
 
-`primary_docs` の生成ルール:
-- `investigation`: `doc_roots` 内で各コマンド・ファイルの責務サマリを持つドキュメント（通常 L3 の specification_summary.md）のパスを設定する。存在しない場合は省略する
-- `structure`: リポジトリのディレクトリ構造と各ディレクトリの責務を記述したドキュメント（通常 L1 の repository_structure.md）のパスを設定する。存在しない場合は省略する
-- `work.md` の調査フェーズはこの値を直接参照するため、パスは実体と一致していること（Phase 4 で検証する）
+`primary_docs` の記述ルール:
+- Phase 3 で生成される予定のパスを記述する（Phase 2 時点でファイルが存在しなくてよい）
+- `investigation`: Phase 3 で L3 に生成される責務サマリ doc のパスを記述する（通常 `docs/L3_implementation/specification_summary.md`）
+- `structure`: Phase 3 で L1 に生成されるディレクトリ構造 doc のパスを記述する（通常 `docs/L1_project/repository_structure.md`）
+- L3 または L1 が生成されない構成の場合のみ該当キーを省略する
+- パスの実在確認は Phase 4-1 で行う（Phase 2 では確認不要）
 
 ---
 
