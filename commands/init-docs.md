@@ -85,11 +85,7 @@
   "repo_id": "string",
   "package_manager": "pnpm|npm|yarn|bun|unknown",
   "doc_roots": [],
-  "commands": {},
-  "primary_docs": {
-    "investigation": "docs/L3_implementation/specification_summary.md",
-    "structure": "docs/L1_project/repository_structure.md"
-  }
+  "commands": {}
 }
 ```
 
