@@ -93,12 +93,7 @@
 }
 ```
 
-`primary_docs` の記述ルール:
-- Phase 3 で生成される予定のパスを記述する（Phase 2 時点でファイルが存在しなくてよい）
-- `investigation`: Phase 3 で L3 に生成される責務サマリ doc のパスを記述する（通常 `docs/L3_implementation/specification_summary.md`）
-- `structure`: Phase 3 で L1 に生成されるディレクトリ構造 doc のパスを記述する（通常 `docs/L1_project/repository_structure.md`）
-- L3 または L1 が生成されない構成の場合のみ該当キーを省略する
-- パスの実在確認は Phase 4-1 で行う（Phase 2 では確認不要）
+`primary_docs` は Phase 2 では記述しない。Phase 3 でファイルを生成した後に設定する（下記参照）。
 
 ---
 
@@ -138,6 +133,15 @@
 - 事実を断定する箇所には必ず根拠（`ファイルパス:行番号`）を示す
 - 「なぜそうなっているか」を必ず添える
 - 確認できない事項は未確認として分離する
+
+#### Phase 3 完了後: primary_docs の設定（必須）
+
+L1・L3 のファイルが実際に生成されたことを確認した上で、`docs/.ai/repo.profile.json` の `primary_docs` を設定する:
+
+- `investigation`: 生成した L3 の責務サマリ doc のパス（`specification_summary.md` が生成された場合）
+- `structure`: 生成した L1 のディレクトリ構造 doc のパス（`repository_structure.md` が生成された場合）
+- 該当ファイルが生成されなかった場合のみキーを省略する
+- ファイルが実在することを確認してから書くこと（予定パスの先行記入は禁止）
 
 ---
 
