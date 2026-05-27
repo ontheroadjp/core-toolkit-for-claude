@@ -16,6 +16,14 @@ A collection of custom slash commands for [Claude Code](https://claude.ai/code) 
 
 > **Symlink-only principle:** All files placed under `~/.claude/` must be symlinks pointing to this repository — never actual file copies. This repo is the single source of truth; `~/.claude/` is just a reference point.
 
+### Quick install (commands + skills)
+
+```bash
+./install.sh
+```
+
+Creates symlinks for `commands/*.md` → `~/.claude/commands/` and `skills/*/` → `~/.codex/skills/`. Target directories are created automatically.
+
 ### 0. Symlink the shared templates (required by all tools)
 
 ```bash
@@ -121,6 +129,8 @@ ln -s /path/to/claude-code-kit/commands/docs-sync.md  ~/.codex/prompts/docs-sync
 ln -s /path/to/claude-code-kit/commands/init-docs.md  ~/.codex/prompts/init-docs.md
 ln -s /path/to/claude-code-kit/AGENTS.md              ~/.codex/AGENTS.md
 ```
+
+Skills are symlinked to `~/.codex/skills/` by `./install.sh` (run once).
 
 ## Usage
 
