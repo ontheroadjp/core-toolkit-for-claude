@@ -208,13 +208,17 @@ Claude Code の Stop hook として `~/.claude/settings.json` から呼び出さ
 ## 11. `commands/review-resolve.md` — PR レビューコメント対話的解決コマンド
 
 ### 概要
-指定した PR のレビューコメントを取得し、各コメントに対して「対応する（/work で実装）」「対応しない（理由を返信）」「スキップ」をユーザーが選択できるコマンド。
-- 根拠: `commands/review-resolve.md:1-5`
+PR レビューコメント対応専用のワークフローエントリポイント。`/work` を経由せず自己完結（checkout → 実装 → commit → push → 返信）。各コメントに対して Claude の意見を提示したうえでユーザーが対応方針を選択する。
+- 根拠: `commands/review-resolve.md:1-6`
 
 ### 引数
 - `/review-resolve 19` または `/review-resolve #19` の形式で PR 番号を指定する
 - 引数がない場合はユーザーに報告して終了する
 - 根拠: `commands/review-resolve.md`（Step 0）
+
+### ブランチ checkout
+- Step 1 で `headRefName` を取得し、コメントが存在する場合は Step 2 完了後に `git checkout <headRefName>` を実行する
+- 根拠: `commands/review-resolve.md`（Step 2）
 
 ### レビューコメントの取得対象
 - **(A) インラインコードコメント**: `gh api repos/{owner}/{repo}/pulls/{n}/comments`（diff に紐づくコメント）
@@ -223,18 +227,20 @@ Claude Code の Stop hook として `~/.claude/settings.json` から呼び出さ
 - 根拠: `commands/review-resolve.md`（Step 2）
 
 ### 対応選択フロー（コメント 1 件ずつ）
-1. **対応する** → `/work` を呼び出して実装 → 完了後に「対応しました。」を返信
-2. **対応しない** → ユーザーが理由を入力 → 理由をコメントに返信
-3. **スキップ** → 次のコメントへ進む（返信なし）
+各コメントに Claude の意見（妥当性・対応方針）を提示した後、4択から選択:
+1. **対応する** → 該当コードを読み PR ブランチ上で直接実装 → `git-commit.md` でコミット（`issue_number=none`, `allowed_types=[fix, refactor, style]`）→ `git push` → 「対応しました。」を返信。スコープ超過と判断した場合は `/work` での対応を促してスキップ
+2. **反対意見を返信する** → Claude の意見をベースに返信文を作成・ユーザー確認後に投稿
+3. **対応しない** → ユーザーが理由を入力 → 理由をコメントに返信
+4. **スキップ** → 次のコメントへ進む（返信なし）
 - 根拠: `commands/review-resolve.md`（Step 3）
 
 ### 返信 API
 - インラインコメント: `POST /repos/{owner}/{repo}/pulls/{n}/comments/{comment_id}/replies`
 - レビュー本体コメント: `POST /repos/{owner}/{repo}/issues/{n}/comments`（PR の issue comment として投稿）
-- 根拠: `commands/review-resolve.md`（Step 3 選択 1/2）
+- 根拠: `commands/review-resolve.md`（Step 3 選択 1〜3）
 
 ### 完了報告
-対応 / 返信 / スキップの件数サマリを表示。スキップがある場合は PR URL を添えて案内する。
+対応 / 反対意見を返信 / 返信 / スキップの件数サマリを表示。スキップがある場合は PR URL を添えて案内する。
 - 根拠: `commands/review-resolve.md`（Step 4）
 
 ---
