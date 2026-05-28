@@ -34,8 +34,8 @@ git checkout -b patch/<変更内容を表す slug>
     ```bash
     git checkout main
     git merge --ff patch/<slug>
-    git branch -d patch/<slug>
     git push origin main
+    git branch -d patch/<slug>
     ```
 
 報告後、`git checkout main` で main に戻る。
