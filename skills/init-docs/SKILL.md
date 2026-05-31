@@ -7,7 +7,7 @@ description: Execute the repository init-docs workflow by loading and following 
 
 ## Source Of Truth
 
-`commands/init-docs.md` is the single authoritative definition of the init-docs workflow.
+`~/.codex/commands/init-docs.md` is the single authoritative definition of the init-docs workflow.
 
 ## Required Behavior
 

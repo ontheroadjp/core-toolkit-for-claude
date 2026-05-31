@@ -7,7 +7,7 @@ description: Execute the repository task workflow by loading and following comma
 
 ## Source Of Truth
 
-`commands/task.md` is the single authoritative definition of the task workflow.
+`~/.codex/commands/task.md` is the single authoritative definition of the task workflow.
 
 ## Required Behavior
 

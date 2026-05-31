@@ -7,7 +7,7 @@ description: Execute the repository patch workflow by loading and following comm
 
 ## Source Of Truth
 
-`commands/patch.md` is the single authoritative definition of the patch workflow.
+`~/.codex/commands/patch.md` is the single authoritative definition of the patch workflow.
 
 ## Required Behavior
 

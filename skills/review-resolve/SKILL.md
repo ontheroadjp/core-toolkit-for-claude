@@ -7,7 +7,7 @@ description: Execute the repository review-resolve workflow by loading and follo
 
 ## Source Of Truth
 
-`commands/review-resolve.md` is the single authoritative definition of the review-resolve workflow.
+`~/.codex/commands/review-resolve.md` is the single authoritative definition of the review-resolve workflow.
 
 ## Required Behavior
 

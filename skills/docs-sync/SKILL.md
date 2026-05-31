@@ -7,7 +7,7 @@ description: Execute the repository docs-sync workflow by loading and following 
 
 ## Source Of Truth
 
-`commands/docs-sync.md` is the single authoritative definition of the docs-sync workflow.
+`~/.codex/commands/docs-sync.md` is the single authoritative definition of the docs-sync workflow.
 
 ## Required Behavior
 
