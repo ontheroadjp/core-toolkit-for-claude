@@ -11,14 +11,14 @@ mkdir -p "$SKILLS_TARGET"
 echo "Linking commands -> ${COMMANDS_TARGET}"
 for src in "$REPO_DIR"/commands/*.md; do
   name="$(basename "$src")"
-  ln -sf "$src" "${COMMANDS_TARGET}/${name}"
+  ln -shf "$src" "${COMMANDS_TARGET}/${name}"
   echo "  ${COMMANDS_TARGET}/${name} -> ${src}"
 done
 
 echo "Linking skills -> ${SKILLS_TARGET}"
 for src in "$REPO_DIR"/skills/*/; do
   name="$(basename "$src")"
-  ln -sf "$src" "${SKILLS_TARGET}/${name}"
+  ln -shf "$src" "${SKILLS_TARGET}/${name}"
   echo "  ${SKILLS_TARGET}/${name} -> ${src}"
 done
 
