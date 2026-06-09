@@ -27,7 +27,8 @@
     "skills/task/SKILL.md",
     "skills/patch/SKILL.md",
     "skills/docs-sync/SKILL.md",
-    "skills/init-docs/SKILL.md"
+    "skills/init-docs/SKILL.md",
+    "skills/work/SKILL.md"
   ],
   "primary_docs": {
     "investigation": "docs/L3_implementation/specification_summary.md",
