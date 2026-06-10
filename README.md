@@ -6,12 +6,13 @@ A collection of custom slash commands for [Claude Code](https://claude.ai/code) 
 
 | Command | Purpose |
 |---|---|
-| `/new-issue` | Optional pre-`/work` entry point. Turns a rough idea into one or more well-formed GitHub issues (with split rationale when scope exceeds a single coherent unit). Does not implement. |
-| `/task` | Entry point for all file changes. Routes to patch flow (no docs needed) or task flow (docs required). |
-| `/patch` | Lightweight fixes without documentation changes. Branch + commit → user ff-merges. |
+| `/work` | **Main entry point** for all development tasks. Gates → investigates → routes to patch flow or task flow automatically. |
+| `/new-issue` | Optional pre-`/work` entry point. Turns a rough idea into one or more well-formed GitHub issues. Does not implement. |
+| `/review-resolve` | Fetches PR review comments and guides the user through addressing or declining each one interactively. |
+| `/patch` | *(delegated by /work)* Lightweight fixes without documentation changes. Branch + commit → user ff-merges. |
+| `/task` | *(delegated by /work)* Implementation with docs changes. Issue → implement → draft PR → `/docs-sync`. |
 | `/docs-sync` | Syncs `docs/*` to match implementation changes using `git diff` as truth, then publishes the draft PR. |
 | `/init-docs` | Full re-observation and reconstruction of project design docs. Run when `/docs-sync` hits a HARD STOP. |
-| `/review-resolve` | Fetches PR review comments and guides the user through addressing or declining each one interactively. |
 
 ## Installation
 

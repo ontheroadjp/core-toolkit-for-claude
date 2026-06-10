@@ -108,13 +108,15 @@ git diff を事実として docs および README.md を最小更新し、ドラ
 リポジトリ実態の全体把握と設計ドキュメント再構築。重い初期化コマンド。
 - 根拠: `commands/init-docs.md:1-8`
 
-### ワークフロー（5 フェーズ）
+### ワークフロー（7 フェーズ）
 1. プロジェクト分析（ディレクトリ・技術スタック・エントリポイント・機能・依存）
-2. `docs/.ai/repo.profile.json` 生成（事実のみ、補完禁止）。`primary_docs` セクションも生成する（`investigation`: 責務サマリ doc のパス、`structure`: ディレクトリ構造 doc のパス）
-3. docs 生成（L0/L1/L2/L3）
+2. `docs/.ai/repo.profile.json` 生成（事実のみ、補完禁止）。`primary_docs` は Phase 3 完了後に設定する
+3. docs 生成（L0/L1/L2/L3）。Phase 3 完了後に `primary_docs` を設定
 4. 整合性検証（docs↔実体、docs↔repo.profile.json、CI 整合）
-5. AGENTS.md 更新
-- 根拠: `commands/init-docs.md:39-222`
+5. README.md の検証・scaffold（必須セクションの存在確認と不足セクションの追加）
+6. CLAUDE.md 更新（AI 運用の起点として Custom Command の使い分けルールを更新）
+7. ユーザー確認 → commit & ドラフト PR 作成（ブランチ: `docs/init-docs-<YYYYMMDD>`）
+- 根拠: `commands/init-docs.md`（Phase 1–7 節）
 
 ### 再実行トリガー
 - `/docs-sync` が HARD STOP を検知
