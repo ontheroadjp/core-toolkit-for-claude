@@ -17,13 +17,13 @@ A collection of custom slash commands for [Claude Code](https://claude.ai/code) 
 
 > **Symlink-only principle:** All files placed under `~/.claude/` must be symlinks pointing to this repository — never actual file copies. This repo is the single source of truth; `~/.claude/` is just a reference point.
 
-### Quick install (commands + skills)
+### Quick install (commands + hooks + skills)
 
 ```bash
 ./install.sh
 ```
 
-Creates symlinks for `commands/*.md` → `~/.claude/commands/` and `skills/*/` → `~/.codex/skills/`. Target directories are created automatically.
+Creates symlinks for `commands/*.md` → `~/.claude/commands/`, `hooks/*.sh` → `~/.claude/hooks/`, and `skills/*/` → `~/.codex/skills/`. Target directories are created automatically.
 
 ### 0. Symlink the shared templates (required by all tools)
 
@@ -59,17 +59,21 @@ Claude Code auto-loads `~/.claude/CLAUDE.md` in every session, so the AI operati
 
 ```bash
 mkdir -p ~/.claude/hooks
-ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh   ~/.claude/hooks/log-token-usage.sh
-ln -s /path/to/claude-code-kit/hooks/log-access-prompt.sh ~/.claude/hooks/log-access-prompt.sh
-ln -s /path/to/claude-code-kit/hooks/log-access-tool.sh   ~/.claude/hooks/log-access-tool.sh
-ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh   ~/.claude/hooks/log-access-stop.sh
-ln -s /path/to/claude-code-kit/hooks/notify-slack.sh      ~/.claude/hooks/notify-slack.sh
+ln -s /path/to/claude-code-kit/hooks/guard-destructive-cmd.sh ~/.claude/hooks/guard-destructive-cmd.sh
+ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh       ~/.claude/hooks/log-token-usage.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-prompt.sh     ~/.claude/hooks/log-access-prompt.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-tool.sh       ~/.claude/hooks/log-access-tool.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh       ~/.claude/hooks/log-access-stop.sh
+ln -s /path/to/claude-code-kit/hooks/notify-slack.sh          ~/.claude/hooks/notify-slack.sh
 ```
 
 Then add the following to `~/.claude/settings.json`:
 
 ```json
 "hooks": {
+    "PreToolUse": [
+        { "matcher": "Bash", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/guard-destructive-cmd.sh" }] }
+    ],
     "UserPromptSubmit": [
         { "matcher": "", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/log-access-prompt.sh" }] }
     ],
@@ -182,11 +186,12 @@ Start every session with `/work` — it asks what you want to do and routes to t
 
 ```
 hooks/
-  log-token-usage.sh    # Stop — logs token usage per session to logs/token-usage/YYYY-MM.log
-  log-access-prompt.sh  # UserPromptSubmit — saves user instruction for session correlation
-  log-access-tool.sh    # PostToolUse — tracks Read/Glob/Grep/Edit/Write by command phase
-  log-access-stop.sh    # Stop — appends phase-based access log to logs/access/YYYY-MM.log
-  notify-slack.sh       # Notification + Stop — posts to Slack when Claude waits for user input
+  guard-destructive-cmd.sh  # PreToolUse/Bash — blocks Lv0 commands; Lv1 hands off to user for manual execution
+  log-token-usage.sh        # Stop — logs token usage per session to logs/token-usage/YYYY-MM.log
+  log-access-prompt.sh      # UserPromptSubmit — saves user instruction for session correlation
+  log-access-tool.sh        # PostToolUse — tracks Read/Glob/Grep/Edit/Write by command phase
+  log-access-stop.sh        # Stop — appends phase-based access log to logs/access/YYYY-MM.log
+  notify-slack.sh           # Notification + Stop — posts to Slack when Claude waits for user input
 logs/
   .gitkeep              # directory tracked; log files are gitignored
 commands/
