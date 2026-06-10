@@ -2,7 +2,8 @@
 # Stop: write formatted log to pending file (not main log); keep state alive across turns
 
 payload=$(cat)
-session_id=$(echo "$payload" | jq -r '.session_id // empty')
+session_id=$(echo "$payload"      | jq -r '.session_id // empty')
+transcript_path=$(echo "$payload" | jq -r '.transcript_path // empty')
 
 [ -z "$session_id" ] && exit 0
 
@@ -71,5 +72,51 @@ phases=$(echo "$state" | jq -r '
   printf '[修正したファイル]\n'
   format_modified
   printf '\n'
+
+  if [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
+    token_data=$(jq -rsc '
+      [.[] | objects | select(.type == "assistant" and .message.usage != null)] as $entries |
+      ($entries[-1].message.model // "unknown") as $model |
+      ($entries | map(.message.usage) | {
+        input:        (map(.input_tokens                // 0) | add // 0),
+        output:       (map(.output_tokens               // 0) | add // 0),
+        cache_read:   (map(.cache_read_input_tokens     // 0) | add // 0),
+        cache_create: (map(.cache_creation_input_tokens // 0) | add // 0)
+      }) as $u |
+      ($u.input + $u.cache_read) as $denom |
+      ($model |
+        if test("opus")    then {i:15.0,  o:75.0, cr:1.50, cc:18.75}
+        elif test("haiku") then {i:0.80,  o:4.0,  cr:0.08, cc:1.0}
+        else                    {i:3.0,   o:15.0, cr:0.30, cc:3.75}
+        end
+      ) as $price |
+      (($u.input * $price.i + $u.output * $price.o +
+        $u.cache_read * $price.cr + $u.cache_create * $price.cc) / 1000000) as $cost |
+      {
+        input:       $u.input,
+        output:      $u.output,
+        cache_read:  $u.cache_read,
+        cache_ratio: (if $denom > 0 then (($u.cache_read * 1000 / $denom | floor) / 10) else 0 end),
+        total:       ($u.input + $u.output + $u.cache_create),
+        cost_usd:    ($cost * 10000 | round | . / 10000)
+      }
+    ' "$transcript_path" 2>/dev/null) || token_data=""
+
+    if [ -n "$token_data" ]; then
+      t_input=$(echo "$token_data"       | jq -r '.input')
+      t_output=$(echo "$token_data"      | jq -r '.output')
+      t_cache_read=$(echo "$token_data"  | jq -r '.cache_read')
+      t_cache_ratio=$(echo "$token_data" | jq -r '.cache_ratio')
+      t_total=$(echo "$token_data"       | jq -r '.total')
+      t_cost=$(echo "$token_data"        | jq -r '.cost_usd')
+      printf '[トークン使用量]\n'
+      printf '  input:       %d\n'   "$t_input"
+      printf '  output:      %d\n'   "$t_output"
+      printf '  cache_read:  %d  (cache_ratio: %s%%)\n' "$t_cache_read" "$t_cache_ratio"
+      printf '  total:       %d\n'   "$t_total"
+      printf '  cost_usd:    %s\n'   "$t_cost"
+      printf '\n'
+    fi
+  fi
 } > "$PENDING_FILE"
 # State is kept alive; pending file is flushed to main log when next /work starts
