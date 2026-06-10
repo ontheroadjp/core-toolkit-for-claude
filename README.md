@@ -152,6 +152,26 @@ hooks のみで work/task/patch のファイルアクセスをログに記録し
   cost_usd:     0.0412
 ```
 
+### 4. Status line (optional)
+
+Displays context usage, 5-hour rate limit, and 7-day rate limit with reset times in the Claude Code status bar.
+
+```bash
+./setup_statusline.sh
+```
+
+Creates `~/.claude/statusline.sh` as a symlink to `scripts/statusline.sh` and adds the `statusLine` entry to `~/.claude/settings.json`. Requires `jq`. Restart Claude Code to apply.
+
+```
+CTX:35% | 5h:12%(>23:00) | 7d:41%(>06/15 23:00)
+```
+
+- **CTX** — context window usage (cyan)
+- **5h** — 5-hour rate limit usage and reset time (yellow)
+- **7d** — 7-day rate limit usage and reset datetime (magenta)
+
+Rate limit data is only available for Claude.ai Pro/Max subscribers after the first API response in a session.
+
 ### Codex CLI (optional)
 
 After completing Steps 0–2 above, symlink for Codex CLI:
@@ -224,6 +244,9 @@ docs/
   L1_project/               # Project overview docs
   L2_development/           # Development and operation docs
   L3_implementation/        # Implementation specification docs
+scripts/
+  statusline.sh             # Claude Code status line — displays context + rate limit usage
+setup_statusline.sh         # Installer — symlinks statusline.sh and updates settings.json
 CLAUDE.md                   # AI operating instructions (auto-loaded by Claude Code)
 ```
 
