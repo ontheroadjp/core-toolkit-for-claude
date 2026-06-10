@@ -92,7 +92,7 @@ Then add the following to `~/.claude/settings.json`:
 }
 ```
 
-**Token usage hook** — at the end of every session, token usage is appended to `~/.claude/token-usage.log`:
+**Token usage hook** — at the end of every session, token usage is appended to `logs/token-usage/YYYY-MM.log` in this repository:
 
 ```
 [2026-05-23 20:54:56] session=abc123  input=  1411  output=445336  cache_read=80565208  cache_create=1092677  total=1539424
@@ -109,7 +109,7 @@ export CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/servic
 - Requires `curl` and `jq`; works on macOS and Linux
 - Network failures never block Claude (`curl --max-time 5`, errors swallowed)
 
-**File access log hooks** — when `/work` is invoked, the files accessed in each command phase are appended to `logs/YYYY-MM/access.log` in this repository:
+**File access log hooks** — when `/work` is invoked, the files accessed in each command phase are appended to `logs/access/YYYY-MM.log` in this repository:
 
 ```
 ---
@@ -119,21 +119,24 @@ export CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/servic
 [ユーザーからの指示内容]
 hooks のみで work/task/patch のファイルアクセスをログに記録したい
 
-[work]
-- ~/.claude/commands/work.md
-- ~/dev/.../docs/.ai/repo.profile.json
+[アクセスサマリ]
+総アクセス数: 6
+重複アクセス:
+  - ~/dev/.../hooks/log-access-tool.sh (2回)
 
-[task]
-- ~/.claude/commands/task.md
+[フェーズ別アクセス順序]
+[work] 3件
+  #1  Read  ~/.claude/commands/work.md
+  #2  Read  ~/dev/.../docs/.ai/repo.profile.json
+  #3  Glob  hooks/*.sh
 
-[patch]
-
-[docs-sync]
-
-[init-docs]
+[task] 3件
+  #4  Read  ~/.claude/commands/task.md
+  #5  Read  ~/dev/.../hooks/log-access-tool.sh
+  #6  Read  ~/dev/.../hooks/log-access-tool.sh
 
 [修正したファイル]
-- ~/dev/.../hooks/log-access-tool.sh
+  - ~/dev/.../hooks/log-access-tool.sh
 ```
 
 ### Codex CLI (optional)
@@ -179,10 +182,10 @@ Start every session with `/work` — it asks what you want to do and routes to t
 
 ```
 hooks/
-  log-token-usage.sh    # Stop — logs token usage per session to ~/.claude/token-usage.log
+  log-token-usage.sh    # Stop — logs token usage per session to logs/token-usage/YYYY-MM.log
   log-access-prompt.sh  # UserPromptSubmit — saves user instruction for session correlation
   log-access-tool.sh    # PostToolUse — tracks Read/Glob/Grep/Edit/Write by command phase
-  log-access-stop.sh    # Stop — appends phase-based access log to logs/YYYY-MM/access.log
+  log-access-stop.sh    # Stop — appends phase-based access log to logs/access/YYYY-MM.log
   notify-slack.sh       # Notification + Stop — posts to Slack when Claude waits for user input
 logs/
   .gitkeep              # directory tracked; log files are gitignored
