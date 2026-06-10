@@ -10,7 +10,7 @@ tool_input=$(echo "$payload" | jq -c '.tool_input // {}')
 
 SESSION_DIR="/tmp/claude-access-sessions"
 STATE_FILE="${SESSION_DIR}/${session_id}.json"
-PROMPT_FILE="${SESSION_DIR}/${session_id}.prompt"
+PENDING_FILE="${SESSION_DIR}/${session_id}.pending"
 
 # Extract relevant path by tool type
 case "$tool_name" in
@@ -32,9 +32,37 @@ basename_file=$(basename "$file_path")
 
 state=$(cat "$STATE_FILE")
 
+_get_log_file() {
+  local script="${BASH_SOURCE[0]}"
+  [ -L "$script" ] && script="$(readlink "$script")"
+  local repo_dir
+  repo_dir="$(cd "$(dirname "$script")/.." && pwd)"
+  local log_dir="${repo_dir}/logs/access"
+  mkdir -p "$log_dir"
+  echo "${log_dir}/$(date '+%Y-%m').log"
+}
+
 # Phase switching on command file reads
 case "$basename_file" in
-  work.md)       state=$(echo "$state" | jq '.current_phase="work"') ;;
+  work.md)
+    existing_seq=$(echo "$state" | jq '.seq')
+    if [ "$existing_seq" -gt 0 ] && [ -f "$PENDING_FILE" ]; then
+      # New /work starting while previous session has data: flush pending to main log
+      LOG_FILE=$(_get_log_file)
+      cat "$PENDING_FILE" >> "$LOG_FILE"
+      rm -f "$PENDING_FILE"
+      # Reset state for the new /work session
+      latest_prompt=$(cat "${SESSION_DIR}/${session_id}.prompt" 2>/dev/null || echo "")
+      timestamp=$(date '+%Y.%m.%d %H.%M')
+      state=$(jq -n \
+        --arg t "$timestamp" \
+        --arg p "$latest_prompt" \
+        '{start_time:$t, user_instruction:$p, current_phase:"work",
+          seq:0, accesses:[], modified_files:[]}')
+    else
+      state=$(echo "$state" | jq '.current_phase="work"')
+    fi
+    ;;
   task.md)       state=$(echo "$state" | jq '.current_phase="task"') ;;
   patch.md)      state=$(echo "$state" | jq '.current_phase="patch"') ;;
   docs-sync.md)  state=$(echo "$state" | jq '.current_phase="docs_sync"') ;;

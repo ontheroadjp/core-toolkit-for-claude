@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop: write formatted access log entry if /work was invoked this session
+# Stop: write formatted log to pending file (not main log); keep state alive across turns
 
 payload=$(cat)
 session_id=$(echo "$payload" | jq -r '.session_id // empty')
@@ -8,6 +8,7 @@ session_id=$(echo "$payload" | jq -r '.session_id // empty')
 
 SESSION_DIR="/tmp/claude-access-sessions"
 STATE_FILE="${SESSION_DIR}/${session_id}.json"
+PENDING_FILE="${SESSION_DIR}/${session_id}.pending"
 
 [ ! -f "$STATE_FILE" ] && exit 0
 
@@ -15,7 +16,6 @@ state=$(cat "$STATE_FILE")
 
 accesses_count=$(echo "$state" | jq '.accesses | length')
 if [ "$accesses_count" -eq 0 ]; then
-  rm -f "$STATE_FILE" "${SESSION_DIR}/${session_id}.prompt"
   exit 0
 fi
 
@@ -24,20 +24,12 @@ user_instruction=$(echo "$state" | jq -r '.user_instruction')
 total=$(echo "$state"            | jq '.accesses | length')
 modified_files=$(echo "$state"   | jq -r '.modified_files[]' 2>/dev/null || true)
 
-_SCRIPT="${BASH_SOURCE[0]}"
-[ -L "$_SCRIPT" ] && _SCRIPT="$(readlink "$_SCRIPT")"
-REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
-LOG_DIR="${REPO_DIR}/logs/access"
-mkdir -p "$LOG_DIR"
-LOG_FILE="${LOG_DIR}/$(date '+%Y-%m').log"
-
 format_modified() {
   if [ -n "$modified_files" ]; then
     echo "$modified_files" | while IFS= read -r f; do echo "  - $f"; done
   fi
 }
 
-# Build duplicate summary: files accessed more than once
 duplicates=$(echo "$state" | jq -r '
   .accesses
   | group_by(.path)
@@ -46,7 +38,6 @@ duplicates=$(echo "$state" | jq -r '
   | "  - \(.path) (\(.count)回)"
 ')
 
-# Build per-phase access sequence (in order of first appearance)
 phases=$(echo "$state" | jq -r '
   [.accesses[].phase]
   | reduce .[] as $p ([]; if (. | contains([$p])) then . else . + [$p] end)
@@ -80,6 +71,5 @@ phases=$(echo "$state" | jq -r '
   printf '[修正したファイル]\n'
   format_modified
   printf '\n'
-} >> "$LOG_FILE"
-
-rm -f "$STATE_FILE" "${SESSION_DIR}/${session_id}.prompt"
+} > "$PENDING_FILE"
+# State is kept alive; pending file is flushed to main log when next /work starts
