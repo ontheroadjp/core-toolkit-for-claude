@@ -9,6 +9,7 @@
   ],
   "commands": {},
   "active_commands": [
+    "commands/work.md",
     "commands/task.md",
     "commands/patch.md",
     "commands/docs-sync.md",
@@ -21,17 +22,22 @@
     "commands/templates/pr.md"
   ],
   "hooks": [
+    "hooks/guard-destructive-cmd.sh",
     "hooks/log-token-usage.sh",
+    "hooks/log-access-prompt.sh",
+    "hooks/log-access-tool.sh",
+    "hooks/log-access-stop.sh",
     "hooks/notify-slack.sh"
   ],
   "external_cli_deps": ["git", "gh", "jq", "curl"],
   "skills": [
+    "skills/work/SKILL.md",
     "skills/task/SKILL.md",
     "skills/patch/SKILL.md",
     "skills/docs-sync/SKILL.md",
     "skills/init-docs/SKILL.md",
-    "skills/work/SKILL.md",
-    "skills/new-issue/SKILL.md"
+    "skills/new-issue/SKILL.md",
+    "skills/review-resolve/SKILL.md"
   ],
   "primary_docs": {
     "investigation": "docs/L3_implementation/specification_summary.md",
