@@ -6,6 +6,7 @@ A collection of custom slash commands for [Claude Code](https://claude.ai/code) 
 
 | Command | Purpose |
 |---|---|
+| `/new-issue` | Optional pre-`/work` entry point. Turns a rough idea into one or more well-formed GitHub issues (with split rationale when scope exceeds a single coherent unit). Does not implement. |
 | `/task` | Entry point for all file changes. Routes to patch flow (no docs needed) or task flow (docs required). |
 | `/patch` | Lightweight fixes without documentation changes. Branch + commit → user ff-merges. |
 | `/docs-sync` | Syncs `docs/*` to match implementation changes using `git diff` as truth, then publishes the draft PR. |
@@ -41,9 +42,10 @@ ln -s /path/to/claude-code-kit/commands/patch.md           ~/.claude/commands/pa
 ln -s /path/to/claude-code-kit/commands/docs-sync.md       ~/.claude/commands/docs-sync.md
 ln -s /path/to/claude-code-kit/commands/init-docs.md       ~/.claude/commands/init-docs.md
 ln -s /path/to/claude-code-kit/commands/review-resolve.md  ~/.claude/commands/review-resolve.md
+ln -s /path/to/claude-code-kit/commands/new-issue.md       ~/.claude/commands/new-issue.md
 ```
 
-The commands are now available as `/task`, `/patch`, `/docs-sync`, `/init-docs`, and `/review-resolve` in any Claude Code session.
+The commands are now available as `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, and `/new-issue` in any Claude Code session.
 
 ### 2. Symlink CLAUDE.md (global — all repos)
 
@@ -127,6 +129,7 @@ ln -s /path/to/claude-code-kit/commands/task.md       ~/.codex/prompts/task.md
 ln -s /path/to/claude-code-kit/commands/patch.md      ~/.codex/prompts/patch.md
 ln -s /path/to/claude-code-kit/commands/docs-sync.md  ~/.codex/prompts/docs-sync.md
 ln -s /path/to/claude-code-kit/commands/init-docs.md  ~/.codex/prompts/init-docs.md
+ln -s /path/to/claude-code-kit/commands/new-issue.md  ~/.codex/prompts/new-issue.md
 ln -s /path/to/claude-code-kit/AGENTS.md              ~/.codex/AGENTS.md
 ```
 
@@ -135,12 +138,18 @@ Skills are symlinked to `~/.codex/skills/` by `./install.sh` (run once).
 ## Usage
 
 ```
-/task
+/new-issue (optional)
+  └── rough idea → 1 or N well-formed issues (with split rationale) → user runs /work #N
+
+/work (main entry)
   ├── docs not required → patch flow: branch → commit → user merges
   └── docs required     → task flow:  issue → implement → draft PR → /docs-sync → PR published
+
+/review-resolve #N
+  └── PR review comments → addressed/declined interactively → reply posted
 ```
 
-Start every session with `/task` — it asks what you want to do and routes to the appropriate flow automatically.
+Start every session with `/work` — it asks what you want to do and routes to the appropriate flow automatically. Use `/new-issue` first only when you want to shape a vague idea into well-formed issues before implementation. Use `/review-resolve` for handling PR review comments.
 
 ## Design Principles
 
@@ -166,6 +175,7 @@ commands/
   docs-sync.md       # Documentation sync and PR publication
   init-docs.md       # Full docs reconstruction
   review-resolve.md  # Interactive PR review comment resolution
+  new-issue.md       # Optional pre-/work entry — idea-to-issue with split support
   templates/
     issue.md       # GitHub issue template
     pr.md          # Pull request template
