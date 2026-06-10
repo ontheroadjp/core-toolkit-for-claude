@@ -12,12 +12,13 @@
 
 ## Custom Command の使い分け（AI 向けルール）
 
-**重要: ワークフローの入り口は2つある。PR レビューコメント対応なら `/review-resolve`、それ以外の全作業は直ちに `/work` を呼ぶこと。調査は `/work` 内で行う。**
+**重要: ワークフローの入り口は3つある。PR レビューコメント対応なら `/review-resolve`、それ以外の全作業は直ちに `/work` を呼ぶこと。漠然としたアイデアから issue を作成したい場合のみ任意で `/new-issue` を先に使い、その後 `/work` で実装に入る。調査は `/work` 内で行う。**
 
 - **review-resolve.md**: PR レビューコメント対応専用のエントリポイント。`/work` を経由せず自己完結（checkout → 実装 → commit → push → 返信）。ユーザーが `/review-resolve #N` で直接呼び出す。
 - **work.md**: review-resolve 以外の全作業のエントリポイント。ゲート確認・ワークスペース管理・現状調査・ルーティング判定を行い、task.md または patch.md へ委譲する。
   - docs 変更不要 → patch.md を Read して patch フロー（issue/PR なし、branch + commit → ユーザーが ff-merge）
   - docs 変更あり → task.md を Read して task フロー（issue 自動生成 → 実装 → ドラフト PR 作成 → /docs-sync へ引き継ぎ）
+- **new-issue.md**: 漠然としたアイデアから 1 件または複数件の整形された issue を生成する**任意の** pre-`/work` エントリポイント。issue 作成のみで実装は行わない（実装は作成された issue 番号に対して別途 `/work` を呼ぶ）。`/work` を経由する必要はなく、`/work` 側にも一切影響を与えない。
 - **task.md**: docs 変更を伴う実装専用。work.md から Read 経由で呼ばれる。直接呼ばれることは想定しない。
 - **patch.md**: ドキュメント変更を伴わない軽微な修正専用。work.md から Read 経由で呼ばれる。直接呼ばれることは想定しない。
 - **docs-sync.md**: git diff を事実として docs を最小更新し、ドラフト PR を公開する。task フロー完了後に呼ぶ。HARD STOP 時は /init-docs を要求して終了する。
