@@ -59,10 +59,11 @@ Claude Code auto-loads `~/.claude/CLAUDE.md` in every session, so the AI operati
 
 ```bash
 mkdir -p ~/.claude/hooks
-ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh  ~/.claude/hooks/log-token-usage.sh
+ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh   ~/.claude/hooks/log-token-usage.sh
 ln -s /path/to/claude-code-kit/hooks/log-access-prompt.sh ~/.claude/hooks/log-access-prompt.sh
-ln -s /path/to/claude-code-kit/hooks/log-access-tool.sh  ~/.claude/hooks/log-access-tool.sh
-ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh  ~/.claude/hooks/log-access-stop.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-tool.sh   ~/.claude/hooks/log-access-tool.sh
+ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh   ~/.claude/hooks/log-access-stop.sh
+ln -s /path/to/claude-code-kit/hooks/notify-slack.sh      ~/.claude/hooks/notify-slack.sh
 ```
 
 Then add the following to `~/.claude/settings.json`:
@@ -75,12 +76,16 @@ Then add the following to `~/.claude/settings.json`:
     "PostToolUse": [
         { "matcher": "", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/log-access-tool.sh" }] }
     ],
+    "Notification": [
+        { "matcher": "", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/notify-slack.sh" }] }
+    ],
     "Stop": [
         {
             "matcher": "",
             "hooks": [
                 { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
-                { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" }
+                { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" },
+                { "type": "command", "command": "bash ~/.claude/hooks/notify-slack.sh" }
             ]
         }
     ]
@@ -92,6 +97,17 @@ Then add the following to `~/.claude/settings.json`:
 ```
 [2026-05-23 20:54:56] session=abc123  input=  1411  output=445336  cache_read=80565208  cache_create=1092677  total=1539424
 ```
+
+**Slack input-wait notification hook** — sends a Slack message when Claude Code is waiting for user input. Set the webhook URL in your shell profile:
+
+```bash
+export CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
+```
+
+- Registered for the `Notification` hook (permission prompts) and `Stop` hook (end-of-response idle)
+- If the variable is unset or empty, the script exits silently — no notification is sent
+- Requires `curl` and `jq`; works on macOS and Linux
+- Network failures never block Claude (`curl --max-time 5`, errors swallowed)
 
 **File access log hooks** — when `/work` is invoked, the files accessed in each command phase are appended to `logs/YYYY-MM/access.log` in this repository:
 
@@ -167,6 +183,7 @@ hooks/
   log-access-prompt.sh  # UserPromptSubmit — saves user instruction for session correlation
   log-access-tool.sh    # PostToolUse — tracks Read/Glob/Grep/Edit/Write by command phase
   log-access-stop.sh    # Stop — appends phase-based access log to logs/YYYY-MM/access.log
+  notify-slack.sh       # Notification + Stop — posts to Slack when Claude waits for user input
 logs/
   .gitkeep              # directory tracked; log files are gitignored
 commands/
