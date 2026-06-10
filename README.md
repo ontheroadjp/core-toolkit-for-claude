@@ -38,6 +38,7 @@ Templates are stored in `~/.config/claude-code-kit/templates/` so both Claude Co
 ### 1. Symlink the commands (global — all repos)
 
 ```bash
+ln -s /path/to/claude-code-kit/commands/work.md            ~/.claude/commands/work.md
 ln -s /path/to/claude-code-kit/commands/task.md            ~/.claude/commands/task.md
 ln -s /path/to/claude-code-kit/commands/patch.md           ~/.claude/commands/patch.md
 ln -s /path/to/claude-code-kit/commands/docs-sync.md       ~/.claude/commands/docs-sync.md
@@ -46,7 +47,7 @@ ln -s /path/to/claude-code-kit/commands/review-resolve.md  ~/.claude/commands/re
 ln -s /path/to/claude-code-kit/commands/new-issue.md       ~/.claude/commands/new-issue.md
 ```
 
-The commands are now available as `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, and `/new-issue` in any Claude Code session.
+The commands are now available as `/work`, `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, and `/new-issue` in any Claude Code session.
 
 ### 2. Symlink CLAUDE.md (global — all repos)
 
@@ -203,8 +204,9 @@ hooks/
 logs/
   .gitkeep              # directory tracked; log files are gitignored
 commands/
-  task.md            # Main entry point — routes to patch or task flow
-  patch.md           # Lightweight fix flow
+  work.md            # Main entry point — gates → investigates → routes to patch or task flow
+  task.md            # Delegated by /work — implementation with docs changes (issue → PR → /docs-sync)
+  patch.md           # Delegated by /work — lightweight fix flow (no docs changes)
   docs-sync.md       # Documentation sync and PR publication
   init-docs.md       # Full docs reconstruction
   review-resolve.md  # Interactive PR review comment resolution
@@ -218,6 +220,7 @@ partials/
 docs/
   .ai/
     repo.profile.json       # Machine-readable repo profile
+  L0_concept/               # Product concept and design policy (WHY layer)
   L1_project/               # Project overview docs
   L2_development/           # Development and operation docs
   L3_implementation/        # Implementation specification docs
