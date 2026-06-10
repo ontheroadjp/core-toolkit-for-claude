@@ -25,11 +25,12 @@ sd_reset=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty' 2>/
 parts=()
 
 # Context
+if [ -z "$ctx_pct" ] && [ -n "$ctx_used" ] && [ -n "$ctx_total" ] && [ "$ctx_total" -gt 0 ] 2>/dev/null; then
+    ctx_pct=$(echo "scale=1; $ctx_used * 100 / $ctx_total" | bc)
+fi
 if [ -n "$ctx_pct" ]; then
     ctx_int=${ctx_pct%.*}
     parts+=("${CYAN}CTX:${ctx_int}%${RESET}")
-elif [ -n "$ctx_used" ] && [ -n "$ctx_total" ]; then
-    parts+=("${CYAN}CTX:${ctx_used}/${ctx_total}${RESET}")
 fi
 
 # 5-hour rate limit
