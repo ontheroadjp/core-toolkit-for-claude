@@ -3,9 +3,11 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMANDS_TARGET="${HOME}/.claude/commands"
+HOOKS_TARGET="${HOME}/.claude/hooks"
 SKILLS_TARGET="${HOME}/.codex/skills"
 
 mkdir -p "$COMMANDS_TARGET"
+mkdir -p "$HOOKS_TARGET"
 mkdir -p "$SKILLS_TARGET"
 
 echo "Linking commands -> ${COMMANDS_TARGET}"
@@ -13,6 +15,13 @@ for src in "$REPO_DIR"/commands/*.md; do
   name="$(basename "$src")"
   ln -shf "$src" "${COMMANDS_TARGET}/${name}"
   echo "  ${COMMANDS_TARGET}/${name} -> ${src}"
+done
+
+echo "Linking hooks -> ${HOOKS_TARGET}"
+for src in "$REPO_DIR"/hooks/*.sh; do
+  name="$(basename "$src")"
+  ln -shf "$src" "${HOOKS_TARGET}/${name}"
+  echo "  ${HOOKS_TARGET}/${name} -> ${src}"
 done
 
 echo "Linking skills -> ${SKILLS_TARGET}"
