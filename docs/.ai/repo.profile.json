@@ -21,9 +21,10 @@
     "commands/templates/pr.md"
   ],
   "hooks": [
-    "hooks/log-token-usage.sh"
+    "hooks/log-token-usage.sh",
+    "hooks/notify-slack.sh"
   ],
-  "external_cli_deps": ["git", "gh", "jq"],
+  "external_cli_deps": ["git", "gh", "jq", "curl"],
   "skills": [
     "skills/task/SKILL.md",
     "skills/patch/SKILL.md",
