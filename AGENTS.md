@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-このファイルは AI 運用の起点となる情報をまとめる。Claude Code がこのリポジトリで作業する際はここを先に読む。
+このファイルは AI 運用の起点となる情報をまとめる。Codex CLI がこのリポジトリで作業する際はここを先に読む。
 
 ## このリポジトリについて
 
@@ -12,10 +12,15 @@
 
 ## Custom Command の使い分け（AI 向けルール）
 
-- **task.md**: ユーザーは常にこれを呼ぶ。内部でルーティング判定を行い、patch フローまたは task フローを実行する。
-  - docs 変更不要 → patch フロー（issue/PR なし、branch + commit → ユーザーが ff-merge）
-  - docs 変更あり → task フロー（issue 自動生成 → 実装 → ドラフト PR 作成 → /docs-sync へ引き継ぎ）
-- **patch.md**: ドキュメント変更を伴わない軽微な修正専用コマンド。直接呼ばれることは少なく、task.md 経由が基本。
+**重要: ワークフローの入り口は3つある。PR レビューコメント対応なら `/review-resolve`、それ以外の全作業は直ちに `/work` を呼ぶこと。漠然としたアイデアから issue を作成したい場合のみ任意で `/new-issue` を先に使い、その後 `/work` で実装に入る。調査は `/work` 内で行う。**
+
+- **review-resolve.md**: PR レビューコメント対応専用のエントリポイント。`/work` を経由せず自己完結（checkout → 実装 → commit → push → 返信）。ユーザーが `/review-resolve #N` で直接呼び出す。
+- **work.md**: review-resolve 以外の全作業のエントリポイント。ゲート確認・ワークスペース管理・現状調査・ルーティング判定を行い、task.md または patch.md へ委譲する。
+  - docs 変更不要 → patch.md を Read して patch フロー（issue/PR なし、branch + commit → ユーザーが ff-merge）
+  - docs 変更あり → task.md を Read して task フロー（issue 自動生成 → 実装 → ドラフト PR 作成 → /docs-sync へ引き継ぎ）
+- **new-issue.md**: 漠然としたアイデアから 1 件または複数件の整形された issue を生成する**任意の** pre-`/work` エントリポイント。issue 作成のみで実装は行わない（実装は作成された issue 番号に対して別途 `/work` を呼ぶ）。`/work` を経由する必要はなく、`/work` 側にも一切影響を与えない。
+- **task.md**: docs 変更を伴う実装専用。work.md から Read 経由で呼ばれる。直接呼ばれることは想定しない。
+- **patch.md**: ドキュメント変更を伴わない軽微な修正専用。work.md から Read 経由で呼ばれる。直接呼ばれることは想定しない。
 - **docs-sync.md**: git diff を事実として docs を最小更新し、ドラフト PR を公開する。task フロー完了後に呼ぶ。HARD STOP 時は /init-docs を要求して終了する。
 - **init-docs.md**: リポジトリ実態の全体把握と設計ドキュメント再構築。重い初期化。docs-sync が説明不能になった時点でここに戻る。
 
@@ -31,20 +36,21 @@
 
 ## テンプレートの場所
 
-- `commands/templates/issue.md` → `~/.config/claude-code-kit/templates/issue.md` としても参照可能
-- `commands/templates/pr.md` → `~/.config/claude-code-kit/templates/pr.md` としても参照可能
-- `commands/templates/readme.md` → 新規リポジトリの README.md 雛形
+- `templates/issue.md` → `~/.config/claude-code-kit/templates/issue.md` としても参照可能
+- `templates/pr.md` → `~/.config/claude-code-kit/templates/pr.md` としても参照可能
+- `templates/readme.md` → 新規リポジトリの README.md 雛形
 
 ## リポジトリへの操作ルール（必須）
 
 このリポジトリに影響する操作を行う際は、以下のルールに従うこと。
 
-### /task フローで行う操作（ファイル編集・追加・削除）
-**ファイルを編集・追加・削除する際は、必ず `/task` を実行すること。**
-直接編集は禁止。`/task` 経由でルーティング判定・ブランチ作成・コミットを行う。
+### ファイル編集・追加・削除の操作
+**ファイルを編集・追加・削除する際は、`/review-resolve` フロー内を除き、必ず `/work` を実行すること。**
+直接編集は禁止。`/work` 経由でルーティング判定・ブランチ作成・コミットを行う。
+`/review-resolve` フロー内での実装は、PR ブランチ上で直接行い commit・push まで完結させる。
 
-### /task フロー対象外の操作（git 管理操作）
-以下の操作は `/task` フローに乗らないが、実行前に必ず理由を説明しユーザーの明示的な確認を取ること:
+### /work フロー対象外の操作（git 管理操作）
+以下の操作は `/work` フローに乗らないが、実行前に必ず理由を説明しユーザーの明示的な確認を取ること:
 
 - git 履歴の書き換え（`filter-repo` / `filter-branch` 等）
 - `git push --force`
@@ -53,7 +59,7 @@
 
 ## このリポジトリへの変更作業
 
-このリポジトリ自体を変更する場合も `/task` を呼ぶ。ただし:
+このリポジトリ自体を変更する場合も `/work` を呼ぶ。ただし:
 - run/build/test コマンドは存在しない（Markdown + Bash のみ）
 - 変更後は `docs/` の更新が必要になることが多い（/docs-sync を呼ぶ）
 - シンボリックリンクは自動更新される（リンク先の実体を変更するだけでよい）
