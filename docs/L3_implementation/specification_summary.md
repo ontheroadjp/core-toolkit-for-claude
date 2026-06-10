@@ -216,7 +216,14 @@ Claude Code の Stop hook として `~/.claude/settings.json` から呼び出さ
     #3  Read  path/to/file
   [修正したファイル]
     - path/to/file
+  [トークン使用量]
+    input:       N
+    output:      N
+    cache_read:  N  (cache_ratio: N.N%)
+    total:       N
+    cost_usd:    N.NNNN
   ```
+- `[トークン使用量]` セクションは `transcript_path` が取得できない場合は省略される
 - フェーズ順序は初回出現順（アルファベット順ではない）
 - 重複アクセスは頻度降順で表示。重複なしの場合は「重複アクセス: なし」
 - 出力先（最終）: `{repo}/logs/access/YYYY-MM.log`（`logs/` は `.gitignore` 対象）

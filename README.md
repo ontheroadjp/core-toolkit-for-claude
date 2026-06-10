@@ -141,6 +141,13 @@ hooks のみで work/task/patch のファイルアクセスをログに記録し
 
 [修正したファイル]
   - ~/dev/.../hooks/log-access-tool.sh
+
+[トークン使用量]
+  input:       12345
+  output:       3210
+  cache_read:   8901  (cache_ratio: 72.1%)
+  total:        15555
+  cost_usd:     0.0412
 ```
 
 ### Codex CLI (optional)
