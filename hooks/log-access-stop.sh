@@ -17,9 +17,10 @@ user_instruction=$(echo "$state" | jq -r '.user_instruction')
 total=$(echo "$state"            | jq '.accesses | length')
 modified_files=$(echo "$state"   | jq -r '.modified_files[]' 2>/dev/null || true)
 
-LOG_DIR="${HOME}/dev/src/github.com/ontheroadjp/claude-code-kit/logs/$(date '+%Y-%m')"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_DIR="${REPO_DIR}/logs/access"
 mkdir -p "$LOG_DIR"
-LOG_FILE="${LOG_DIR}/access.log"
+LOG_FILE="${LOG_DIR}/$(date '+%Y-%m').log"
 
 format_modified() {
   if [ -n "$modified_files" ]; then

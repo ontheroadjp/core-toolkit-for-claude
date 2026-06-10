@@ -59,7 +59,9 @@ total=$(echo "$data"        | jq -r '.total')
 cache_ratio=$(echo "$data"  | jq -r '.cache_ratio')
 cost_usd=$(echo "$data"     | jq -r '.cost_usd')
 
-log_file="$HOME/.claude/token-usage.log"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+log_file="${REPO_DIR}/logs/token-usage/$(date '+%Y-%m').log"
+mkdir -p "$(dirname "$log_file")"
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
 printf '[%s] session=%-36s  name=%-20s  model=%-30s  turns=%3d  input=%6d  output=%6d  cache_read=%7d  cache_create=%6d  total=%7d  cache_ratio=%5.1f  cost_usd=%8.4f  branch=%-20s  cwd=%s\n' \
