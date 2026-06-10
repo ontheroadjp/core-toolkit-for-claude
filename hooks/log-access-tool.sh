@@ -1,5 +1,5 @@
 #!/bin/bash
-# PostToolUse: track file access per phase (work/task/patch)
+# PostToolUse: track file access order and duplicates per phase (work/task/patch)
 
 payload=$(cat)
 session_id=$(echo "$payload" | jq -r '.session_id // empty')
@@ -38,8 +38,7 @@ if [ ! -f "$STATE_FILE" ]; then
     --arg t "$timestamp" \
     --arg p "$prompt" \
     '{start_time:$t, user_instruction:$p, current_phase:"work",
-      work_files:[], task_files:[], patch_files:[],
-      docs_sync_files:[], init_docs_files:[], modified_files:[]}' \
+      seq:0, accesses:[], modified_files:[]}' \
     > "$STATE_FILE"
 fi
 
@@ -54,14 +53,16 @@ case "$basename_file" in
   init-docs.md)  state=$(echo "$state" | jq '.current_phase="init_docs"') ;;
 esac
 
-# Append to appropriate list (deduplicated)
+# Append to accesses (with sequence) or modified_files
 if [[ "$tool_name" == "Edit" || "$tool_name" == "Write" ]]; then
   state=$(echo "$state" | jq --arg f "$file_path" \
     '.modified_files = (.modified_files + [$f] | unique)')
 else
-  phase=$(echo "$state" | jq -r '.current_phase')
-  state=$(echo "$state" | jq --arg f "$file_path" --arg k "${phase}_files" \
-    '.[$k] = (.[$k] + [$f] | unique)')
+  state=$(echo "$state" | jq \
+    --arg f "$file_path" \
+    --arg t "$tool_name" \
+    '.seq += 1 |
+     .accesses += [{seq:.seq, phase:.current_phase, tool:$t, path:$f}]')
 fi
 
 echo "$state" > "$STATE_FILE"
