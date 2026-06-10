@@ -26,7 +26,7 @@ patch.md のワークフローを実行（G-2 通過済みとして扱う）
 - 根拠: `commands/task.md`（patch フロー節）
 
 ### task フロー（Phase 1）
-- Step 0: issue 確認または自動生成（`commands/templates/issue.md` 使用）
+- Step 0: issue 確認または自動生成（issue なし時は `commands/new-issue.md` の Step 1〜5 フローを実行）
 - Step 1: 現状調査の引き継ぎと補完（work.md の調査を引き継ぎ、不足があれば補完）
 - Step 2: プラン策定（ユーザー許可必須）
 - Step 3: 実装・コミット（コミット前チェック実施 → `<type>(#<issue>): <short description>`）

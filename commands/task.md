@@ -46,9 +46,9 @@ Phase 3: 最終報告
     - 以降その issue を作業の起点とする
 
 - issue 番号が伝えられていない場合:
-    - `~/.config/claude-code-kit/templates/issue.md` をもとに issue のドラフトを作成してユーザーに提示する
-    - **issue のタイトル・本文は英語で記述する**
-    - ユーザーの OK が出たら `gh issue create` で作成する
+    - `commands/new-issue.md` を Read し、Step 1〜Step 5 のフローに従って issue を作成する
+        - Step 0（前提確認）はスキップする（work.md のゲートで確認済み）
+        - Step 6（引き継ぎ案内）はスキップする（/work から呼ばれているため不要）
     - 作成した issue 番号を以降の起点とする
 
 以降、全てのコミットメッセージに `#<issue番号>` を含める。
