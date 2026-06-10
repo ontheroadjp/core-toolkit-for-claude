@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Claude Code status line: context + rate limits
+
+RESET='\033[0m'
+CYAN='\033[36m'
+YELLOW='\033[33m'
+MAGENTA='\033[35m'
+DIM='\033[2m'
+
+input=$(cat)
+
+# Context usage
+ctx_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
+ctx_used=$(echo "$input" | jq -r '.context_window.total_input_tokens // empty' 2>/dev/null)
+ctx_total=$(echo "$input" | jq -r '.context_window.context_window_size // empty' 2>/dev/null)
+
+# 5-hour rate limit
+fh_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' 2>/dev/null)
+fh_reset=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty' 2>/dev/null)
+
+# 7-day rate limit
+sd_pct=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty' 2>/dev/null)
+sd_reset=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty' 2>/dev/null)
+
+parts=()
+
+# Context
+if [ -n "$ctx_pct" ]; then
+    ctx_int=${ctx_pct%.*}
+    parts+=("${CYAN}CTX:${ctx_int}%${RESET}")
+elif [ -n "$ctx_used" ] && [ -n "$ctx_total" ]; then
+    parts+=("${CYAN}CTX:${ctx_used}/${ctx_total}${RESET}")
+fi
+
+# 5-hour rate limit
+if [ -n "$fh_pct" ]; then
+    fh_int=${fh_pct%.*}
+    if [ -n "$fh_reset" ]; then
+        fh_time=$(date -r "$fh_reset" "+%H:%M" 2>/dev/null || date -d "@$fh_reset" "+%H:%M" 2>/dev/null)
+        parts+=("${YELLOW}5h:${fh_int}%${DIM}(>${fh_time})${RESET}")
+    else
+        parts+=("${YELLOW}5h:${fh_int}%${RESET}")
+    fi
+fi
+
+# 7-day rate limit
+if [ -n "$sd_pct" ]; then
+    sd_int=${sd_pct%.*}
+    if [ -n "$sd_reset" ]; then
+        sd_time=$(date -r "$sd_reset" "+%m/%d %H:%M" 2>/dev/null || date -d "@$sd_reset" "+%m/%d %H:%M" 2>/dev/null)
+        parts+=("${MAGENTA}7d:${sd_int}%${DIM}(>${sd_time})${RESET}")
+    else
+        parts+=("${MAGENTA}7d:${sd_int}%${RESET}")
+    fi
+fi
+
+if [ ${#parts[@]} -gt 0 ]; then
+    SEP="${DIM} | ${RESET}"
+    result=""
+    for i in "${!parts[@]}"; do
+        [ $i -gt 0 ] && result+="$SEP"
+        result+="${parts[$i]}"
+    done
+    echo -e "$result"
+fi
