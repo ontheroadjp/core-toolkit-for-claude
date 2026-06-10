@@ -119,21 +119,24 @@ export CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/servic
 [ユーザーからの指示内容]
 hooks のみで work/task/patch のファイルアクセスをログに記録したい
 
-[work]
-- ~/.claude/commands/work.md
-- ~/dev/.../docs/.ai/repo.profile.json
+[アクセスサマリ]
+総アクセス数: 6
+重複アクセス:
+  - ~/dev/.../hooks/log-access-tool.sh (2回)
 
-[task]
-- ~/.claude/commands/task.md
+[フェーズ別アクセス順序]
+[work] 3件
+  #1  Read  ~/.claude/commands/work.md
+  #2  Read  ~/dev/.../docs/.ai/repo.profile.json
+  #3  Glob  hooks/*.sh
 
-[patch]
-
-[docs-sync]
-
-[init-docs]
+[task] 3件
+  #4  Read  ~/.claude/commands/task.md
+  #5  Read  ~/dev/.../hooks/log-access-tool.sh
+  #6  Read  ~/dev/.../hooks/log-access-tool.sh
 
 [修正したファイル]
-- ~/dev/.../hooks/log-access-tool.sh
+  - ~/dev/.../hooks/log-access-tool.sh
 ```
 
 ### Codex CLI (optional)
