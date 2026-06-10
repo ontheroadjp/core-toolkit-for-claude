@@ -27,20 +27,8 @@ esac
 file_path=$(echo "$file_path" | sed "s|${HOME}|~|g")
 basename_file=$(basename "$file_path")
 
-# Initialize session state on first work.md read
-if [ ! -f "$STATE_FILE" ]; then
-  [ "$basename_file" != "work.md" ] && exit 0
-  prompt=""
-  [ -f "$PROMPT_FILE" ] && prompt=$(cat "$PROMPT_FILE")
-  timestamp=$(date '+%Y.%m.%d %H.%M')
-  mkdir -p "$SESSION_DIR"
-  jq -n \
-    --arg t "$timestamp" \
-    --arg p "$prompt" \
-    '{start_time:$t, user_instruction:$p, current_phase:"work",
-      seq:0, accesses:[], modified_files:[]}' \
-    > "$STATE_FILE"
-fi
+# State file is initialized by log-access-prompt.sh on UserPromptSubmit
+[ ! -f "$STATE_FILE" ] && exit 0
 
 state=$(cat "$STATE_FILE")
 

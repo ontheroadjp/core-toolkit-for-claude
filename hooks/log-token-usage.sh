@@ -59,7 +59,9 @@ total=$(echo "$data"        | jq -r '.total')
 cache_ratio=$(echo "$data"  | jq -r '.cache_ratio')
 cost_usd=$(echo "$data"     | jq -r '.cost_usd')
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+_SCRIPT="${BASH_SOURCE[0]}"
+[ -L "$_SCRIPT" ] && _SCRIPT="$(readlink "$_SCRIPT")"
+REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
 log_file="${REPO_DIR}/logs/token-usage/$(date '+%Y-%m').log"
 mkdir -p "$(dirname "$log_file")"
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')

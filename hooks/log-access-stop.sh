@@ -12,12 +12,21 @@ STATE_FILE="${SESSION_DIR}/${session_id}.json"
 [ ! -f "$STATE_FILE" ] && exit 0
 
 state=$(cat "$STATE_FILE")
+
+accesses_count=$(echo "$state" | jq '.accesses | length')
+if [ "$accesses_count" -eq 0 ]; then
+  rm -f "$STATE_FILE" "${SESSION_DIR}/${session_id}.prompt"
+  exit 0
+fi
+
 start_time=$(echo "$state"       | jq -r '.start_time')
 user_instruction=$(echo "$state" | jq -r '.user_instruction')
 total=$(echo "$state"            | jq '.accesses | length')
 modified_files=$(echo "$state"   | jq -r '.modified_files[]' 2>/dev/null || true)
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+_SCRIPT="${BASH_SOURCE[0]}"
+[ -L "$_SCRIPT" ] && _SCRIPT="$(readlink "$_SCRIPT")"
+REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
 LOG_DIR="${REPO_DIR}/logs/access"
 mkdir -p "$LOG_DIR"
 LOG_FILE="${LOG_DIR}/$(date '+%Y-%m').log"
