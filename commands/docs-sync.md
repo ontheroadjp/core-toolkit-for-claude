@@ -116,6 +116,7 @@
 - 完了後、更新内容をユーザーに報告する
 - `~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
     - パラメータ: `fixed_message="docs: sync documentation"`
+- `git push` を実行する
 
 ---
 
