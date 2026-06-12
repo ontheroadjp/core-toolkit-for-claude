@@ -1,6 +1,6 @@
 ---
 name: coding-ts
-description: TypeScript 固有のコーディング規約（strict: true、any 禁止、型ガード等）を coding-general・coding-js の原則に重ねて適用する。ユーザーが /coding-ts を呼んだとき、または TypeScript のコーディング規約に従うよう求めたときに使用する。
+description: "TypeScript 固有のコーディング規約（strict: true、any 禁止、型ガード等）を coding-general・coding-js の原則に重ねて適用する。ユーザーが /coding-ts を呼んだとき、または TypeScript のコーディング規約に従うよう求めたときに使用する。"
 ---
 
 # Coding TypeScript スキル
