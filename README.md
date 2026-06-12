@@ -48,9 +48,10 @@ ln -s /path/to/claude-code-kit/commands/new-issue.md        ~/.claude/commands/n
 ln -s /path/to/claude-code-kit/commands/coding-general.md   ~/.claude/commands/coding-general.md
 ln -s /path/to/claude-code-kit/commands/coding-py.md        ~/.claude/commands/coding-py.md
 ln -s /path/to/claude-code-kit/commands/coding-js.md        ~/.claude/commands/coding-js.md
+ln -s /path/to/claude-code-kit/commands/coding-ts.md        ~/.claude/commands/coding-ts.md
 ```
 
-The commands are now available as `/work`, `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, `/new-issue`, `/coding-general`, `/coding-py`, and `/coding-js` in any Claude Code session.
+The commands are now available as `/work`, `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, `/new-issue`, `/coding-general`, `/coding-py`, `/coding-js`, and `/coding-ts` in any Claude Code session.
 
 ### 2. Symlink CLAUDE.md (global — all repos)
 
@@ -234,6 +235,10 @@ commands/
   init-docs.md       # Full docs reconstruction
   review-resolve.md  # Interactive PR review comment resolution
   new-issue.md       # Optional pre-/work entry — idea-to-issue with split support
+  coding-general.md  # Language-agnostic coding principles (base for language-specific commands)
+  coding-py.md       # Python-specific coding conventions (Biome→ruff, Vitest→pytest, strict mypy)
+  coding-js.md       # JavaScript-specific coding conventions (Biome, Vitest)
+  coding-ts.md       # TypeScript-specific coding conventions (strict: true, no any/as/!, no enum)
   templates/
     issue.md       # GitHub issue template
     pr.md          # Pull request template
