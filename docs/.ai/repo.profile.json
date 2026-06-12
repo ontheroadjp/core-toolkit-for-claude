@@ -15,7 +15,8 @@
     "commands/docs-sync.md",
     "commands/init-docs.md",
     "commands/review-resolve.md",
-    "commands/new-issue.md"
+    "commands/new-issue.md",
+    "commands/coding-general.md"
   ],
   "templates": [
     "commands/templates/issue.md",
@@ -37,7 +38,8 @@
     "skills/docs-sync/SKILL.md",
     "skills/init-docs/SKILL.md",
     "skills/new-issue/SKILL.md",
-    "skills/review-resolve/SKILL.md"
+    "skills/review-resolve/SKILL.md",
+    "skills/coding-general/SKILL.md"
   ],
   "primary_docs": {
     "investigation": "docs/L3_implementation/specification_summary.md",

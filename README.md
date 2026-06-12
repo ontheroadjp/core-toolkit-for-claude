@@ -43,11 +43,12 @@ ln -s /path/to/claude-code-kit/commands/task.md            ~/.claude/commands/ta
 ln -s /path/to/claude-code-kit/commands/patch.md           ~/.claude/commands/patch.md
 ln -s /path/to/claude-code-kit/commands/docs-sync.md       ~/.claude/commands/docs-sync.md
 ln -s /path/to/claude-code-kit/commands/init-docs.md       ~/.claude/commands/init-docs.md
-ln -s /path/to/claude-code-kit/commands/review-resolve.md  ~/.claude/commands/review-resolve.md
-ln -s /path/to/claude-code-kit/commands/new-issue.md       ~/.claude/commands/new-issue.md
+ln -s /path/to/claude-code-kit/commands/review-resolve.md   ~/.claude/commands/review-resolve.md
+ln -s /path/to/claude-code-kit/commands/new-issue.md        ~/.claude/commands/new-issue.md
+ln -s /path/to/claude-code-kit/commands/coding-general.md   ~/.claude/commands/coding-general.md
 ```
 
-The commands are now available as `/work`, `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, and `/new-issue` in any Claude Code session.
+The commands are now available as `/work`, `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, `/new-issue`, and `/coding-general` in any Claude Code session.
 
 ### 2. Symlink CLAUDE.md (global — all repos)
 
