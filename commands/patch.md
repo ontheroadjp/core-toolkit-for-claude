@@ -18,6 +18,11 @@ git checkout -b patch/<変更内容を表す slug>
 ```
 
 #### Step 2. 変更を実施してコミット
+- ソースコードを修正する場合は、修正前に対象ファイルの言語に応じたコマンドを Read し、記載された原則を適用すること:
+    - Python (.py): `commands/coding-py.md`
+    - JavaScript (.js / .jsx): `commands/coding-js.md`
+    - TypeScript (.ts / .tsx): `commands/coding-ts.md`
+    - その他の言語: `commands/coding-general.md`
 - 変更を実施する（ユーザー確認不要）
 - コミットは複数回でも可。各コミットで `~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
     - パラメータ: `issue_number=none`, `allowed_types=[fix, refactor, chore, style, test, docs]`
