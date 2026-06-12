@@ -28,6 +28,13 @@ Phase 3: 最終報告
 ## npm 操作の注意点
 - npm を使用する場合は必ず初めに `node --version` を実行して node をロードする
 
+## ソースコード修正時の注意点
+ソースコードを修正する場合は、修正前に対象ファイルの言語に応じたコマンドを Read し、記載された原則を適用すること:
+- Python (.py): `commands/coding-py.md`
+- JavaScript (.js / .jsx): `commands/coding-js.md`
+- TypeScript (.ts / .tsx): `commands/coding-ts.md`
+- その他の言語: `commands/coding-general.md`
+
 ---
 
 ## ワークフロー
