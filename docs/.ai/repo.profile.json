@@ -16,7 +16,8 @@
     "commands/init-docs.md",
     "commands/review-resolve.md",
     "commands/new-issue.md",
-    "commands/coding-general.md"
+    "commands/coding-general.md",
+    "commands/coding-js.md"
   ],
   "templates": [
     "commands/templates/issue.md",
@@ -39,7 +40,8 @@
     "skills/init-docs/SKILL.md",
     "skills/new-issue/SKILL.md",
     "skills/review-resolve/SKILL.md",
-    "skills/coding-general/SKILL.md"
+    "skills/coding-general/SKILL.md",
+    "skills/coding-js/SKILL.md"
   ],
   "primary_docs": {
     "investigation": "docs/L3_implementation/specification_summary.md",

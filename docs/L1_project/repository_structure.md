@@ -17,6 +17,9 @@ claude-code-kit/
 │   ├── init-docs.md                 # ドキュメント全体再構築
 │   ├── review-resolve.md            # PR レビューコメント対話的解決
 │   ├── new-issue.md                 # 任意の pre-/work エントリ: アイデアから issue 生成
+│   ├── coding-general.md            # 言語非依存コーディング原則
+│   ├── coding-py.md                 # Python 固有コーディング規約（coding-general の上位）
+│   ├── coding-js.md                 # JavaScript 固有コーディング規約（coding-general の上位）
 │   └── templates/
 │       ├── issue.md                 # GitHub issue 本文テンプレート
 │       ├── pr.md                    # GitHub PR 本文テンプレート
@@ -42,7 +45,10 @@ claude-code-kit/
 │   ├── docs-sync/SKILL.md
 │   ├── init-docs/SKILL.md
 │   ├── new-issue/SKILL.md
-│   └── review-resolve/SKILL.md
+│   ├── review-resolve/SKILL.md
+│   ├── coding-general/SKILL.md
+│   ├── coding-py/SKILL.md
+│   └── coding-js/SKILL.md
 ├── templates/                       # （現在未使用 / README scaffold 等を格納予定）
 └── docs/                            # 設計ドキュメント（/init-docs が生成・/docs-sync が更新）
     ├── .ai/
@@ -86,6 +92,9 @@ Claude Code のカスタムスラッシュコマンド仕様（Markdown）。`~/
 | `init-docs.md` | `/init-docs` | リポジトリ実態の全体観測とドキュメント再構築 |
 | `review-resolve.md` | `/review-resolve` | PR レビューコメントを取得し、対応・返信をユーザーが対話的に選択 |
 | `new-issue.md` | `/new-issue` | 任意の pre-`/work` エントリ。アイデアから 1 件または N 件の整形 issue を生成（分割方針はユーザーが 3 択で決定） |
+| `coding-general.md` | `/coding-general` | 言語非依存コーディング原則 SSOT。言語固有コマンドの基盤として参照される |
+| `coding-py.md` | `/coding-py` | Python 固有コーディング規約（ruff / mypy strict / pytest）。`coding-general` の上位 |
+| `coding-js.md` | `/coding-js` | JavaScript 固有コーディング規約（Biome / Vitest）。`coding-general` の上位 |
 
 ### `commands/templates/`
 issue・PR 本文のテンプレート。コマンドから `~/.config/claude-code-kit/templates/` として参照される（Claude / Codex 共通パス）。
