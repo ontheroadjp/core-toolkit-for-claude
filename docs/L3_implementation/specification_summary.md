@@ -29,8 +29,8 @@ patch.md のワークフローを実行（G-2 通過済みとして扱う）
 - Step 0: issue 確認または自動生成（issue なし時は `commands/new-issue.md` の Step 1〜5 フローを実行）
 - Step 1: 現状調査の引き継ぎと補完（work.md の調査を引き継ぎ、不足があれば補完）
 - Step 2: プラン策定（ユーザー許可必須）
-- Step 3: 実装・コミット（コミット前チェック実施 → `<type>(#<issue>): <short description>`）
-- 根拠: `commands/task.md`（Phase 1 節）
+- Step 3: 実装・コミット（コミット前チェック実施 → `<type>(#<issue>): <short description>`）。ソースコード修正時は言語別 coding コマンドを Read して原則を適用する（Python→coding-py.md / JS→coding-js.md / TS→coding-ts.md / その他→coding-general.md）
+- 根拠: `commands/task.md`（Phase 1 節、ソースコード修正時の注意点節）
 
 ### task フロー（Phase 2）
 - ドラフト PR 作成（`commands/templates/pr.md` 使用、`--body-file -` で本文渡し）
@@ -57,9 +57,9 @@ patch.md のワークフローを実行（G-2 通過済みとして扱う）
 ### ワークフロー
 1. ルーティング判定（docs 変更が必要なら `/task` へ誘導して終了）
 2. branch 作成（`patch/<slug>`）
-3. 変更・コミット（コミット前チェック実施 → 複数 OK、Conventional Commits 形式）
+3. 変更・コミット（コミット前チェック実施 → 複数 OK、Conventional Commits 形式）。ソースコード修正時は言語別 coding コマンドを Read して原則を適用する（Python→coding-py.md / JS→coding-js.md / TS→coding-ts.md / その他→coding-general.md）
 4. ユーザーに ff-merge 手順を通知して main に戻る
-- 根拠: `commands/patch.md`（Phase 1–3）
+- 根拠: `commands/patch.md`（Phase 1–3、Step 2）
 
 ### エスカレーション（→ task フロー）
 patch フローの前提（軽微・局所・追跡不要）が崩れたと判断した場合（docs 変更・スコープ拡大・影響読み切れない・スコープ超過など）:
