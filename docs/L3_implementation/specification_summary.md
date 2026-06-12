@@ -89,7 +89,7 @@ git diff を事実として docs および README.md を最小更新し、ドラ
 3. PR 本文から `/docs-sync への引き継ぎ事項` を読み取る
 4. 対象ファイルの targeted diff を取得し、docs・README.md 更新対象を確定
 5. HARD STOP 判定（全体再構築が必要な場合は `/init-docs` を促して終了）
-6. docs・README.md を最小更新（コミット前チェック実施 → コミット）
+6. docs・README.md を最小更新（コミット前チェック実施 → コミット → `git push`）
 7. ドラフト PR を公開（`gh pr ready`）
 - 根拠: `commands/docs-sync.md`（各フェーズ）
 
