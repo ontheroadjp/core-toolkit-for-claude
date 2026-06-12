@@ -1,45 +1,45 @@
 # /coding-general
 
-Language-agnostic implementation principles for AI agents. Apply these regardless of programming language or framework.
+AI エージェント向けの言語非依存な実装原則。プログラミング言語・フレームワークに関わらず常に適用すること。
 
 ---
 
-## Principles
+## 原則
 
-### 1. No guessing — check the docs first
+### 1. 推測禁止 — まずドキュメントを確認する
 
-Before using any library, function, or API, check the official documentation or type stubs. Never infer behavior from naming alone.
+ライブラリ・関数・API を使用する前に、公式ドキュメントまたは型スタブを確認する。名前だけで挙動を推測してはならない。
 
-- Read the relevant section of the official docs or source type stubs.
-- If the docs are ambiguous, state the ambiguity and ask the user before proceeding.
+- 公式ドキュメントの該当箇所またはソースの型スタブを読む。
+- ドキュメントが曖昧な場合は、その曖昧さを明示してユーザーに確認する（先に進まない）。
 
-### 2. Ask when specs are unclear — never assume
+### 2. 仕様が不明な場合は確認する — 推測しない
 
-If the requirement, expected behavior, or edge-case handling is not explicitly stated, stop and ask. Do not fill in gaps with assumptions.
+要件・期待される挙動・エッジケースの扱いが明示されていない場合は、作業を止めて確認する。推測でギャップを埋めてはならない。
 
-- State exactly what is unclear.
-- Propose an interpretation only as a question, not as a decision.
+- 何が不明なのかを具体的に述べる。
+- 解釈案は決定としてではなく、質問として提示する。
 
-### 3. Follow existing patterns and conventions
+### 3. 既存のパターンと規約に従う
 
-Read the surrounding code before writing new code. Match the naming conventions, file structure, error handling style, and abstraction level already present in the project.
+新しいコードを書く前に周囲のコードを読む。プロジェクト内の命名規則・ファイル構成・エラーハンドリングのスタイル・抽象化レベルに合わせる。
 
-- Do not introduce new patterns when an existing one fits.
-- If an existing pattern is clearly wrong, flag it separately — do not silently fix it as a side effect.
+- 既存のパターンで対応できる場合は新しいパターンを導入しない。
+- 既存パターンに明らかな問題がある場合は、副作用として黙って修正せず、別途指摘する。
 
-### 4. Single responsibility per function
+### 4. 関数は単一責任
 
-Each function, method, or module should do exactly one thing. If a function needs a multi-clause description using "and", it should be split.
+関数・メソッド・モジュールはそれぞれ 1 つのことだけを行う。説明に「〜して〜する」という複合表現が必要な場合は、分割を検討する。
 
-### 5. No silent exception suppression
+### 5. 例外の握り潰し禁止
 
-Never swallow exceptions without handling them. Bare `except: pass`, empty `catch {}`, or `_ = err` without a return or log are forbidden.
+例外を処理せずに飲み込んではならない。`except: pass`・空の `catch {}`・戻り値のない `_ = err` は禁止。
 
-- If an error is truly ignorable, add an explicit comment explaining why.
+- エラーを本当に無視してよい場合は、その理由をコメントで明示する。
 
-### 6. No magic numbers
+### 6. マジックナンバー禁止
 
-Replace all literal numeric (or string) constants that encode a business rule or configuration with named constants.
+業務ルールや設定を表すリテラルの数値・文字列はすべて名前付き定数に置き換える。
 
-- Define constants at the top of the file or in a dedicated constants module.
-- The name must convey intent, not just value (`MAX_RETRY_COUNT = 3`, not `THREE = 3`).
+- 定数はファイルの先頭または専用の定数モジュールで定義する。
+- 名前は値ではなく意図を表すこと（`MAX_RETRY_COUNT = 3` は良い。`THREE = 3` は不可）。

@@ -1,94 +1,94 @@
 # /coding-py
 
-Follow `coding-general` first, then apply the following Python-specific rules.
+まず `coding-general` を参照し、その後以下の Python 固有ルールを適用すること。
 
 ---
 
-## Toolchain
+## ツールチェーン
 
-- **Linter / Formatter**: ruff (lint + format)
-- **Type checker**: mypy (strict mode)
-- **Test framework**: pytest
+- **Linter / Formatter**: ruff（lint + format）
+- **型チェッカー**: mypy（strict モード）
+- **テストフレームワーク**: pytest
 
 ---
 
-## Principles
+## 原則
 
-### 1. Type annotations required on all functions
+### 1. 全関数に型アノテーションを付与する
 
-Every function argument and return value must have an explicit type annotation. No bare `def f(x):` without types.
+関数の引数と戻り値にはすべて明示的な型アノテーションを付ける。型なしの `def f(x):` は禁止。
 
 ```python
-# bad
+# 悪い例
 def add(a, b):
     return a + b
 
-# good
+# 良い例
 def add(a: int, b: int) -> int:
     return a + b
 ```
 
-### 2. `Any` is prohibited in principle
+### 2. `Any` は原則禁止
 
-Do not use `typing.Any` unless there is no alternative. If `Any` is unavoidable, add a `# type: ignore` comment with an explanation of why.
+代替手段がない場合を除き `typing.Any` を使用しない。やむを得ず使用する場合は `# type: ignore` コメントと理由を必ず添える。
 
-- Prefer `object` for truly unknown types.
-- Prefer `Protocol` to express structural contracts.
-- Prefer generics (`TypeVar`, `Generic`) to preserve type information across call boundaries.
+- 型が本当に不明な場合は `object` を使う。
+- 構造的な契約を表現する場合は `Protocol` を使う。
+- 呼び出しをまたいで型情報を保持する場合は `TypeVar` / `Generic` を使う。
 
 ```python
-# bad
+# 悪い例
 from typing import Any
 def process(data: Any) -> Any: ...
 
-# good
+# 良い例
 from typing import Protocol
 class Processable(Protocol):
     def process(self) -> str: ...
 ```
 
-### 3. No silent exception suppression
+### 3. 例外の握り潰し禁止
 
-Never swallow exceptions without handling them. `except: pass` or `except Exception: pass` without a log or re-raise is forbidden.
+例外を処理せずに飲み込んではならない。ログ出力も再 raise もない `except: pass` や `except Exception: pass` は禁止。
 
-- If an error is truly ignorable, add an explicit comment explaining why.
+- エラーを本当に無視してよい場合は、その理由をコメントで明示する。
 
 ```python
-# bad
+# 悪い例
 try:
     connect()
 except Exception:
     pass
 
-# good
+# 良い例
 try:
     connect()
 except TimeoutError:
-    logger.warning("Connection timed out; retrying")
+    logger.warning("接続がタイムアウトしました。リトライします")
 ```
 
-### 4. No magic numbers
+### 4. マジックナンバー禁止
 
-Replace all literal numeric or string constants that encode a business rule or configuration with named constants.
+業務ルールや設定を表すリテラルの数値・文字列はすべて名前付き定数に置き換える。
 
 ```python
-# bad
+# 悪い例
 if retries > 3:
     raise RuntimeError
 
-# good
+# 良い例
 MAX_RETRY_COUNT = 3
 if retries > MAX_RETRY_COUNT:
     raise RuntimeError
 ```
 
-### 5. Single responsibility per function
+### 5. 関数は単一責任
 
-Each function should do exactly one thing. If a function description requires "and", split it.
+関数はそれぞれ 1 つのことだけを行う。説明に「〜して〜する」という複合表現が必要な場合は、分割する。
 
-### 6. Use `pytest` conventions
+### 6. `pytest` 規約に従う
 
-- Test files: `test_<module>.py`
-- Test functions: `test_<behavior>_<condition>()`
-- Use `pytest.raises` for expected exceptions; do not catch and assert manually.
-- Avoid `unittest.TestCase` unless integrating with legacy code.
+- テストファイル: `test_<モジュール名>.py`
+- テスト関数: `test_<挙動>_<条件>()`
+- 期待される例外は `pytest.raises` を使用する。手動で catch して assert するのは禁止。
+- レガシーコードとの統合が必要な場合を除き、`unittest.TestCase` は使用しない。
