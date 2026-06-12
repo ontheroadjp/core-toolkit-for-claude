@@ -242,7 +242,7 @@ Claude Code の `Notification` hook（permission prompt 等の待機）および
   - `Stop` → ✅ `Claude Code: response finished` / `Waiting for next instruction`
   - その他 → ℹ️ 汎用メッセージ
   - 補助情報: project basename（`cwd` から抽出）、`git rev-parse --abbrev-ref HEAD`、短縮 `session_id`
-- 環境変数: `CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL`
+- 環境変数: `CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL`
   - 未設定または空文字列の場合は **silently `exit 0`**（Claude 本体に影響を与えない）
   - 設定されている場合のみ webhook URL として使用する
 - 失敗耐性: `curl --max-time 5` でタイムアウト制限、ネットワーク失敗は `|| true` で握り潰し常に `exit 0`（Claude のレスポンスをブロックしない）

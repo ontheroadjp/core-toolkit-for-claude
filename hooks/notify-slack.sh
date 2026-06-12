@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-webhook_url="${CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL:-}"
+webhook_url="${CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL:-}"
 [ -z "$webhook_url" ] && exit 0
 
 payload=$(cat)

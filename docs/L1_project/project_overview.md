@@ -47,7 +47,7 @@
   - 根拠: `hooks/log-access-tool.sh`
 - `hooks/log-access-stop.sh`: Stop hook。セッション中に `/work` が呼ばれた場合のみ、フェーズ別アクセスログを pending ファイルに書き出す（main log へのフラッシュは次回 `/work` 開始時または新セッション開始時）。
   - 根拠: `hooks/log-access-stop.sh`
-- `hooks/notify-slack.sh`: Notification hook（permission prompt 等）および Stop hook（応答完了後の入力待ち）。`CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL` 環境変数で指定された Slack Incoming Webhook にメッセージを POST する（未設定なら silently exit）。
+- `hooks/notify-slack.sh`: Notification hook（permission prompt 等）および Stop hook（応答完了後の入力待ち）。`CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL` 環境変数で指定された Slack Incoming Webhook にメッセージを POST する（未設定なら silently exit）。
   - 根拠: `hooks/notify-slack.sh`
 
 ## skills（7本）

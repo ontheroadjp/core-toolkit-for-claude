@@ -111,7 +111,7 @@ Then add the following to `~/.claude/settings.json`:
 **Slack input-wait notification hook** — sends a Slack message when Claude Code is waiting for user input. Set the webhook URL in your shell profile:
 
 ```bash
-export CLAUDE_CODE_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
+export CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
 ```
 
 - Registered for the `Notification` hook (permission prompts) and `Stop` hook (end-of-response idle)
