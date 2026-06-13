@@ -55,6 +55,11 @@
       "source": "commands/",
       "target": "~/.claude/commands/"
     },
+    "codex_commands": {
+      "method": "symlink",
+      "source": "commands/",
+      "target": "~/.codex/commands/"
+    },
     "hooks": {
       "method": "symlink",
       "source": "hooks/",
