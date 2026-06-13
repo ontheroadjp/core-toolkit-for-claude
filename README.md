@@ -24,7 +24,7 @@ A collection of custom slash commands for [Claude Code](https://claude.ai/code) 
 ./install.sh
 ```
 
-Creates symlinks for `commands/*.md` → `~/.claude/commands/`, `hooks/*.sh` → `~/.claude/hooks/`, and `skills/*/` → `~/.codex/skills/`. Target directories are created automatically.
+Creates symlinks for `commands/*.md` → `~/.claude/commands/` and `~/.codex/commands/`, `hooks/*.sh` → `~/.claude/hooks/`, and `skills/*/` → `~/.codex/skills/`. Target directories are created automatically.
 
 ### 0. Symlink the shared templates (required by all tools)
 
