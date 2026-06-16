@@ -15,28 +15,28 @@ mkdir -p "$SKILLS_TARGET"
 echo "Linking commands -> ${COMMANDS_TARGET}"
 for src in "$REPO_DIR"/commands/*.md; do
   name="$(basename "$src")"
-  ln -shf "$src" "${COMMANDS_TARGET}/${name}"
+  ln -sf "$src" "${COMMANDS_TARGET}/${name}"
   echo "  ${COMMANDS_TARGET}/${name} -> ${src}"
 done
 
 echo "Linking commands -> ${CODEX_COMMANDS_TARGET}"
 for src in "$REPO_DIR"/commands/*.md; do
   name="$(basename "$src")"
-  ln -shf "$src" "${CODEX_COMMANDS_TARGET}/${name}"
+  ln -sf "$src" "${CODEX_COMMANDS_TARGET}/${name}"
   echo "  ${CODEX_COMMANDS_TARGET}/${name} -> ${src}"
 done
 
 echo "Linking hooks -> ${HOOKS_TARGET}"
 for src in "$REPO_DIR"/hooks/*.sh; do
   name="$(basename "$src")"
-  ln -shf "$src" "${HOOKS_TARGET}/${name}"
+  ln -sf "$src" "${HOOKS_TARGET}/${name}"
   echo "  ${HOOKS_TARGET}/${name} -> ${src}"
 done
 
 echo "Linking skills -> ${SKILLS_TARGET}"
 for src in "$REPO_DIR"/skills/*/; do
   name="$(basename "$src")"
-  ln -shf "$src" "${SKILLS_TARGET}/${name}"
+  ln -sf "$src" "${SKILLS_TARGET}/${name}"
   echo "  ${SKILLS_TARGET}/${name} -> ${src}"
 done
 
