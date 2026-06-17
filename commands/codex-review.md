@@ -96,36 +96,40 @@ fi
 
 ---
 
-## Step 5: PR コメントとして投稿
+## Step 5: PR レビューとして投稿
 
-ANSI エスケープシーケンスを除去してから PR コメントとして投稿し、コメント URL を取得する。
+ANSI エスケープシーケンスを除去し、Codex 出力の内容を判定して PR レビューを提出する。
 
 ```bash
 CLEAN_TMPFILE="${TMPFILE}.clean"
-JSON_TMPFILE="${TMPFILE}.json"
-
 sed $'s/\033\[[0-9;]*[mGKHF]//g' "$TMPFILE" > "$CLEAN_TMPFILE"
-
-jq -Rs '{"body": .}' "$CLEAN_TMPFILE" > "$JSON_TMPFILE"
-
-COMMENT_URL=$(gh api repos/{owner}/{repo}/issues/<PR番号>/comments \
-  --method POST \
-  --input "$JSON_TMPFILE" \
-  --jq '.html_url')
 ```
 
-- 投稿に失敗した場合: `rm -f "$TMPFILE" "$CLEAN_TMPFILE" "$JSON_TMPFILE"` を実行し、「コメントの投稿に失敗しました。レビュー結果は削除されました」と報告して終了する
+`$CLEAN_TMPFILE` の内容を読み、以下の基準で判定する:
+- 問題点・バグ・修正提案・セキュリティ懸念・重大な指摘が**含まれていない** → **問題なし**
+- 上記のいずれかが**含まれている** → **問題あり**
+
+**問題なしの場合:**
+```bash
+gh pr review <PR番号> --approve --body-file "$CLEAN_TMPFILE"
+```
+
+**問題ありの場合:**
+```bash
+gh pr review <PR番号> --request-changes --body-file "$CLEAN_TMPFILE"
+```
+
+- 投稿に失敗した場合: `rm -f "$TMPFILE" "$CLEAN_TMPFILE"` を実行し、「レビューの投稿に失敗しました。レビュー結果は削除されました」と報告して終了する
 
 ---
 
 ## Step 6: 一時ファイルの削除と完了報告
 
 ```bash
-rm -f "$TMPFILE" "$CLEAN_TMPFILE" "$JSON_TMPFILE"
+rm -f "$TMPFILE" "$CLEAN_TMPFILE"
 ```
 
 ユーザーに以下を報告する:
 
-```
-コメントを投稿しました: <COMMENT_URL>
-```
+- 問題なし: 「PR #<PR番号> を承認しました（Codex レビュー: 問題なし）」
+- 問題あり: 「PR #<PR番号> に変更リクエストを提出しました（Codex レビュー: 問題あり）」
