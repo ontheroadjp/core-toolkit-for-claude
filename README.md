@@ -71,6 +71,7 @@ ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh       ~/.claude/hooks/lo
 ln -s /path/to/claude-code-kit/hooks/log-access-prompt.sh     ~/.claude/hooks/log-access-prompt.sh
 ln -s /path/to/claude-code-kit/hooks/log-access-tool.sh       ~/.claude/hooks/log-access-tool.sh
 ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh       ~/.claude/hooks/log-access-stop.sh
+ln -s /path/to/claude-code-kit/hooks/cleanup-session.sh       ~/.claude/hooks/cleanup-session.sh
 ln -s /path/to/claude-code-kit/hooks/notify-slack.sh          ~/.claude/hooks/notify-slack.sh
 ```
 
@@ -97,6 +98,7 @@ Then add the following to `~/.claude/settings.json` (applied automatically by `i
             "hooks": [
                 { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
                 { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" },
+                { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" },
                 { "type": "command", "command": "bash ~/.claude/hooks/notify-slack.sh" }
             ]
         }
@@ -104,12 +106,16 @@ Then add the following to `~/.claude/settings.json` (applied automatically by `i
 }
 ```
 
-**Auto-approve read-only hook** — eliminates permission prompts for safe, read-only tool calls:
+**Auto-approve hook** — eliminates permission prompts for read-only tool calls and for operations pre-approved in the current work plan:
 
 - Auto-approves the `Read` tool (all inputs)
 - Auto-approves `Bash` commands matching read-only patterns: `git status/log/diff/show/branch`, `ls`, `cat`, `grep`, `find`, `gh issue/pr/label list|view`, and more
-- Compound commands (`&&`, `||`, `;`, `|`) are split and each segment is verified — approved only if every segment is read-only
-- Write redirections (`>`) and non-whitelisted commands pass through to normal permission flow
+- Auto-approves `Write`/`Edit` tool calls for files listed in `~/.claude/session-approved`
+- Auto-approves `Bash` write operations (`git push`, `gh issue create`, `gh pr create`, etc.) for categories listed in `~/.claude/session-approved` (`tool:git_write`, `tool:gh_issue_write`, `tool:gh_pr_write`)
+- Compound commands (`&&`, `||`, `;`, `|`) are split and each segment is verified — approved only if every segment qualifies
+- Write redirections (`>`) and non-listed operations pass through to normal permission flow
+
+**Session cleanup hook** — `cleanup-session.sh` deletes `~/.claude/session-approved` at the end of each Claude session so work-plan approvals do not carry over to the next session.
 
 **Token usage hook** — at the end of every session, token usage is appended to `logs/token-usage/YYYY-MM.log` in this repository:
 
@@ -120,7 +126,7 @@ Then add the following to `~/.claude/settings.json` (applied automatically by `i
 **Slack input-wait notification hook** — sends a Slack message when Claude Code is waiting for user input. Set the webhook URL in your shell profile:
 
 ```bash
-export CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
+export CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL="<your Slack Incoming Webhook URL>"
 ```
 
 - Registered for the `Notification` hook (permission prompts) and `Stop` hook (end-of-response idle)
@@ -237,6 +243,7 @@ hooks/
   log-access-prompt.sh      # UserPromptSubmit — saves user instruction for session correlation
   log-access-tool.sh        # PostToolUse — tracks Read/Glob/Grep/Edit/Write by command phase
   log-access-stop.sh        # Stop — appends phase-based access log to logs/access/YYYY-MM.log
+  cleanup-session.sh        # Stop — deletes ~/.claude/session-approved at session end
   notify-slack.sh           # Notification + Stop — posts to Slack when Claude waits for user input
 logs/
   .gitkeep              # directory tracked; log files are gitignored
