@@ -463,8 +463,22 @@ Claude Code の PreToolUse hook として `~/.claude/settings.json` から呼び
 
 ---
 
+## 20. `.github/workflows/deploy.yml` — VitePress ドキュメントサイト自動デプロイ
+
+GitHub Actions workflow として `~/.claude/` へはデプロイされない（CI 定義のみ）。
+
+- **トリガー**: `main` ブランチへの push、および `workflow_dispatch`（手動実行）
+- **パーミッション**: `contents: read`、`pages: write`、`id-token: write`
+- **ジョブ構成**:
+  - `build`: Node.js 20 + npm ci → `npm run docs:build`（`site/` ディレクトリで実行）→ `actions/upload-pages-artifact@v3` で `site/.vitepress/dist` をアップロード
+  - `deploy`: `actions/deploy-pages@v4` で GitHub Pages へデプロイ。gh-pages ブランチを使用しない
+- **前提**: GitHub リポジトリ設定で Settings → Pages → Source を「GitHub Actions」に手動設定する必要がある
+- **依存**: Node.js 20, npm, VitePress（`site/package.json`）
+- 根拠: `.github/workflows/deploy.yml`
+
+---
+
 ## 未確認事項
 
-- CI 定義: `.github/workflows/` が存在しない（CI なし）。確認済み。
 - 実行ランタイム: このリポジトリ自体は Markdown + Bash のみ。アプリケーションランタイムなし。確認済み。
 - `commands/docs-sync.md` の HARD STOP 条件 (C)「10 ファイル以上かつ 3 ドメイン以上」は AI の判断に委ねられる。

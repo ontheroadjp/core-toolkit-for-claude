@@ -227,6 +227,9 @@ Start every session with `/work` — it asks what you want to do and routes to t
 ## Repository Structure
 
 ```
+.github/
+  workflows/
+    deploy.yml            # GitHub Actions — push to main → VitePress build → GitHub Pages deploy
 hooks/
   auto-approve-readonly.sh  # PreToolUse — auto-approves Read tool and read-only Bash commands
   guard-destructive-cmd.sh  # PreToolUse/Bash — blocks Lv0 commands; Lv1 hands off to user for manual execution
@@ -255,6 +258,14 @@ commands/
     readme.md      # README.md scaffold template
 partials/
   git-commit.md    # Shared commit procedure — Read by commands/* at commit time (not a slash command)
+site/                         # VitePress documentation site (publicly hosted on GitHub Pages)
+  package.json              # VitePress + FontAwesome dependencies
+  .vitepress/config.mts     # Nav, sidebar, theme configuration
+  index.md                  # Homepage with hero image and feature cards
+  guide/                    # User guide (installation, configuration)
+  developer/                # Developer docs (specification summary)
+  concept/                  # Design concept and policy
+  public/                   # Static assets (logo.svg, hero.png)
 docs/
   .ai/
     repo.profile.json       # Machine-readable repo profile
