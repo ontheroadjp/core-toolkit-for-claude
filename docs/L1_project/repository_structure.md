@@ -7,7 +7,7 @@ claude-code-kit/
 ├── CLAUDE.md                        # AI 運用起点。Claude Code が全セッションで自動ロード
 ├── AGENTS.md                        # Codex 向け AI 運用指示
 ├── README.md                        # 人間向けドキュメント。インストール手順・コマンド一覧
-├── install.sh                       # symlink 一括作成スクリプト（commands → ~/.claude/commands/, hooks → ~/.claude/hooks/, skills → ~/.codex/skills/）
+├── install.sh                       # symlink 一括作成スクリプト（commands → ~/.claude/commands/, hooks → ~/.claude/hooks/, skills → ~/.codex/skills/）+ ~/.claude/settings.json hook 設定（jq 必須）
 ├── .gitignore                       # .DS_Store, .claude/, logs/ を除外
 ├── commands/                        # アクティブコマンド仕様（Markdown）
 │   ├── work.md                      # メインエントリポイント: ゲート確認・調査・ルーティング判定

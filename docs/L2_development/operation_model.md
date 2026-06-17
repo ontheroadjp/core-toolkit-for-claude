@@ -97,6 +97,7 @@
 # → commands/*.md → ~/.claude/commands/
 # → hooks/*.sh    → ~/.claude/hooks/
 # → skills/*/     → ~/.codex/skills/
+# → ~/.claude/settings.json に hook エントリを自動追加（jq 必須）
 
 # 共通テンプレート（Claude / Codex 両ツールが参照）
 mkdir -p ~/.config/claude-code-kit
