@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/core-toolkit-for-claude/',
   title: 'Core Toolkit for Claude',
   description: 'A structured AI-driven development workflow for Claude Code',
   lang: 'en-US',
