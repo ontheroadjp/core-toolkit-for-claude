@@ -54,9 +54,9 @@ PR 番号を受け取り、PR branch に checkout し、inline review comment・
 
 ### `/codex-review` (`commands/codex-review.md`)
 
-PR 番号を受け取り、PR ブランチに checkout し、`codex review --base <base>` でレビューを実行する。結果を一時ファイルに保存して ANSI コードを除去し、内容に問題がなければ `gh pr review --approve`、問題があれば `gh pr review --request-changes` で PR レビューとして提出する。
+PR 番号を受け取り、PR ブランチに checkout し、`codex review --base <base>` でレビューを実行する。結果を一時ファイルに保存して ANSI コードを除去し、内容を判定して問題なし / 問題ありを決定する。`CODEX_REVIEW_TOKEN` 環境変数が設定されていればそのトークンで `gh pr review --approve` または `--request-changes` を提出し、未設定の場合は `--comment` にフォールバックしてトークン設定を案内する。
 
-根拠: `commands/codex-review.md:1-132`
+根拠: `commands/codex-review.md:1-148`
 
 ### `/coding-*` (`commands/coding-*.md`)
 

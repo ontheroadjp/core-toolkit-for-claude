@@ -109,15 +109,29 @@ sed $'s/\033\[[0-9;]*[mGKHF]//g' "$TMPFILE" > "$CLEAN_TMPFILE"
 - 問題点・バグ・修正提案・セキュリティ懸念・重大な指摘が**含まれていない** → **問題なし**
 - 上記のいずれかが**含まれている** → **問題あり**
 
-**問題なしの場合:**
+`CODEX_REVIEW_TOKEN` 環境変数の有無によって投稿方法を切り替える。
+
+**`CODEX_REVIEW_TOKEN` が設定されている場合（推奨）:**
+
+GitHub は PR 作者自身による `--approve` / `--request-changes` を禁止するため、別アカウント（ボット PAT など）のトークンを使う。
+
+問題なしの場合:
 ```bash
-gh pr review <PR番号> --approve --body-file "$CLEAN_TMPFILE"
+GH_TOKEN="$CODEX_REVIEW_TOKEN" gh pr review <PR番号> --approve --body-file "$CLEAN_TMPFILE"
 ```
 
-**問題ありの場合:**
+問題ありの場合:
 ```bash
-gh pr review <PR番号> --request-changes --body-file "$CLEAN_TMPFILE"
+GH_TOKEN="$CODEX_REVIEW_TOKEN" gh pr review <PR番号> --request-changes --body-file "$CLEAN_TMPFILE"
 ```
+
+**`CODEX_REVIEW_TOKEN` が設定されていない場合:**
+
+`--comment` にフォールバックして投稿し、トークン設定を案内する:
+```bash
+gh pr review <PR番号> --comment --body-file "$CLEAN_TMPFILE"
+```
+「CODEX_REVIEW_TOKEN（別アカウントの PAT）を環境変数に設定すると --approve / --request-changes でレビューを提出できます」と案内する。
 
 - 投稿に失敗した場合: `rm -f "$TMPFILE" "$CLEAN_TMPFILE"` を実行し、「レビューの投稿に失敗しました。レビュー結果は削除されました」と報告して終了する
 
