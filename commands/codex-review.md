@@ -28,24 +28,45 @@ gh pr view <PR番号> --json number,url,title,headRefName,baseRefName
 
 ## Step 2: PR ブランチへの切り替え
 
-現在のブランチを記録し、PR ブランチに切り替える。
+現在のブランチを記録し、未コミット変更を退避してから PR ブランチに切り替える。
 
 ```bash
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+```
+
+- `CURRENT_BRANCH` が `HEAD` の場合（detached HEAD 状態）:
+  - 「detached HEAD 状態のため実行できません。ブランチを checkout してから再実行してください」と報告して終了する
+
+未コミット変更を退避する:
+
+```bash
+STASHED=false
+if [ -n "$(git status --porcelain)" ]; then
+  git stash push -m "codex-review: auto stash"
+  STASHED=true
+fi
+```
+
+PR ブランチとベースブランチを取得して切り替える:
+
+```bash
 git fetch origin <headRefName>
+git fetch origin <baseRefName>
 git checkout <headRefName>
 ```
 
-- checkout に失敗した場合: 「ブランチ '<headRefName>' への切り替えに失敗しました」と報告して終了する
+- checkout に失敗した場合:
+  - `$STASHED` が `true` の場合は `git stash pop` を実行する
+  - 「ブランチ '<headRefName>' への切り替えに失敗しました」と報告して終了する
 
 ---
 
 ## Step 3: Codex CLI によるレビュー実行
 
-以下のプロンプトで `codex review` を実行し、端末に表示しながら一時ファイルに保存する。
+以下のプロンプトで `codex review` を実行し、結果を一時ファイルに保存して端末に表示する。
 
 ```bash
-TMPFILE="/tmp/codex-review-<PR番号>.txt"
+TMPFILE="/tmp/codex-review-<PR番号>-$$.txt"
 
 codex review \
   --base "origin/<baseRefName>" \
@@ -56,10 +77,11 @@ codex review \
 - docs/* 変更は /docs-sync が担う（実装者が直接編集しない）
 - ワークスペースのクリーン化は stash で行う（破壊的操作禁止）
 - git diff が事実。AI の要約・解釈は補助情報にとどめる" \
-  | tee "$TMPFILE"
+  > "$TMPFILE"
+cat "$TMPFILE"
 ```
 
-- コマンドが失敗した場合: 「codex review の実行に失敗しました」と報告して Step 4 へ進む（クリーンアップを行う）
+- コマンドが失敗した場合: 「codex review の実行に失敗しました」と報告して Step 4 へ進み、Step 4 完了後に終了する（Step 5 以降は実行しない）
 
 ---
 
@@ -67,6 +89,9 @@ codex review \
 
 ```bash
 git checkout "$CURRENT_BRANCH"
+if [ "$STASHED" = "true" ]; then
+  git stash pop
+fi
 ```
 
 ---
@@ -76,24 +101,27 @@ git checkout "$CURRENT_BRANCH"
 ANSI エスケープシーケンスを除去してから PR コメントとして投稿し、コメント URL を取得する。
 
 ```bash
-CLEAN_OUTPUT=$(sed 's/\x1b\[[0-9;]*[mGKHF]//g' "$TMPFILE")
+CLEAN_TMPFILE="${TMPFILE}.clean"
+JSON_TMPFILE="${TMPFILE}.json"
 
-REPO=$(gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"')
+sed $'s/\033\[[0-9;]*[mGKHF]//g' "$TMPFILE" > "$CLEAN_TMPFILE"
 
-COMMENT_URL=$(gh api "repos/$REPO/issues/<PR番号>/comments" \
+jq -Rs '{"body": .}' "$CLEAN_TMPFILE" > "$JSON_TMPFILE"
+
+COMMENT_URL=$(gh api repos/{owner}/{repo}/issues/<PR番号>/comments \
   --method POST \
-  -f body="$CLEAN_OUTPUT" \
+  --input "$JSON_TMPFILE" \
   --jq '.html_url')
 ```
 
-- 投稿に失敗した場合: 「コメントの投稿に失敗しました。`$TMPFILE` の内容を確認してください」と報告して終了する
+- 投稿に失敗した場合: `rm -f "$TMPFILE" "$CLEAN_TMPFILE" "$JSON_TMPFILE"` を実行し、「コメントの投稿に失敗しました。レビュー結果は削除されました」と報告して終了する
 
 ---
 
 ## Step 6: 一時ファイルの削除と完了報告
 
 ```bash
-rm "$TMPFILE"
+rm -f "$TMPFILE" "$CLEAN_TMPFILE" "$JSON_TMPFILE"
 ```
 
 ユーザーに以下を報告する:
