@@ -77,6 +77,12 @@ Phase 3: 最終報告
 - 想定される影響とリスク
 - 検証方法（成功条件）
 - ロールバック方針
+- 利用ツール（該当するものを列挙）:
+    - `tool:git_write`（git add / commit / push / stash / checkout / switch / branch / merge）
+    - `tool:gh_issue_write`（gh issue create / edit / close / comment / reopen）
+    - `tool:gh_pr_write`（gh pr create / edit / merge / close / ready）
+- 新規作成ファイル（絶対パス）
+- 編集ファイル（絶対パス）
 - タスクリスト（以下を必ず含む）
     - 作業ブランチの作成（feat/change/fix/test/chore-<slug>）
         - /patch からのエスカレーションの場合はブランチ再利用（新規作成しない）
@@ -87,6 +93,9 @@ Phase 3: 最終報告
 ※ Step 3 実行前に調査結果・作業プランをユーザーに提示し、明確な許可を得ること（必須）
 
 ユーザーから OK が出た場合:
+    - Write ツールで `~/.claude/session-approved` を作成する。内容（1行1エントリ）:
+        - 利用ツールカテゴリ（例: `tool:git_write`）
+        - 新規作成・編集ファイルの絶対パス（例: `file:/abs/path/to/file.md`）
     - 調査結果・作業プランを対象 issue の本文に追記する
     - Step 3 へ進む
 

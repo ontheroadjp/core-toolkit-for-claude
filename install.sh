@@ -84,6 +84,7 @@ add_hook "PostToolUse"     ""     "bash ~/.claude/hooks/log-access-tool.sh"
 add_hook "Notification"    ""     "bash ~/.claude/hooks/notify-slack.sh"
 add_hook "Stop"            ""     "bash ~/.claude/hooks/log-token-usage.sh"
 add_hook "Stop"            ""     "bash ~/.claude/hooks/log-access-stop.sh"
+add_hook "Stop"            ""     "bash ~/.claude/hooks/cleanup-session.sh"
 add_hook "Stop"            ""     "bash ~/.claude/hooks/notify-slack.sh"
 
 echo "Done."

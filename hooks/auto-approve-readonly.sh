@@ -10,6 +10,7 @@ _SCRIPT="${BASH_SOURCE[0]}"
 [ -L "$_SCRIPT" ] && _SCRIPT="$(readlink "$_SCRIPT")"
 REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
 LOG_FILE="${REPO_DIR}/logs/auto-approve/$(date '+%Y-%m').log"
+SESSION_APPROVED_FILE="${HOME}/.claude/session-approved"
 
 log_decision() {
     local result="$1" tool="$2" detail="${3:-}"
@@ -20,11 +21,87 @@ log_decision() {
         "$(date '+%Y-%m-%d %H:%M:%S')" "$result" "$tool" "$short" >> "$LOG_FILE" || true
 }
 
+is_session_approved_file() {
+    local path="$1"
+    [ -f "$SESSION_APPROVED_FILE" ] || return 1
+    while IFS= read -r line; do
+        case "$line" in
+            ''|\#*) continue ;;
+            file:*)
+                local approved="${line#file:}"
+                [ "$path" = "$approved" ] && return 0
+                ;;
+        esac
+    done < "$SESSION_APPROVED_FILE"
+    return 1
+}
+
+check_session_approved() {
+    local seg="$1"
+    [ -f "$SESSION_APPROVED_FILE" ] || return 1
+    while IFS= read -r category; do
+        case "$category" in
+            ''|\#*) continue ;;
+            tool:git_write)
+                printf '%s' "$seg" | grep -qE '^git[[:space:]]+add(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^git[[:space:]]+commit(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^git[[:space:]]+merge(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^git[[:space:]]+stash([[:space:]]+(push|pop|apply|drop|clear))?(\s|$)' && return 0
+                if printf '%s' "$seg" | grep -qE '^git[[:space:]]+push(\s|$)'; then
+                    printf '%s' "$seg" | grep -qE '(--force|-f[[:space:]]|-f$|--force-with-lease)' || return 0
+                fi
+                if printf '%s' "$seg" | grep -qE '^git[[:space:]]+(checkout|switch)(\s|$)'; then
+                    if ! printf '%s' "$seg" | grep -qE '([[:space:]]--([[:space:]]|$)|^git[[:space:]]+(checkout|switch)[[:space:]]+\.)'; then
+                        return 0
+                    fi
+                fi
+                if printf '%s' "$seg" | grep -qE '^git[[:space:]]+branch(\s|$)'; then
+                    printf '%s' "$seg" | grep -qE '[[:space:]]-D([[:space:]]|$)' || return 0
+                fi
+                ;;
+            tool:gh_issue_write)
+                printf '%s' "$seg" | grep -qE '^gh[[:space:]]+issue[[:space:]]+(create|edit|close|delete|comment|reopen)(\s|$)' && return 0
+                ;;
+            tool:gh_pr_write)
+                printf '%s' "$seg" | grep -qE '^gh[[:space:]]+pr[[:space:]]+(create|edit|merge|close|comment|reopen|ready|review|checkout)(\s|$)' && return 0
+                ;;
+        esac
+    done < "$SESSION_APPROVED_FILE"
+    return 1
+}
+
 # Always approve Read tool
 if [ "$tool_name" = "Read" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // "-"')
     log_decision "approved" "Read" "$file_path"
     echo '{"decision": "approve"}'
+    exit 0
+fi
+
+# Write tool: approve session file itself unconditionally; approve other paths if session-listed
+if [ "$tool_name" = "Write" ]; then
+    file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
+    if [ "$file_path" = "$SESSION_APPROVED_FILE" ]; then
+        log_decision "approved" "Write" "$file_path (session-file)"
+        echo '{"decision": "approve"}'
+        exit 0
+    fi
+    if is_session_approved_file "$file_path"; then
+        log_decision "approved" "Write" "$file_path (session)"
+        echo '{"decision": "approve"}'
+        exit 0
+    fi
+    exit 0
+fi
+
+# Edit tool: approve if the path is session-listed
+if [ "$tool_name" = "Edit" ]; then
+    file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
+    if is_session_approved_file "$file_path"; then
+        log_decision "approved" "Edit" "$file_path (session)"
+        echo '{"decision": "approve"}'
+        exit 0
+    fi
     exit 0
 fi
 
@@ -82,6 +159,8 @@ is_safe_segment() {
     # pytest and python -m pytest
     printf '%s' "$seg" | grep -qE '^pytest(\s|$)' && return 0
     printf '%s' "$seg" | grep -qE '^python3?\s+-m\s+pytest(\s|$)' && return 0
+
+    check_session_approved "$seg" && return 0
 
     return 1
 }

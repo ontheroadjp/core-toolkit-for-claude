@@ -10,14 +10,37 @@
 
 ## ワークフロー
 
-### Phase 2: 実行
+### Phase 1: 実装
 
-#### Step 1. ブランチ作成
-```bash
-git checkout -b patch/<変更内容を表す slug>
-```
+#### Step 1: 現状調査の引き継ぎと補完
 
-#### Step 2. 変更を実施してコミット
+- work.md の現状調査結果を引き継ぐ
+- Step 2（プラン確認）に必要な情報が不足している場合のみ、差分を調査・補完する
+
+#### Step 2: プラン確認（必須・スキップ不可）
+
+以下を提示してユーザーの明確な許可を得る:
+
+- 変更内容サマリ
+- 利用ツール: `tool:git_write`（git add / commit / stash / checkout 等）
+- 新規作成ファイル（絶対パス）
+- 編集ファイル（絶対パス）
+
+ユーザーから OK が出た場合:
+    - Write ツールで `~/.claude/session-approved` を作成する。内容（1行1エントリ）:
+        - `tool:git_write`
+        - 新規作成・編集ファイルの絶対パス（例: `file:/abs/path/to/file.md`）
+    - Step 3 へ進む
+
+ユーザーから質問や変更があった場合:
+    - ユーザーの質問・変更に対応する
+
+#### Step 3: 実行
+
+- ブランチ作成:
+    ```bash
+    git checkout -b patch/<変更内容を表す slug>
+    ```
 - ソースコードを修正する場合は、修正前に対象ファイルの言語に応じたコマンドを Read し、記載された原則を適用すること:
     - Python (.py): `commands/coding-py.md`
     - JavaScript (.js / .jsx): `commands/coding-js.md`
