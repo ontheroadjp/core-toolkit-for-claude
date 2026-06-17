@@ -65,6 +65,7 @@ Claude Code auto-loads `~/.claude/CLAUDE.md` in every session, so the AI operati
 
 ```bash
 mkdir -p ~/.claude/hooks
+ln -s /path/to/claude-code-kit/hooks/auto-approve-readonly.sh ~/.claude/hooks/auto-approve-readonly.sh
 ln -s /path/to/claude-code-kit/hooks/guard-destructive-cmd.sh ~/.claude/hooks/guard-destructive-cmd.sh
 ln -s /path/to/claude-code-kit/hooks/log-token-usage.sh       ~/.claude/hooks/log-token-usage.sh
 ln -s /path/to/claude-code-kit/hooks/log-access-prompt.sh     ~/.claude/hooks/log-access-prompt.sh
@@ -78,6 +79,7 @@ Then add the following to `~/.claude/settings.json`:
 ```json
 "hooks": {
     "PreToolUse": [
+        { "matcher": "", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/auto-approve-readonly.sh" }] },
         { "matcher": "Bash", "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/guard-destructive-cmd.sh" }] }
     ],
     "UserPromptSubmit": [
@@ -101,6 +103,13 @@ Then add the following to `~/.claude/settings.json`:
     ]
 }
 ```
+
+**Auto-approve read-only hook** — eliminates permission prompts for safe, read-only tool calls:
+
+- Auto-approves the `Read` tool (all inputs)
+- Auto-approves `Bash` commands matching read-only patterns: `git status/log/diff/show/branch`, `ls`, `cat`, `grep`, `find`, `gh issue/pr/label list|view`, and more
+- Compound commands (`&&`, `||`, `;`, `|`) are split and each segment is verified — approved only if every segment is read-only
+- Write redirections (`>`) and non-whitelisted commands pass through to normal permission flow
 
 **Token usage hook** — at the end of every session, token usage is appended to `logs/token-usage/YYYY-MM.log` in this repository:
 
@@ -219,6 +228,7 @@ Start every session with `/work` — it asks what you want to do and routes to t
 
 ```
 hooks/
+  auto-approve-readonly.sh  # PreToolUse — auto-approves Read tool and read-only Bash commands
   guard-destructive-cmd.sh  # PreToolUse/Bash — blocks Lv0 commands; Lv1 hands off to user for manual execution
   log-token-usage.sh        # Stop — logs token usage per session to logs/token-usage/YYYY-MM.log
   log-access-prompt.sh      # UserPromptSubmit — saves user instruction for session correlation
