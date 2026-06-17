@@ -62,9 +62,9 @@ slash command ではない共通手順を置く。現在は commit 手順を `pa
 
 ### `site/`
 
-VitePress の公開サイトを置く。`site/package.json` に npm scripts と依存関係、`site/.vitepress/config.mts` に navigation/sidebar/site metadata が定義され、GitHub Actions は `site/` で `npm ci` と `npm run docs:build` を実行する。
+VitePress の公開サイトを置く。`site/package.json` に npm scripts と依存関係、`site/.vitepress/config.mts` に `locales` 設定（en / ja / zh）と navigation/sidebar/site metadata が定義される。コンテンツは `site/`（英語）・`site/ja/`（日本語）・`site/zh/`（中国語簡体字）に配置される。GitHub Actions は `site/` で `npm ci` と `npm run docs:build` を実行する。
 
-根拠: `site/package.json:1-14`, `site/.vitepress/config.mts:1-78`, `.github/workflows/deploy.yml:24-42`
+根拠: `site/package.json:1-14`, `site/.vitepress/config.mts:1-185`, `.github/workflows/deploy.yml:24-42`
 
 ### `scripts/` と `setup_statusline.sh`
 
