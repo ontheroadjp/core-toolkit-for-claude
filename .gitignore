@@ -13,3 +13,18 @@ logs/
 site/node_modules/
 site/.vitepress/dist/
 site/.vitepress/cache/
+
+# Self-referential skill entry-point symlinks created by install.sh
+# Each skills/<name>/<name> symlink is generated at install time; intentionally not tracked.
+skills/coding-general/coding-general
+skills/coding-js/coding-js
+skills/coding-py/coding-py
+skills/coding-ts/coding-ts
+skills/codex-review/codex-review
+skills/docs-sync/docs-sync
+skills/init-docs/init-docs
+skills/new-issue/new-issue
+skills/patch/patch
+skills/review-resolve/review-resolve
+skills/task/task
+skills/work/work

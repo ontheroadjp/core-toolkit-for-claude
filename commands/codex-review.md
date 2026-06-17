@@ -47,17 +47,16 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 ```
 
-PR ブランチとベースブランチを取得して切り替える:
+PR ブランチに切り替え、ベースブランチを取得する（fork PR も正しく処理される）:
 
 ```bash
-git fetch origin <headRefName>
+gh pr checkout <PR番号>
 git fetch origin <baseRefName>
-git checkout <headRefName>
 ```
 
-- checkout に失敗した場合:
+- `gh pr checkout` に失敗した場合:
   - `$STASHED` が `true` の場合は `git stash pop` を実行する
-  - 「ブランチ '<headRefName>' への切り替えに失敗しました」と報告して終了する
+  - 「PR #<PR番号> のブランチへの切り替えに失敗しました」と報告して終了する
 
 ---
 
@@ -145,5 +144,10 @@ rm -f "$TMPFILE" "$CLEAN_TMPFILE"
 
 ユーザーに以下を報告する:
 
+**`CODEX_REVIEW_TOKEN` が設定されていた場合:**
 - 問題なし: 「PR #<PR番号> を承認しました（Codex レビュー: 問題なし）」
 - 問題あり: 「PR #<PR番号> に変更リクエストを提出しました（Codex レビュー: 問題あり）」
+
+**`CODEX_REVIEW_TOKEN` が設定されていなかった場合:**
+- 「PR #<PR番号> にレビューコメントを投稿しました（Codex レビュー: 問題なし/問題あり）」
+- 「CODEX_REVIEW_TOKEN（別アカウントの PAT）を設定すると --approve / --request-changes でレビューを提出できます」と案内する
