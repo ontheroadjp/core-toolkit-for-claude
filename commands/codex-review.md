@@ -108,11 +108,24 @@ sed $'s/\033\[[0-9;]*[mGKHF]//g' "$TMPFILE" > "$CLEAN_TMPFILE"
 - 問題点・バグ・修正提案・セキュリティ懸念・重大な指摘が**含まれていない** → **問題なし**
 - 上記のいずれかが**含まれている** → **問題あり**
 
-`CODEX_REVIEW_TOKEN` 環境変数の有無によって投稿方法を切り替える。
+`CODEX_REVIEW_TOKEN` 環境変数が設定されているか確認する。
 
-**`CODEX_REVIEW_TOKEN` が設定されている場合（推奨）:**
+**設定されていない場合:**
 
-GitHub は PR 作者自身による `--approve` / `--request-changes` を禁止するため、別アカウント（ボット PAT など）のトークンを使う。
+以下のエラーを報告し、`rm -f "$TMPFILE" "$CLEAN_TMPFILE"` を実行して終了する:
+
+```
+エラー: CODEX_REVIEW_TOKEN が設定されていません。
+GitHub は PR 作者自身による --approve / --request-changes を禁止するため、別アカウントの PAT が必要です。
+~/.claude/settings.local.json に以下を追加してください:
+{
+  "env": {
+    "CODEX_REVIEW_TOKEN": "<別アカウントの PAT>"
+  }
+}
+```
+
+**設定されている場合:**
 
 問題なしの場合:
 ```bash
@@ -123,14 +136,6 @@ GH_TOKEN="$CODEX_REVIEW_TOKEN" gh pr review <PR番号> --approve --body-file "$C
 ```bash
 GH_TOKEN="$CODEX_REVIEW_TOKEN" gh pr review <PR番号> --request-changes --body-file "$CLEAN_TMPFILE"
 ```
-
-**`CODEX_REVIEW_TOKEN` が設定されていない場合:**
-
-`--comment` にフォールバックして投稿し、トークン設定を案内する:
-```bash
-gh pr review <PR番号> --comment --body-file "$CLEAN_TMPFILE"
-```
-「CODEX_REVIEW_TOKEN（別アカウントの PAT）を環境変数に設定すると --approve / --request-changes でレビューを提出できます」と案内する。
 
 - 投稿に失敗した場合: `rm -f "$TMPFILE" "$CLEAN_TMPFILE"` を実行し、「レビューの投稿に失敗しました。レビュー結果は削除されました」と報告して終了する
 
@@ -144,10 +149,7 @@ rm -f "$TMPFILE" "$CLEAN_TMPFILE"
 
 ユーザーに以下を報告する:
 
-**`CODEX_REVIEW_TOKEN` が設定されていた場合:**
 - 問題なし: 「PR #<PR番号> を承認しました（Codex レビュー: 問題なし）」
 - 問題あり: 「PR #<PR番号> に変更リクエストを提出しました（Codex レビュー: 問題あり）」
 
-**`CODEX_REVIEW_TOKEN` が設定されていなかった場合:**
-- 「PR #<PR番号> にレビューコメントを投稿しました（Codex レビュー: 問題なし/問題あり）」
-- 「CODEX_REVIEW_TOKEN（別アカウントの PAT）を設定すると --approve / --request-changes でレビューを提出できます」と案内する
+問題ありの場合、報告後に続けて `/review-resolve #<PR番号>` を自動実行する。
