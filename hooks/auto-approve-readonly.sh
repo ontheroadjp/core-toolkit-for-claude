@@ -32,11 +32,28 @@ is_safe_segment() {
     printf '%s' "$seg" | grep -qE '^gh[[:space:]]+(issue|pr|label|repo|release|run|workflow)[[:space:]]+(list|view|status)(\s|$)' && return 0
     printf '%s' "$seg" | grep -qE '^gh[[:space:]]+auth[[:space:]]+status(\s|$)' && return 0
 
-    # Standard read-only Unix tools
-    printf '%s' "$seg" | grep -qE '^(ls|ll|la|cat|head|tail|grep|egrep|fgrep|rg|find|wc|sort|uniq|cut|tr|awk|sed|echo|printf|pwd|which|type|env|printenv|du|df|stat|file|basename|dirname|date|uname|hostname|whoami|id|groups|ps|jq|yq|column)(\s|$)' && return 0
+    # Standard read-only Unix tools (prefer fd over find)
+    printf '%s' "$seg" | grep -qE '^(ls|ll|la|cat|head|tail|grep|egrep|fgrep|rg|fd|find|wc|sort|uniq|cut|tr|awk|sed|echo|printf|pwd|which|type|env|printenv|du|df|stat|file|basename|dirname|date|uname|hostname|whoami|id|groups|ps|jq|yq|column)(\s|$)' && return 0
 
     # Runtime version checks
     printf '%s' "$seg" | grep -qE '^(node|npm|npx|python3?|pip3?|ruby|go|cargo|rustc|bash|zsh)[[:space:]]+(--version|-v|version)(\s|$)' && return 0
+
+    # curl — allowed for HTTP requests; blocked when downloading to a file
+    if printf '%s' "$seg" | grep -qE '^curl(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '(^|\s)(-o([[:space:]]|$)|--output([[:space:]]|=|$)|-O([[:space:]]|$)|--remote-name([[:space:]]|=|$)|--remote-name-all([[:space:]]|$))' && return 1
+        return 0
+    fi
+
+    # npm — allowed except install/uninstall operations and global installs
+    if printf '%s' "$seg" | grep -qE '^npm(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '^npm[[:space:]]+(install|i|ci|uninstall|un|remove|rm|r|link|rebuild)(\s|$)' && return 1
+        printf '%s' "$seg" | grep -qE '(-g|--global)(\s|$)' && return 1
+        return 0
+    fi
+
+    # pytest and python -m pytest
+    printf '%s' "$seg" | grep -qE '^pytest(\s|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^python3?\s+-m\s+pytest(\s|$)' && return 0
 
     return 1
 }
