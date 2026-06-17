@@ -25,7 +25,7 @@ Target directories are created automatically.
 
 ```bash
 mkdir -p ~/.config/claude-code-kit
-ln -s /path/to/core-toolkit-for-claude/commands/templates \
+ln -s /path/to/core-toolkit-for-claude/templates \
       ~/.config/claude-code-kit/templates
 ```
 
@@ -63,8 +63,14 @@ ln -s /path/to/core-toolkit-for-claude/hooks/guard-destructive-cmd.sh \
       ~/.claude/hooks/guard-destructive-cmd.sh
 ln -s /path/to/core-toolkit-for-claude/hooks/log-token-usage.sh \
       ~/.claude/hooks/log-token-usage.sh
-ln -s /path/to/core-toolkit-for-claude/hooks/notify-slack.sh \
-      ~/.claude/hooks/notify-slack.sh
+ln -s /path/to/core-toolkit-for-claude/hooks/log-access-prompt.sh \
+      ~/.claude/hooks/log-access-prompt.sh
+ln -s /path/to/core-toolkit-for-claude/hooks/log-access-tool.sh \
+      ~/.claude/hooks/log-access-tool.sh
+ln -s /path/to/core-toolkit-for-claude/hooks/log-access-stop.sh \
+      ~/.claude/hooks/log-access-stop.sh
+ln -s /path/to/core-toolkit-for-claude/hooks/cleanup-session.sh \
+      ~/.claude/hooks/cleanup-session.sh
 ```
 
 See [Configuration](./configuration) for registering hooks in `~/.claude/settings.json`.
@@ -82,5 +88,5 @@ Restart Claude Code to apply.
 ## Requirements
 
 - [Claude Code](https://claude.ai/code) installed
-- [Git](https://git-scm.com/) and [gh CLI](https://cli.github.com/) installed and authenticated
-- [jq](https://stedolan.github.io/jq/) installed
+- Git and gh CLI installed and authenticated
+- jq installed

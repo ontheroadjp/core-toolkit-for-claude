@@ -2,78 +2,36 @@
 
 ## 技術選定ポリシー
 
-### 言語・ランタイム
-
-- **コマンド仕様: Markdown のみ** — AI エージェントが直接解釈して実行する。DSL や設定ファイルを別途設けない
-  - 根拠: `commands/*.md`（全ファイルが純粋な Markdown 仕様）
-- **自動化スクリプト: Bash のみ** — hooks および utility scripts は Bash で実装する。依存関係を最小に保つため、Node.js・Python 等は使用しない
-  - 根拠: `hooks/*.sh`, `scripts/*.sh`
-- **外部 CLI 依存の最小化**: `git`, `gh`, `jq`, `curl` の 4 本のみ。これ以上増やす場合は明示的な justification が必要
-  - 根拠: `docs/.ai/repo.profile.json:external_cli_deps`
-
-### パッケージ管理
-
-- このリポジトリ自体はパッケージマネージャを持たない（`package_manager: unknown`）
-  - 根拠: `docs/.ai/repo.profile.json:package_manager`
+- コマンド仕様は Markdown で管理する。AI が `commands/*.md` を読んで実行するため、別 DSL は置かない。根拠: `commands/work.md:1-4`, `commands/task.md:1-9`
+- Codex skill は `skills/*/SKILL.md` に置き、対応する `commands/*.md` を Source of Truth として読む薄いラッパーにする。根拠: `skills/init-docs/SKILL.md:1-14`
+- Claude Code hooks と補助ツールは Bash で実装する。根拠: `hooks/*.sh`, `scripts/*.sh`, `install.sh:1-3`
+- 公開サイトは `site/` 配下の VitePress と npm で管理する。根拠: `site/package.json:1-14`, `.github/workflows/deploy.yml:24-37`
 
 ## セキュリティ方針
 
-### 破壊的操作の防止
+- 破壊的 Bash 操作は `hooks/guard-destructive-cmd.sh` で Lv0/Lv1 に分類する。Lv0 は即時ブロック、Lv1 は AI 自動実行ではなくユーザー手動実行へ委譲する。根拠: `hooks/guard-destructive-cmd.sh:12-127`
+- 読み取り専用操作とセッション承認済み操作のみ `hooks/auto-approve-readonly.sh` が自動承認する。根拠: `hooks/auto-approve-readonly.sh:73-181`
+- セッション承認は Stop hook で削除し、次セッションへ持ち越さない。根拠: `hooks/cleanup-session.sh:1-7`
+- コミット前に個人情報、IP アドレス、ドメイン名、絶対パスを diff から確認する。根拠: `partials/git-commit.md:31-40`
 
-`hooks/guard-destructive-cmd.sh`（PreToolUse hook）により、Claude Code の Bash ツール実行前に以下を自動検査する:
+## 運用・性能方針
 
-- **Lv0（即座ブロック・バイパス不可）**: `rm -rf` でのシステムディレクトリ破壊、`dd`/`shred`/`wipefs`/`mkfs`/`truncate -s 0` によるブロックデバイス操作、フォークボム、`chmod`/`chown -R` でのシステムルート変更、`git filter-branch`/`filter-repo` による履歴書き換え
-- **Lv1（ブロック＋ユーザー手動実行へ委譲）**: `git push --force`、`git reset --hard`、`git checkout .`/`restore .`、`git clean -fd`/`-fdx`、`git branch -D`、`git stash drop`/`clear`
-
-根拠: `hooks/guard-destructive-cmd.sh`（Lv0/Lv1 分類節）
-
-### 個人情報・機密情報
-
-`partials/git-commit.md` のコミット前チェックで、コミット対象 diff に以下が含まれていないことを確認する:
-- 個人情報（メールアドレス・電話番号・住所等）
-- IP アドレス・内部ドメイン名
-- 絶対パス（特定のマシン環境に依存するパス）
-
-根拠: `partials/git-commit.md`（コミット前チェック節）
-
-## パフォーマンス要件
-
-- **hooks は Claude の応答をブロックしてはならない**: すべての hook は `exit 0` で終了し、ネットワーク操作には `curl --max-time 5` でタイムアウトを設定する
-  - 根拠: `hooks/notify-slack.sh`（失敗耐性節）
-- **hooks のログ書き込みは非同期・ベストエフォート**: ログ追記が失敗しても Claude のワークフローに影響しない設計とする
-  - 根拠: `hooks/log-access-stop.sh`（動作仕様）
+- hooks は Claude Code の通常操作を過度に妨げない。ログ書き込み失敗時も処理を継続する実装がある。根拠: `hooks/auto-approve-readonly.sh:15-22`, `hooks/log-access-stop.sh`, `hooks/log-token-usage.sh`
+- VitePress サイトは CI で `site/` を working directory として `npm ci` と `npm run docs:build` を実行し、GitHub Pages へデプロイする。根拠: `.github/workflows/deploy.yml:31-52`
+- `scripts/statusline.sh` は `jq` と `bc` を使って context 使用率を表示する。根拠: `scripts/statusline.sh:10-31`
 
 ## 禁止事項
 
-| 禁止操作 | 理由 | 根拠 |
-|----------|------|------|
-| `~/.claude/` への実体ファイル配置 | symlink-only 原則違反 | `README.md:18-19` |
-| `/docs-sync` による docs 全体再構築 | 最小更新原則違反。全体再構築は `/init-docs` の責務 | `commands/docs-sync.md:1-10` |
-| task フローでの `docs/*` 直接変更 | docs 更新は `/docs-sync` のみが担う | `CLAUDE.md:33`（Docs changes are isolated） |
-| `git add -A` / `git add .` の使用 | 機密ファイルや大容量バイナリを意図せずコミットするリスク | `partials/git-commit.md` |
-| `--no-verify` によるフック bypass | guard-destructive-cmd の迂回を防ぐ | `hooks/guard-destructive-cmd.sh:Lv0` |
-| `git push --force` の AI 自動実行 | Lv1 コマンドはユーザーが手動実行する | `hooks/guard-destructive-cmd.sh:Lv1` |
+| 禁止事項 | 理由 | 根拠 |
+|---|---|---|
+| `~/.claude/` へ実体ファイルを置く | symlink-only 原則と single source of truth を壊す | `README.md:21-38` |
+| `/task` で `docs/*` を直接更新する | docs 同期は `/docs-sync` の責務 | `commands/task.md:5-9` |
+| `/docs-sync` で L0 を通常更新する | L0 は意思決定記録であり git diff 追従対象ではない | `commands/docs-sync.md:86-88` |
+| `git add -A` / `git add .` を使う | 意図しないファイルをコミットしやすい | `commands/init-docs.md:279-280`, `partials/git-commit.md:25-40` |
+| AI が `git push --force` など不可逆な git 操作を自動実行する | 共有履歴・未追跡変更を破壊する可能性がある | `CLAUDE.md:55-61`, `hooks/guard-destructive-cmd.sh:90-126` |
 
-## ルーティング判定ポリシー
+## 整合性方針
 
-作業のルーティングは **単一の質問** で決定する:
+`install.sh` が settings に登録する hook は、現在の `hooks/` 配下に存在する script のみとする。存在しない hook を設定に登録しない。
 
-> 「この変更で `docs/*` への追加・変更・削除が必要か？」
-
-- **不要** → patch フロー（branch + commit → ユーザーが ff-merge。issue/PR 不要）
-- **必要** → task フロー（issue → 実装 → ドラフト PR → `/docs-sync`）
-
-「判断に迷う」「まず実装してから考える」は禁止。ルーティング前に判定する。
-
-根拠: `commands/work.md`（ルーティング判定節）, `CLAUDE.md:30`
-
-## docs 更新ポリシー
-
-- **L0（コンセプト・ポリシー）**: `/docs-sync` では更新しない。`/init-docs` 再実行時、または設計方針の根本的変更があった場合のみ更新する
-- **L1〜L3**: `git diff` を事実として `/docs-sync` が最小更新を行う
-- **HARD STOP 条件**: 以下のいずれかで `/docs-sync` は `/init-docs` を促して終了する:
-  - 新規主要レイヤ / トップレベル構造の追加疑い
-  - 起動経路・エントリポイント変更の疑い
-  - 10 ファイル以上かつ 3 ドメイン以上の広範な変更
-
-根拠: `commands/docs-sync.md`（HARD STOP 判定節）, `commands/init-docs.md:1-8`（再実行トリガー）
+根拠: `install.sh:80-87`, `hooks/` 実体一覧

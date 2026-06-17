@@ -1,65 +1,49 @@
 # Project Overview
 
-## このリポジトリの実態
+## リポジトリの実態
 
-- Claude Code 向けのカスタムスラッシュコマンド仕様（Markdown）と補助スクリプト（Bash）のリポジトリ。
-  - 根拠: `commands/*.md`, `hooks/*.sh` の存在を直接確認
-- コマンドは `~/.claude/commands/` へのシンボリックリンクで AI に供給される。
-  - 根拠: `README.md:40-46`
-- `CLAUDE.md` は `~/.claude/CLAUDE.md` にリンクされ、全セッションで自動ロードされる。
-  - 根拠: `README.md:51-56`
-- `repo.profile.json` と `docs/` が AI 運用の基盤情報として機能する。
-  - 根拠: `commands/init-docs.md:21-26`（G-1 ゲート）
+`core-toolkit-for-claude` は、Claude Code / Codex CLI 向けの AI 開発運用ツールキットである。主な実体は Markdown のコマンド仕様、Codex skill ラッパー、Claude Code hooks、共通テンプレート、VitePress ドキュメントサイトで構成される。
 
-## アクティブコマンド（7本）
+根拠: `README.md:1-15`, `commands/*.md`, `skills/*/SKILL.md`, `hooks/*.sh`, `templates/*.md`, `site/package.json:1-14`
 
-- `commands/work.md` → `/work`: 全作業のメインエントリポイント。ゲート確認・ワークスペース管理・現状調査・ルーティング判定を行い、task.md または patch.md を Read して委譲する。
-  - 根拠: `commands/work.md:1-4`
-- `commands/task.md` → `/task`: docs 変更を伴う実装専用。work.md から Read 経由で呼ばれる。issue 確認/自動生成・実装・コミット・ドラフト PR 作成・/docs-sync 自動実行まで担う。
-  - 根拠: `commands/task.md:1-9`
-- `commands/patch.md` → `/patch`: docs 変更を伴わない軽微な修正専用。work.md から Read 経由で呼ばれる。issue/PR 不要。branch + commit → ユーザーが main へ ff-merge。
-  - 根拠: `commands/patch.md:1-8`
-- `commands/docs-sync.md` → `/docs-sync`: git diff を事実として docs/* および README.md を最小更新し、ドラフト PR を公開する。
-  - 根拠: `commands/docs-sync.md:1-10`
-- `commands/init-docs.md` → `/init-docs`: リポジトリ実態の全体観測と設計ドキュメント再構築。重い初期化コマンド。
-  - 根拠: `commands/init-docs.md:1-8`
-- `commands/review-resolve.md` → `/review-resolve`: PR レビューコメント対応専用のエントリポイント。`/work` を経由せず自己完結（checkout → 実装 → commit → push → 返信）。
-  - 根拠: `commands/review-resolve.md:1-6`
-- `commands/new-issue.md` → `/new-issue`: 漠然としたアイデアから 1 件または複数件の整形された issue を生成する任意の pre-`/work` エントリポイント。実装は行わない。
-  - 根拠: `commands/new-issue.md:1-9`
+## 主要機能
 
-## テンプレート
-
-- `commands/templates/issue.md`: issue 本文テンプレート（task.md および patch.md エスカレーション時に使用）。
-  - 根拠: `commands/templates/issue.md:3`
-- `commands/templates/pr.md`: PR 本文テンプレート（task.md Phase 2 で使用）。
-  - 根拠: `commands/templates/pr.md:3`
-
-## hooks（6本）
-
-- `hooks/guard-destructive-cmd.sh`: PreToolUse hook。Bash ツール実行前に発火し、Lv0 コマンドを即座にブロック、Lv1 コマンドをユーザー手動実行へ委譲する。
-  - 根拠: `hooks/guard-destructive-cmd.sh`
-- `hooks/log-token-usage.sh`: Stop hook。セッション終了時に JSONL トランスクリプトを読み取り、全ターンの token usage（input / output / cache_read / cache_create）を集計して `{repo}/logs/token-usage/YYYY-MM.log` に追記する。セッション名（`/rename` で設定）と推定コスト（`cost_usd`）も記録する。
-  - 根拠: `hooks/log-token-usage.sh`
-- `hooks/log-access-prompt.sh`: UserPromptSubmit hook。ユーザー指示を `/tmp/claude-access-sessions/{session_id}.prompt` に保存する。新セッション開始時に孤立 pending ファイルをフラッシュする。
-  - 根拠: `hooks/log-access-prompt.sh`
-- `hooks/log-access-tool.sh`: PostToolUse hook。Read/Glob/Grep/Edit/Write を捕捉し、コマンドファイルの読み込みでフェーズを切り替えながらアクセス先を `/tmp/claude-access-sessions/{session_id}.json` に蓄積する。
-  - 根拠: `hooks/log-access-tool.sh`
-- `hooks/log-access-stop.sh`: Stop hook。セッション中に `/work` が呼ばれた場合のみ、フェーズ別アクセスログを pending ファイルに書き出す（main log へのフラッシュは次回 `/work` 開始時または新セッション開始時）。
-  - 根拠: `hooks/log-access-stop.sh`
-- `hooks/notify-slack.sh`: Notification hook（permission prompt 等）および Stop hook（応答完了後の入力待ち）。`CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL` 環境変数で指定された Slack Incoming Webhook にメッセージを POST する（未設定なら silently exit）。
-  - 根拠: `hooks/notify-slack.sh`
-
-## skills（7本）
-
-Codex 向けのスキルエントリポイント。各 `skills/*/SKILL.md` が対応する `commands/*.md` を Source Of Truth として Read して実行する薄いラッパー。
-- `skills/work/SKILL.md`, `skills/task/SKILL.md`, `skills/patch/SKILL.md`, `skills/docs-sync/SKILL.md`, `skills/init-docs/SKILL.md`, `skills/new-issue/SKILL.md`, `skills/review-resolve/SKILL.md`
-- 根拠: `skills/*/SKILL.md`（各ファイルの Source Of Truth 宣言）
+| 領域 | 実装 | 役割 | 根拠 |
+|---|---|---|---|
+| 作業入口 | `commands/work.md` | main への checkout、repo profile 確認、workspace 確認、現状調査、task/patch ルーティング | `commands/work.md:7-119` |
+| docs あり実装 | `commands/task.md` | issue 確認/生成、プラン承認、実装、ドラフト PR、`/docs-sync` 引き継ぎ | `commands/task.md:42-154` |
+| 軽微修正 | `commands/patch.md` | docs 変更不要な修正を branch + commit で完了し、必要時 task へエスカレーション | `commands/patch.md:1-95` |
+| docs 同期 | `commands/docs-sync.md` | `git diff main...HEAD` を事実として docs/README を最小更新し、PR を ready にする | `commands/docs-sync.md:1-160` |
+| docs 初期化 | `commands/init-docs.md` | repo 再観測、repo profile 生成、L0-L3 docs 生成、整合性検証、commit/PR 確認 | `commands/init-docs.md:1-317` |
+| review 対応 | `commands/review-resolve.md` | PR review コメント取得、対応方針選択、実装/返信/push | `commands/review-resolve.md:1-175` |
+| issue 作成 | `commands/new-issue.md` | 漠然としたアイデアから issue を作成する任意 pre-step | `commands/new-issue.md:1-129` |
+| coding 原則 | `commands/coding-*.md` | general / py / js / ts の実装規約 | `commands/coding-general.md:1-3`, `commands/coding-ts.md:1-12` |
+| Codex skills | `skills/*/SKILL.md` | 対応する command markdown を Source of Truth として実行する | `skills/init-docs/SKILL.md:1-14` |
+| hooks | `hooks/*.sh` | 自動承認、破壊的操作 guard、ログ、セッション cleanup | `hooks/auto-approve-readonly.sh`, `hooks/guard-destructive-cmd.sh`, `hooks/cleanup-session.sh` |
+| site | `site/` | VitePress による公開ドキュメントサイト | `site/package.json:1-14`, `site/.vitepress/config.mts:1-78` |
 
 ## 技術スタック
 
-- ドキュメント形式: Markdown（`.md`）— コマンド仕様
-- スクリプト: Bash（`.sh`）— hooks および utility scripts
-- 実行ランタイム: なし（Markdown 仕様は AI エージェントが解釈して実行）
-- 外部 CLI 依存: `git`, `gh`, `jq`, `curl`
-  - 根拠: `commands/task.md`（github 操作節）, `hooks/log-token-usage.sh:5`, `hooks/notify-slack.sh`（curl 使用）
+- コマンド仕様: Markdown。根拠: `commands/*.md`
+- hooks / 補助スクリプト: Bash。根拠: `hooks/*.sh`, `scripts/*.sh`, `install.sh:1-3`
+- 公開サイト: VitePress + npm。根拠: `site/package.json:1-14`, `site/package-lock.json`
+- CI: GitHub Actions + Node.js 20 + npm。根拠: `.github/workflows/deploy.yml:24-37`
+- 外部 CLI: `git`, `gh`, `jq`, `node`, `npm`, `bc`。根拠: `commands/task.md:21-29`, `hooks/*.sh`, `scripts/statusline.sh:10-31`, `.github/workflows/deploy.yml:24-37`
+
+## エントリポイント
+
+- AI 作業の通常入口は `/work`。根拠: `commands/work.md:1-4`, `README.md:63-85`
+- PR review コメント対応は `/review-resolve #N`。根拠: `commands/review-resolve.md:1-6`
+- idea から issue を作る任意入口は `/new-issue`。根拠: `commands/new-issue.md:1-9`
+- VitePress site の CI entry は `.github/workflows/deploy.yml` の `npm run docs:build`。根拠: `.github/workflows/deploy.yml:31-37`
+- アプリケーションの `main.*` / `server.*` / `app.*` は存在しない。根拠: `rg --files -uu` による実体確認
+
+## 依存関係
+
+`site/package.json` は本番依存として `@fortawesome/fontawesome-free`、開発依存として `vitepress` を宣言する。lock file から `@fortawesome/fontawesome-free` は 6.7.2、`vitepress` は 1.6.4 が解決されている。
+
+根拠: `site/package.json:9-14`, `site/package-lock.json`
+
+## 未確認事項
+
+現時点で docs に混在させた未確認事項はない。

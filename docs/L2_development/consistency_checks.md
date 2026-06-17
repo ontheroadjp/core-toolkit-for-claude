@@ -2,104 +2,92 @@
 
 このファイルは `/init-docs` Phase 4 の整合性検証結果を記録する。
 
-最終実行: 2026-06-11（/init-docs 再実行。work.md・review-resolve.md 追加・guard-destructive-cmd.sh 追加・L0_concept 生成後の再構築）
+最終実行: 2026-06-17（CI / VitePress site / templates path / hooks 実体を再観測し、settings 登録を現存 hook のみに揃えた後に再検証）
 
----
+## 4-1. docs -> 実体 の検証
 
-## 4-1. docs → 実体 の検証
+### 参照パス
 
-### 参照パスの実在確認
+| パス | 実在 | 根拠 |
+|---|---|---|
+| `commands/work.md` | yes | `rg --files -uu` |
+| `commands/task.md` | yes | `rg --files -uu` |
+| `commands/patch.md` | yes | `rg --files -uu` |
+| `commands/docs-sync.md` | yes | `rg --files -uu` |
+| `commands/init-docs.md` | yes | `rg --files -uu` |
+| `commands/review-resolve.md` | yes | `rg --files -uu` |
+| `commands/new-issue.md` | yes | `rg --files -uu` |
+| `commands/coding-general.md` | yes | `rg --files -uu` |
+| `commands/coding-py.md` | yes | `rg --files -uu` |
+| `commands/coding-js.md` | yes | `rg --files -uu` |
+| `commands/coding-ts.md` | yes | `rg --files -uu` |
+| `templates/issue.md` | yes | `templates/issue.md:1-25` |
+| `templates/pr.md` | yes | `templates/pr.md:1-32` |
+| `templates/readme.md` | yes | `rg --files -uu` |
+| `partials/git-commit.md` | yes | `partials/git-commit.md:1-15` |
+| `hooks/auto-approve-readonly.sh` | yes | `hooks/auto-approve-readonly.sh:1-181` |
+| `hooks/cleanup-session.sh` | yes | `hooks/cleanup-session.sh:1-7` |
+| `hooks/guard-destructive-cmd.sh` | yes | `hooks/guard-destructive-cmd.sh:1-128` |
+| `hooks/log-access-prompt.sh` | yes | `rg --files -uu` |
+| `hooks/log-access-stop.sh` | yes | `rg --files -uu` |
+| `hooks/log-access-tool.sh` | yes | `rg --files -uu` |
+| `hooks/log-token-usage.sh` | yes | `rg --files -uu` |
+| `site/package.json` | yes | `site/package.json:1-14` |
+| `site/package-lock.json` | yes | `rg --files -uu site` |
+| `site/.vitepress/config.mts` | yes | `site/.vitepress/config.mts:1-78` |
+| `.github/workflows/deploy.yml` | yes | `.github/workflows/deploy.yml:1-53` |
+| `docs/.ai/repo.profile.json` | yes | this run |
+| `docs/L0_concept/concept.md` | yes | this run |
+| `docs/L0_concept/policy.md` | yes | this run |
+| `docs/L1_project/project_overview.md` | yes | this run |
+| `docs/L1_project/repository_structure.md` | yes | this run |
+| `docs/L2_development/operation_model.md` | yes | this run |
+| `docs/L2_development/consistency_checks.md` | yes | this run |
+| `docs/L3_implementation/specification_summary.md` | yes | this run |
 
-| docs で参照したパス | 実在 | 備考 |
-|---------------------|------|------|
-| `commands/work.md` | ✅ | commands/ 下に実在 |
-| `commands/task.md` | ✅ | commands/ 下に実在 |
-| `commands/patch.md` | ✅ | commands/ 下に実在 |
-| `commands/docs-sync.md` | ✅ | commands/ 下に実在 |
-| `commands/init-docs.md` | ✅ | commands/ 下に実在 |
-| `commands/review-resolve.md` | ✅ | commands/ 下に実在 |
-| `commands/new-issue.md` | ✅ | commands/ 下に実在 |
-| `commands/templates/issue.md` | ✅ | commands/templates/ 下に実在 |
-| `commands/templates/pr.md` | ✅ | commands/templates/ 下に実在 |
-| `partials/git-commit.md` | ✅ | partials/ 下に実在 |
-| `hooks/guard-destructive-cmd.sh` | ✅ | hooks/ 下に実在 |
-| `hooks/log-token-usage.sh` | ✅ | hooks/ 下に実在 |
-| `hooks/log-access-prompt.sh` | ✅ | hooks/ 下に実在 |
-| `hooks/log-access-tool.sh` | ✅ | hooks/ 下に実在 |
-| `hooks/log-access-stop.sh` | ✅ | hooks/ 下に実在 |
-| `hooks/notify-slack.sh` | ✅ | hooks/ 下に実在 |
-| `scripts/show-token-usage.sh` | ✅ | scripts/ 下に実在 |
-| `skills/work/SKILL.md` | ✅ | skills/work/ 下に実在 |
-| `skills/task/SKILL.md` | ✅ | skills/task/ 下に実在 |
-| `skills/patch/SKILL.md` | ✅ | skills/patch/ 下に実在 |
-| `skills/docs-sync/SKILL.md` | ✅ | skills/docs-sync/ 下に実在 |
-| `skills/init-docs/SKILL.md` | ✅ | skills/init-docs/ 下に実在 |
-| `skills/new-issue/SKILL.md` | ✅ | skills/new-issue/ 下に実在 |
-| `skills/review-resolve/SKILL.md` | ✅ | skills/review-resolve/ 下に実在 |
-| `docs/.ai/repo.profile.json` | ✅ | docs/.ai/ 下に実在 |
-| `docs/L0_concept/concept.md` | ✅ | docs/L0_concept/ 下に実在（今回新規生成） |
-| `docs/L0_concept/policy.md` | ✅ | docs/L0_concept/ 下に実在（今回新規生成） |
-| `docs/L1_project/` | ✅ | 実在 |
-| `docs/L2_development/` | ✅ | 実在 |
-| `docs/L3_implementation/` | ✅ | 実在 |
-| `CLAUDE.md` | ✅ | ルート直下に実在 |
-| `install.sh` | ✅ | ルート直下に実在 |
-| `~/.claude/commands/` | ✅ | シンボリックリンク群として実在（グローバルデプロイ先） |
-| `~/.claude/hooks/` | ✅ | hooks/*.sh symlink として実在 |
-| `~/.claude/CLAUDE.md` | ✅ | CLAUDE.md への symlink として実在 |
+### コマンド
 
----
+| コマンド | 実体 | 根拠 |
+|---|---|---|
+| `./install.sh` | executable script in repo root | `install.sh:1-86` |
+| `./setup_statusline.sh` | executable script in repo root | `setup_statusline.sh:1-57` |
+| `cd site && npm run docs:dev` | npm script | `site/package.json:4-8` |
+| `cd site && npm run docs:build` | npm script and CI command | `site/package.json:4-8`, `.github/workflows/deploy.yml:35-37` |
+| `cd site && npm run docs:preview` | npm script | `site/package.json:4-8` |
+| `npm ci` | CI install step in `site/` | `.github/workflows/deploy.yml:31-33` |
 
-## 4-2. repo.profile.json ↔ docs の突合
+## 4-2. repo.profile.json <-> docs の突合
 
-- `repo_id`: `claude-code-kit` — リポジトリ名と一致 ✅
-- `doc_roots`: `docs/L0_concept`, `docs/L1_project`, `docs/L2_development`, `docs/L3_implementation` — docs 構造と一致 ✅
-- `commands`: 空 — docs でも「実行コマンドなし」と記述（一致） ✅
-- `active_commands`: `commands/work.md` 他 6 本（7 本合計）— docs で同一のパスを記述 ✅
-- `templates`: `commands/templates/issue.md`, `commands/templates/pr.md` — docs と一致 ✅
-- `hooks`: 6 本（guard-destructive-cmd.sh / log-token-usage.sh / log-access-prompt.sh / log-access-tool.sh / log-access-stop.sh / notify-slack.sh）— docs と一致 ✅
-- `external_cli_deps`: `git`, `gh`, `jq`, `curl` — docs でも同 4 本を記述 ✅
-- `skills`: 7 本（work / task / patch / docs-sync / init-docs / new-issue / review-resolve）— docs と一致 ✅
-- `deploy`: commands/hooks/CLAUDE.md/skills の 4 系統を記述 — docs（README.md）と一致 ✅
-- `primary_docs`: investigation → specification_summary.md, structure → repository_structure.md — 両ファイル実在を確認 ✅
+- `doc_roots` は現存する L0-L3 directory と一致する。根拠: `docs/.ai/repo.profile.json`, `docs/` 実体一覧
+- `commands` は operation_model のローカル・CI コマンド表で説明済み。根拠: `docs/L2_development/operation_model.md`
+- `active_commands` は project_overview と specification_summary で説明済み。根拠: `docs/L1_project/project_overview.md`, `docs/L3_implementation/specification_summary.md`
+- `templates` は `templates/*.md` として docs/site docs に記述済み。根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `site/guide/installation.md`
+- `hooks` は現存 7 本に一致する。`install.sh` の settings 登録も現存 hook のみを登録する。根拠: `hooks/` 実体一覧, `install.sh:80-87`
+- `primary_docs.investigation` と `primary_docs.structure` は実在する。根拠: `docs/L3_implementation/specification_summary.md`, `docs/L1_project/repository_structure.md`
 
----
+## 4-3. CI 定義との整合性
 
-## 4-3. CI 定義との整合性確認
+CI は存在する。`.github/workflows/deploy.yml` は main push と workflow_dispatch で実行され、Node.js 20、npm cache、`site/package-lock.json`、`site/` working directory、`npm ci`、`npm run docs:build`、GitHub Pages artifact upload/deploy を定義する。
 
-- `.github/workflows/` は存在しない（CI なし）。直接確認済み。
-- CI との整合性チェック対象なし。
+根拠: `.github/workflows/deploy.yml:1-53`
 
----
+## 4-4. 根拠表記
 
-## 4-4. 根拠表記の正規化
-
-- docs 内の断定文には `ファイルパス` または `ファイルパス:行番号` の形式で根拠を記載済み。
-- 行番号が変動しやすい箇所はセクション名を根拠として記載。
-- 根拠を示せない断定は記載していない。
-
----
+断定的な仕様説明には `path:line` または実体一覧・設定ファイル名を根拠として記載した。wildcard しか示せない箇所は、該当領域が同一構造を持つことを `rg --files -uu` の観測結果として扱った。
 
 ## 4-5. 未確認事項
 
-現時点で未確認の事項はない。
+| 項目 | 状態 | 次に見るべきファイル |
+|---|---|---|
+| dedicated test command | `site/package.json` に test script がないため、site build を CI 上の主要検証として扱う | `site/package.json` |
 
-確定済み事項:
-- CI 定義: `.github/workflows/` の不在を直接確認 → CI なし（確定）
-- 実行ランタイム: Markdown + Bash のみ → アプリケーションランタイムなし（確定）
-- 全 hooks の実在確認済み（2026-06-11）
-- 全 skills の実在確認済み（2026-06-11）
-- `docs/L0_concept/concept.md` / `policy.md` を今回新規生成（2026-06-11）
+## 4-6. Done Criteria 判定
 
----
+| 条件 | 判定 | 理由 |
+|---|---|---|
+| docs に記載された事実が実体と矛盾していない | yes | 存在しない hook への登録・案内を削除済み |
+| repo.profile.json と docs が相互に説明可能 | yes | commands / hooks / templates / site / CI を docs に反映 |
+| CI 定義と docs の手順が一致している | yes | `npm ci` と `npm run docs:build` を operation_model と repo profile に反映 |
+| 未確認事項が明示的に分離されている | yes | dedicated test command の不在のみ記録 |
 
-## 4-6. フェーズ完了条件（Done Criteria）判定
-
-| 条件 | 判定 |
-|------|------|
-| docs に記載された事実が実体と矛盾していない | ✅ |
-| repo.profile.json と docs が相互に説明可能 | ✅ |
-| CI 定義と docs の手順が一致している | ✅（CI なし、docs も CI 手順を断定しない） |
-| 未確認事項が明示的に分離されている | ✅（未確認事項なし） |
-
-**判定: 完了**
+判定: 完了。
