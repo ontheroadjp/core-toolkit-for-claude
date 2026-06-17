@@ -23,12 +23,21 @@ Add the following to `~/.claude/settings.json` to activate the hooks. `install.s
         }]
       }
     ],
-    "Notification": [
+    "UserPromptSubmit": [
       {
         "matcher": "",
         "hooks": [{
           "type": "command",
-          "command": "bash ~/.claude/hooks/notify-slack.sh"
+          "command": "bash ~/.claude/hooks/log-access-prompt.sh"
+        }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/log-access-tool.sh"
         }]
       }
     ],
@@ -37,7 +46,8 @@ Add the following to `~/.claude/settings.json` to activate the hooks. `install.s
         "matcher": "",
         "hooks": [
           { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
-          { "type": "command", "command": "bash ~/.claude/hooks/notify-slack.sh" }
+          { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" },
+          { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" }
         ]
       }
     ]
@@ -71,17 +81,17 @@ Appends token usage to `logs/token-usage/YYYY-MM.log` at the end of every sessio
 [2026-05-23 20:54:56] session=abc123  input=1411  output=445336  cache_read=80565208  total=1539424  cost_usd=0.0412
 ```
 
-### notify-slack.sh
+### log-access-*.sh
 
-Posts to Slack when Claude Code is waiting for user input or finishes a response.
+Records the user prompt, file access order, and modified files for `/work` sessions.
 
-Set the webhook URL in your shell profile:
+- `log-access-prompt.sh`: saves the current user prompt
+- `log-access-tool.sh`: tracks Read/Glob/Grep/Edit/Write by workflow phase
+- `log-access-stop.sh`: writes the pending access log at session stop
 
-```bash
-export CLAUDE_CODE_KIT_WAIT_NOTIFY_SLACK_WEBHOOK_URL="https://hooks.slack.com/services/XXX/YYY/ZZZ"
-```
+### cleanup-session.sh
 
-If the variable is unset or empty, the hook exits silently. Network failures never block Claude (`curl --max-time 5`).
+Deletes `~/.claude/session-approved` at session end so one session's approvals do not carry over to the next session.
 
 ## Status Line
 
@@ -93,6 +103,6 @@ CTX:35% | 5h:12%(>23:00) | 7d:41%(>06/15 23:00)
 
 - **CTX** — context window usage
 - **5h** — 5-hour rate limit usage and reset time
-- **7d** — 7-day rate limit usage and reset datetime
+- **7d** — 7-day rate limit usage reset datetime
 
 Rate limit data is only available for Claude.ai Pro/Max subscribers.

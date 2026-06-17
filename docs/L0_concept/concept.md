@@ -1,39 +1,29 @@
 # Concept
 
-## このリポジトリの目的
+## 目的
 
-Claude Code 向けのカスタムスラッシュコマンド仕様（Markdown）と補助スクリプト（Bash）を一元管理し、AI 駆動開発ワークフローを構造化・再現可能にする。
+このリポジトリは、Claude Code と Codex CLI の AI 駆動開発ワークフローを、Markdown のコマンド仕様、Codex skill ラッパー、Claude Code hooks、共通テンプレート、VitePress サイトとして一元管理する。
 
-根拠: `README.md:1-3`, `commands/work.md:1-4`
+根拠: `README.md:1-3`, `commands/work.md:1-4`, `skills/init-docs/SKILL.md:1-14`, `site/package.json:1-14`
 
 ## 解決する問題
 
-Claude Code は強力なエージェントだが、指示が曖昧なまま作業を開始すると以下の問題が生じやすい:
+曖昧な AI 作業開始による、ドキュメント更新漏れ、issue/PR 追跡漏れ、レビューコメント対応の属人化、破壊的 git 操作、セッション承認の持ち越しを抑制する。
 
-- ドキュメント更新の漏れ（実装は完了するが docs が古いまま）
-- コミット形式の不一致（Conventional Commits の非遵守）
-- 破壊的な git 操作の意図せぬ実行
-- issue・PR の未作成による追跡不能な変更
-- セッションをまたぐコンテキスト喪失（何のために変更したかが残らない）
+このため、`/work` はゲート確認・現状調査・docs 変更要否によるルーティングを担い、`/task` は issue と PR を伴う実装、`/patch` は軽微修正、`/docs-sync` は git diff に基づく docs 同期、`/review-resolve` は PR レビューコメント対応に分離されている。
 
-このリポジトリは「ゲート → 調査 → ルーティング → 実装 → ドキュメント同期」の一連のフローを Markdown 仕様として定義することで、上記の問題を構造的に防ぐ。
-
-根拠: `commands/work.md`（G-1/G-2 ゲート節）, `commands/docs-sync.md`（全体フロー）, `commands/init-docs.md:9-19`（再実行トリガー）
+根拠: `commands/work.md:42-92`, `commands/task.md:42-144`, `commands/patch.md:11-95`, `commands/docs-sync.md:39-160`, `commands/review-resolve.md:1-6`
 
 ## 対象ユーザー
 
-Claude Code を使って開発を行う個人または小規模チーム。特に:
-- ドキュメントと実装の同期を自動化したい開発者
-- AI セッションの作業履歴・コスト・ファイルアクセスを記録・分析したい開発者
-- PR レビューコメントへの対応を構造化したい開発者
+Claude Code または Codex CLI を使い、実装・ドキュメント同期・PR 作成・レビュー対応を再現可能な手順で進めたい開発者を対象とする。
+
+根拠: `README.md:5-15`, `README.md:63-85`, `skills/*/SKILL.md`
 
 ## 設計上の制約
 
-- **実行ランタイムなし**: Markdown（AI が解釈して実行）と Bash（hooks のみ）のみ。Node.js・Python 等のランタイムは一切持たない
-  - 根拠: `commands/` 配下がすべて `.md`、`hooks/` 配下がすべて `.sh`
-- **symlink-only 原則**: `~/.claude/` 配下には実体ファイルを置かず、全て本リポジトリへのシンボリックリンクとする
-  - 根拠: `README.md:18-19`, `CLAUDE.md:29`（設計原則）
-- **git diff が事実**: ドキュメント更新は AI の要約ではなく `git diff` の出力を根拠とする
-  - 根拠: `commands/docs-sync.md`（フロー Step 2）, `CLAUDE.md:35`
-- **最小更新原則**: `/docs-sync` は変更があった箇所のみを更新する。全体再構築は禁止
-  - 根拠: `commands/docs-sync.md:1-10`
+- `~/.claude/` 配下は symlink-only とし、このリポジトリを single source of truth とする。根拠: `README.md:21-38`, `CLAUDE.md:27-35`
+- 作業入口は `/review-resolve`、`/work`、任意の `/new-issue` に限定する。根拠: `CLAUDE.md:13-25`
+- docs 変更要否を単一質問として扱う。根拠: `commands/work.md:69-92`, `CLAUDE.md:30`
+- docs 同期は `git diff` を事実として扱う。根拠: `commands/docs-sync.md:1-10`, `CLAUDE.md:35`
+- L0 は `/docs-sync` では更新せず、設計方針の再観測時に `/init-docs` が更新する。根拠: `commands/init-docs.md:104-122`, `commands/docs-sync.md:86-88`

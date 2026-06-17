@@ -1,13 +1,19 @@
 {
-  "repo_id": "claude-code-kit",
-  "package_manager": "unknown",
+  "repo_id": "core-toolkit-for-claude",
+  "package_manager": "npm",
   "doc_roots": [
     "docs/L0_concept",
     "docs/L1_project",
     "docs/L2_development",
     "docs/L3_implementation"
   ],
-  "commands": {},
+  "commands": {
+    "install": "./install.sh",
+    "statusline:install": "./setup_statusline.sh",
+    "site:dev": "cd site && npm run docs:dev",
+    "site:build": "cd site && npm run docs:build",
+    "site:preview": "cd site && npm run docs:preview"
+  },
   "active_commands": [
     "commands/work.md",
     "commands/task.md",
@@ -17,30 +23,54 @@
     "commands/review-resolve.md",
     "commands/new-issue.md",
     "commands/coding-general.md",
+    "commands/coding-py.md",
     "commands/coding-js.md",
     "commands/coding-ts.md"
   ],
   "templates": [
-    "commands/templates/issue.md",
-    "commands/templates/pr.md"
+    "templates/issue.md",
+    "templates/pr.md",
+    "templates/readme.md"
   ],
   "hooks": [
+    "hooks/auto-approve-readonly.sh",
+    "hooks/cleanup-session.sh",
     "hooks/guard-destructive-cmd.sh",
-    "hooks/log-token-usage.sh",
     "hooks/log-access-prompt.sh",
-    "hooks/log-access-tool.sh",
     "hooks/log-access-stop.sh",
-    "hooks/notify-slack.sh"
+    "hooks/log-access-tool.sh",
+    "hooks/log-token-usage.sh"
   ],
-  "external_cli_deps": ["git", "gh", "jq", "curl"],
+  "external_cli_deps": [
+    "git",
+    "gh",
+    "jq",
+    "node",
+    "npm",
+    "bc"
+  ],
   "ci": {
     "workflows": [
       {
         "file": ".github/workflows/deploy.yml",
-        "trigger": "push to main",
-        "purpose": "Build VitePress site in site/ and deploy to GitHub Pages via actions/deploy-pages"
+        "trigger": "push to main and workflow_dispatch",
+        "runtime": "Node.js 20",
+        "package_manager": "npm",
+        "commands": [
+          "npm ci",
+          "npm run docs:build"
+        ],
+        "working_directory": "site",
+        "purpose": "Build VitePress site in site/ and deploy site/.vitepress/dist to GitHub Pages"
       }
     ]
+  },
+  "site": {
+    "root": "site",
+    "framework": "VitePress",
+    "config": "site/.vitepress/config.mts",
+    "package_file": "site/package.json",
+    "lock_file": "site/package-lock.json"
   },
   "skills": [
     "skills/work/SKILL.md",
@@ -51,6 +81,7 @@
     "skills/new-issue/SKILL.md",
     "skills/review-resolve/SKILL.md",
     "skills/coding-general/SKILL.md",
+    "skills/coding-py/SKILL.md",
     "skills/coding-js/SKILL.md",
     "skills/coding-ts/SKILL.md"
   ],
@@ -75,7 +106,7 @@
       "target": "~/.claude/hooks/"
     },
     "claude_md": {
-      "method": "symlink",
+      "method": "manual symlink",
       "source": "CLAUDE.md",
       "target": "~/.claude/CLAUDE.md"
     },
@@ -83,6 +114,17 @@
       "method": "symlink",
       "source": "skills/",
       "target": "~/.codex/skills/"
+    },
+    "templates": {
+      "method": "manual symlink",
+      "source": "templates/",
+      "target": "~/.config/claude-code-kit/templates/"
+    },
+    "statusline": {
+      "method": "manual installer",
+      "source": "scripts/statusline.sh",
+      "target": "~/.claude/statusline.sh",
+      "installer": "./setup_statusline.sh"
     },
     "github_pages": {
       "method": "github-actions",
