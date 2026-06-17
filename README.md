@@ -73,7 +73,7 @@ ln -s /path/to/claude-code-kit/hooks/log-access-stop.sh       ~/.claude/hooks/lo
 ln -s /path/to/claude-code-kit/hooks/notify-slack.sh          ~/.claude/hooks/notify-slack.sh
 ```
 
-Then add the following to `~/.claude/settings.json`:
+Then add the following to `~/.claude/settings.json` (applied automatically by `install.sh` if `jq` is available):
 
 ```json
 "hooks": {
