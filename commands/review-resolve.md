@@ -49,17 +49,17 @@ gh api repos/{owner}/{repo}/pulls/<PR番号>/comments \
   --jq '[.[] | {id: .id, path: .path, line: .line, body: .body, user: .user.login, created_at: .created_at}]'
 ```
 
-### (B) レビュー本体コメント（CHANGES_REQUESTED / COMMENTED 状態のレビュー）
+### (B) レビュー本体コメント（CHANGES_REQUESTED / COMMENTED / APPROVED 状態のレビュー）
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/<PR番号>/reviews \
-  --jq '[.[] | select(.state == "CHANGES_REQUESTED" or .state == "COMMENTED") | select(.body != "") | {id: .id, state: .state, body: .body, user: .user.login, submitted_at: .submitted_at}]'
+  --jq '[.[] | select(.state == "CHANGES_REQUESTED" or .state == "COMMENTED" or .state == "APPROVED") | select(.body != "") | {id: .id, state: .state, body: .body, user: .user.login, submitted_at: .submitted_at}]'
 ```
 
 - `{owner}` と `{repo}` は `gh repo view --json owner,name` で取得する
 
-両方が空（コメントなし）の場合:
-- 「PR #<番号> にレビューコメントはありません」と報告して終了する
+両方が空（インラインコメント・レビュー・承認いずれも存在しない）の場合:
+- 「PR #<番号> にレビューコメントはありません（inline comment・review・approval いずれも未提出）」と報告して終了する
 
 コメントが存在する場合: Step 3 へ進む。
 
@@ -77,7 +77,7 @@ gh api repos/{owner}/{repo}/pulls/<PR番号>/reviews \
 種別: インラインコメント / レビューコメント
 投稿者: @<user>
 ファイル: <path>:<line>  ← インラインの場合のみ
-状態: CHANGES_REQUESTED / COMMENTED  ← レビューコメントの場合のみ
+状態: CHANGES_REQUESTED / COMMENTED / APPROVED  ← レビューコメントの場合のみ
 
 <コメント本文>
 

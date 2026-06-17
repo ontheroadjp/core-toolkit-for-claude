@@ -40,6 +40,13 @@ for src in "$REPO_DIR"/skills/*/; do
   echo "  ${SKILLS_TARGET}/${name} -> ${src}"
 done
 
+echo "Creating self-referential skill symlinks..."
+for src in "$REPO_DIR"/skills/*/; do
+  name="$(basename "$src")"
+  ln -sf "$src" "${src}${name}"
+  echo "  ${src}${name} -> ${src}"
+done
+
 SETTINGS_FILE="${HOME}/.claude/settings.json"
 
 echo "Configuring ${SETTINGS_FILE}..."
