@@ -89,7 +89,7 @@
 → **issue なし かつ docs 変更が不要な場合:**
 `commands/patch.md` を Read し、その内容に従って作業を進める。
 - G-2 は通過済みとして扱う（stash 状態も引き継ぐ）
-- patch.md の「Phase 2 Step 1（ブランチ作成）」から開始する
+- patch.md の「Phase 1 Step 1」から開始する
 
 ### (B) 現在ブランチが main ではない場合（再開・エスカレーション）
 
