@@ -53,6 +53,12 @@ case "$SESSION_ID" in process-*) SESSION_ID_IS_FALLBACK=1 ;; esac
 SESSION_DIR="${CLAUDE_CODE_KIT_SESSION_DIR:-${STATE_ROOT}/sessions/${SESSION_ID}}"
 SESSION_APPROVED_FILE="${CLAUDE_CODE_KIT_SESSION_APPROVED_FILE:-${SESSION_DIR}/session-approved}"
 
+# Announce the resolved path so Claude can locate it (task.md / patch.md Step 2)
+if [ "$SESSION_ID_IS_FALLBACK" = "0" ]; then
+    mkdir -p "$STATE_ROOT" 2>/dev/null || true
+    printf '%s\n' "$SESSION_APPROVED_FILE" > "${STATE_ROOT}/current-session-approved-path" 2>/dev/null || true
+fi
+
 ensure_session_dir() {
     mkdir -p "$SESSION_DIR"
     chmod 700 "$STATE_ROOT" "${STATE_ROOT}/sessions" "$SESSION_DIR" 2>/dev/null || true

@@ -28,7 +28,12 @@
 - 編集ファイル（絶対パス）
 
 ユーザーから OK が出た場合:
-    - Write ツールで現在の hook セッションに対応する `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を作成する。内容（1行1エントリ）:
+    - 以下の Bash コマンドで session-approved ファイルの正確なパスを取得する:
+      ```bash
+      cat "${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/current-session-approved-path"
+      ```
+      ファイルが存在しない場合（hook が未実行のケース）はスキップして Step 3 へ進む。
+    - Write ツールで上記で取得したパスに session-approved ファイルを作成する。内容（1行1エントリ）:
         - `tool:git_write`
         - 新規作成・編集ファイルの絶対パス（例: `file:/abs/path/to/file.md`）
     - 注: `session-approved` はこの Step で 1 度だけ書き込む。実行中にスコープを追加しようとすると hook がブロックする。スコープ変更が必要な場合はこの Step に戻り、ユーザーの許可を得てから再書き込みすること。
