@@ -11,6 +11,9 @@ _SCRIPT="${BASH_SOURCE[0]}"
 REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
 LOG_FILE="${REPO_DIR}/logs/auto-approve/$(date '+%Y-%m').log"
 
+# shellcheck source=hooks/lib/approval-safety.sh
+. "${REPO_DIR}/hooks/lib/approval-safety.sh"
+
 sanitize_session_id() {
     printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'
 }
@@ -199,6 +202,12 @@ fi
 
 command=$(echo "$payload" | jq -r '.tool_input.command // ""')
 
+if destructive_reason=$(approval_safety_destructive_reason "$command"); then
+    log_decision "blocked" "Bash" "$command ($destructive_reason)"
+    approval_safety_emit_block "$destructive_reason"
+    exit 0
+fi
+
 # Normalize before write-redirect check and pipe splitting:
 #   1. Strip /dev/null redirects (2>/dev/null, >>/dev/null, &>/dev/null, etc.)
 #      to avoid false positives from stderr suppression.
@@ -227,9 +236,6 @@ is_safe_segment() {
     # gh read-only subcommands
     printf '%s' "$seg" | grep -qE '^gh[[:space:]]+(issue|pr|label|repo|release|run|workflow)[[:space:]]+(list|view|status)(\s|$)' && return 0
     printf '%s' "$seg" | grep -qE '^gh[[:space:]]+auth[[:space:]]+status(\s|$)' && return 0
-    # gh run rerun — triggers a CI re-run (write operation, but approved by policy)
-    printf '%s' "$seg" | grep -qE '^gh[[:space:]]+run[[:space:]]+rerun(\s|$)' && return 0
-
     # Standard read-only Unix tools (prefer fd over find)
     printf '%s' "$seg" | grep -qE '^(ls|ll|la|cat|head|tail|grep|egrep|fgrep|rg|fd|find|wc|sort|uniq|cut|tr|awk|sed|echo|printf|pwd|which|type|env|printenv|du|df|stat|file|basename|dirname|date|uname|hostname|whoami|id|groups|ps|jq|yq|column)(\s|$)' && return 0
 

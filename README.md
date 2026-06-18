@@ -100,13 +100,14 @@ CI runs `npm ci` and `npm run docs:build` in `site/` on push to `main` and on ma
 ```text
 .github/workflows/deploy.yml  GitHub Actions for VitePress -> GitHub Pages
 commands/                     Markdown command specifications
-hooks/                        Claude Code / Codex hook scripts
+hooks/                        Claude Code / Codex hook scripts and shared helpers
 partials/                     Shared command fragments, currently git commit flow
 skills/                       Codex skill wrappers around commands/*.md
 templates/                    Issue, PR, and README templates
 docs/                         /init-docs generated L0-L3 design docs
 site/                         VitePress documentation site
 scripts/                      status line and token usage utilities
+tests/                        verification scripts for hooks and workflows
 install.sh                    symlink installer for commands/hooks/skills
 setup_statusline.sh           status line installer
 CLAUDE.md                     Claude Code AI operating guidance
