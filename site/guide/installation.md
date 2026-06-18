@@ -1,6 +1,6 @@
 # Installation
 
-> **Symlink-only principle:** All files placed under `~/.claude/` must be symlinks pointing to this repository — never actual file copies. This repo is the single source of truth; `~/.claude/` is just a reference point.
+> **Symlink-only principle:** All files placed under `~/.claude/` and `~/.codex/` must be symlinks pointing to this repository — never actual file copies. This repo is the single source of truth; the home-directory paths are reference points.
 
 ## Quick Install
 
@@ -14,10 +14,10 @@ cd core-toolkit-for-claude
 
 This creates symlinks for:
 - `commands/*.md` → `~/.claude/commands/` and `~/.codex/commands/`
-- `hooks/*.sh` → `~/.claude/hooks/`
+- `hooks/*.sh` → `~/.claude/hooks/` and `~/.codex/hooks/`
 - `skills/*/` → `~/.codex/skills/`
 
-Target directories are created automatically.
+Target directories are created automatically. If `jq` is available, the installer also updates `~/.claude/settings.json` and `~/.codex/hooks.json`. Codex users should review and trust registered hooks with `/hooks` before relying on them.
 
 ## Manual Setup
 
@@ -35,15 +35,19 @@ Templates are stored in `~/.config/claude-code-kit/templates/` so both Claude Co
 
 ```bash
 ln -s /path/to/core-toolkit-for-claude/commands/work.md            ~/.claude/commands/work.md
+ln -s /path/to/core-toolkit-for-claude/commands/triage-issues.md   ~/.claude/commands/triage-issues.md
 ln -s /path/to/core-toolkit-for-claude/commands/task.md            ~/.claude/commands/task.md
 ln -s /path/to/core-toolkit-for-claude/commands/patch.md           ~/.claude/commands/patch.md
 ln -s /path/to/core-toolkit-for-claude/commands/docs-sync.md       ~/.claude/commands/docs-sync.md
 ln -s /path/to/core-toolkit-for-claude/commands/init-docs.md       ~/.claude/commands/init-docs.md
 ln -s /path/to/core-toolkit-for-claude/commands/review-resolve.md  ~/.claude/commands/review-resolve.md
+ln -s /path/to/core-toolkit-for-claude/commands/codex-review.md    ~/.claude/commands/codex-review.md
 ln -s /path/to/core-toolkit-for-claude/commands/new-issue.md       ~/.claude/commands/new-issue.md
 ```
 
-The commands are now available as `/work`, `/task`, `/patch`, `/docs-sync`, `/init-docs`, `/review-resolve`, and `/new-issue` in any Claude Code session.
+Create the same links under `~/.codex/commands/` when installing manually for Codex CLI.
+
+The commands are now available as `/work`, `/triage-issues`, `/new-issue`, `/review-resolve`, `/codex-review`, `/task`, `/patch`, `/docs-sync`, and `/init-docs`.
 
 ### Step 2: Symlink CLAUDE.md (global — all repos)
 
@@ -75,7 +79,18 @@ ln -s /path/to/core-toolkit-for-claude/hooks/cleanup-session.sh \
 
 See [Configuration](./configuration) for registering hooks in `~/.claude/settings.json`.
 
-### Step 4: Status line (optional)
+For Codex CLI, create the same hook symlinks under `~/.codex/hooks/` and register them in `~/.codex/hooks.json`, or run `./install.sh` to do this automatically when `jq` is available.
+
+### Step 4: Symlink Codex skills (Codex CLI)
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s /path/to/core-toolkit-for-claude/skills/* ~/.codex/skills/
+```
+
+Each skill is a thin wrapper that reads the corresponding `commands/*.md` file as its source of truth.
+
+### Step 5: Status line (optional)
 
 Displays context usage and rate limits in the Claude Code status bar:
 
@@ -88,5 +103,6 @@ Restart Claude Code to apply.
 ## Requirements
 
 - [Claude Code](https://claude.ai/code) installed
+- Codex CLI installed when using Codex skills or hooks
 - Git and gh CLI installed and authenticated
 - jq installed

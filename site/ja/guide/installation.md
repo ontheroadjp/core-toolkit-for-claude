@@ -1,6 +1,6 @@
 # インストール
 
-> **symlink-only 原則:** `~/.claude/` 配下に置くファイルは全てこのリポジトリへのシンボリックリンクとし、実体ファイルは置かないこと。このリポジトリが single source of truth。`~/.claude/` は参照ポイントに過ぎない。
+> **symlink-only 原則:** `~/.claude/` と `~/.codex/` 配下に置くファイルは全てこのリポジトリへのシンボリックリンクとし、実体ファイルは置かないこと。このリポジトリが single source of truth。ホームディレクトリ側のパスは参照ポイントに過ぎない。
 
 ## クイックインストール
 
@@ -14,10 +14,10 @@ cd core-toolkit-for-claude
 
 以下のシンボリックリンクが作成されます:
 - `commands/*.md` → `~/.claude/commands/` および `~/.codex/commands/`
-- `hooks/*.sh` → `~/.claude/hooks/`
+- `hooks/*.sh` → `~/.claude/hooks/` および `~/.codex/hooks/`
 - `skills/*/` → `~/.codex/skills/`
 
-対象ディレクトリは自動で作成されます。
+対象ディレクトリは自動で作成されます。`jq` が利用可能な場合、`~/.claude/settings.json` と `~/.codex/hooks.json` も更新されます。Codex ユーザーは `/hooks` で登録済み hooks を確認し、trust してから利用してください。
 
 ## 手動セットアップ
 
@@ -35,15 +35,19 @@ ln -s /path/to/core-toolkit-for-claude/templates \
 
 ```bash
 ln -s /path/to/core-toolkit-for-claude/commands/work.md            ~/.claude/commands/work.md
+ln -s /path/to/core-toolkit-for-claude/commands/triage-issues.md   ~/.claude/commands/triage-issues.md
 ln -s /path/to/core-toolkit-for-claude/commands/task.md            ~/.claude/commands/task.md
 ln -s /path/to/core-toolkit-for-claude/commands/patch.md           ~/.claude/commands/patch.md
 ln -s /path/to/core-toolkit-for-claude/commands/docs-sync.md       ~/.claude/commands/docs-sync.md
 ln -s /path/to/core-toolkit-for-claude/commands/init-docs.md       ~/.claude/commands/init-docs.md
 ln -s /path/to/core-toolkit-for-claude/commands/review-resolve.md  ~/.claude/commands/review-resolve.md
+ln -s /path/to/core-toolkit-for-claude/commands/codex-review.md    ~/.claude/commands/codex-review.md
 ln -s /path/to/core-toolkit-for-claude/commands/new-issue.md       ~/.claude/commands/new-issue.md
 ```
 
-これで `/work`、`/task`、`/patch`、`/docs-sync`、`/init-docs`、`/review-resolve`、`/new-issue` が全ての Claude Code セッションで利用できるようになります。
+Codex CLI へ手動インストールする場合は、同じリンクを `~/.codex/commands/` 配下にも作成します。
+
+これで `/work`、`/triage-issues`、`/new-issue`、`/review-resolve`、`/codex-review`、`/task`、`/patch`、`/docs-sync`、`/init-docs` が利用できるようになります。
 
 ### Step 2: CLAUDE.md のシンボリックリンク作成（グローバル — 全リポジトリ）
 
@@ -75,7 +79,18 @@ ln -s /path/to/core-toolkit-for-claude/hooks/cleanup-session.sh \
 
 `~/.claude/settings.json` への hooks 登録は[設定](./configuration)を参照してください。
 
-### Step 4: ステータスライン（任意）
+Codex CLI では同じ hook symlink を `~/.codex/hooks/` 配下に作成し、`~/.codex/hooks.json` に登録します。`jq` が利用可能なら `./install.sh` が自動で実行します。
+
+### Step 4: Codex skills のシンボリックリンク作成（Codex CLI）
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s /path/to/core-toolkit-for-claude/skills/* ~/.codex/skills/
+```
+
+各 skill は、対応する `commands/*.md` を source of truth として読む薄いラッパーです。
+
+### Step 5: ステータスライン（任意）
 
 Claude Code のステータスバーにコンテキスト使用率とレート制限を表示します:
 
@@ -88,5 +103,6 @@ Claude Code を再起動すると反映されます。
 ## 要件
 
 - [Claude Code](https://claude.ai/code) のインストール
+- Codex skill または hook を使う場合は Codex CLI のインストール
 - Git と gh CLI のインストールおよび認証済みであること
 - jq のインストール

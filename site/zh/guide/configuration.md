@@ -1,8 +1,8 @@
 # 配置
 
-## 在 settings.json 中注册 Hooks
+## 注册 Hooks
 
-将以下内容添加到 `~/.claude/settings.json` 以激活 hooks。如果 `jq` 可用，`install.sh` 会自动完成此配置。
+将以下内容添加到 `~/.claude/settings.json` 以激活 Claude Code hooks。如果 `jq` 可用，`install.sh` 会自动完成此配置。
 
 ```json
 {
@@ -55,6 +55,8 @@
 }
 ```
 
+对于 Codex CLI，同样的事件结构会注册到 `~/.codex/hooks.json`，并使用 `~/.codex/hooks/*.sh` 路径。安装后请用 `/hooks` 检查并信任这些 hooks。
+
 ## Hook 参考
 
 ### auto-approve-readonly.sh
@@ -63,6 +65,7 @@
 
 - 自动批准 `Read` 工具（所有输入）
 - 自动批准只读 `Bash` 命令：`git status/log/diff`、`ls`、`cat`、`grep`、`fd`、`curl`（无文件下载）、`npm`（无安装）、`pytest` 等
+- 自动批准当前 `session-approved` 文件中列出的会话作用域写入
 - 复合命令（`&&`、`||`、`;`、`|`）会被拆分——只有每个部分都安全才会批准
 - 写入重定向（`>`）按正常权限流程处理
 

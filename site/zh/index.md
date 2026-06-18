@@ -22,8 +22,8 @@ features:
     details: 所有任务的主入口。门控检查 → 调查 → 自动路由到 patch 或 task 流程。
     link: /zh/guide/
   - icon: <i class="fa-solid fa-file-circle-plus"></i>
-    title: /new-issue
-    details: 将模糊的想法转化为规范的 GitHub issue。/work 的可选前置步骤。
+    title: /triage-issues
+    details: 审查并分类 open issue，将它们整理到可通过 /work #N 开始的状态。
     link: /zh/guide/
   - icon: <i class="fa-solid fa-rotate"></i>
     title: /docs-sync
@@ -34,11 +34,11 @@ features:
     details: 获取 PR 审查评论，交互式地处理或拒绝每条评论。
     link: /zh/guide/
   - icon: <i class="fa-solid fa-book"></i>
-    title: /task & /patch
-    details: 针对有无文档变更的实现的委托流程。
+    title: /codex-review
+    details: 使用 Codex CLI 审查 PR、发布结果，并在要求变更时交接给 /review-resolve。
     link: /zh/developer/specification
   - icon: <i class="fa-solid fa-shield-halved"></i>
     title: Hooks
-    details: 自动批准只读命令、防护破坏性操作、记录 token 使用量。
+    details: 自动批准只读命令、防护破坏性操作、记录访问日志并跟踪 token 使用量。
     link: /zh/guide/configuration
 ---

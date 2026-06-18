@@ -1,8 +1,8 @@
 # Configuration
 
-## Registering Hooks in settings.json
+## Registering Hooks
 
-Add the following to `~/.claude/settings.json` to activate the hooks. `install.sh` does this automatically if `jq` is available.
+Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `install.sh` does this automatically if `jq` is available.
 
 ```json
 {
@@ -55,6 +55,8 @@ Add the following to `~/.claude/settings.json` to activate the hooks. `install.s
 }
 ```
 
+For Codex CLI, the same event structure is registered in `~/.codex/hooks.json`, using `~/.codex/hooks/*.sh` paths. After installation, review and trust those hooks with `/hooks`.
+
 ## Hook Reference
 
 ### auto-approve-readonly.sh
@@ -63,6 +65,7 @@ Eliminates permission prompts for safe, read-only tool calls.
 
 - Auto-approves the `Read` tool (all inputs)
 - Auto-approves read-only `Bash` commands: `git status/log/diff`, `ls`, `cat`, `grep`, `fd`, `curl` (no file download), `npm` (no install), `pytest`, and more
+- Auto-approves session-scoped writes listed in the current `session-approved` file
 - Compound commands (`&&`, `||`, `;`, `|`) are split — approved only if every segment is safe
 - Write redirections (`>`) pass through to normal permission flow
 

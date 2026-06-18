@@ -8,7 +8,7 @@ This section covers the internal design, workflow routing logic, and command spe
 - **Docs changes are isolated** — `/task` never touches `docs/*`; only `/docs-sync` does
 - **Minimal updates** — `/docs-sync` updates only what changed, never rewrites wholesale
 - **HARD STOP escalation** — when `/docs-sync` cannot reason about a change, it stops and requires `/init-docs`
-- **Symlink-only** — `~/.claude/` holds no real files; everything symlinks back to this repository
+- **Symlink-only** — `~/.claude/` and `~/.codex/` hold no real files; everything symlinks back to this repository
 
 ## Workflow Architecture
 
@@ -16,21 +16,24 @@ This section covers the internal design, workflow routing logic, and command spe
 /work (entry point)
   │
   ├── G-0: Ensure on main branch
+  │        and clear the current session-approved file
   ├── G-1: Verify docs/.ai/repo.profile.json exists
   ├── G-2: Workspace clean check (stash if needed)
   │
   ├── issue mentioned? → /task flow
   │
   └── docs change needed?
-       ├── YES → /task flow (issue → implement → draft PR → /docs-sync)
-       └── NO  → /patch flow (branch → commit → user ff-merge)
+      ├── YES → /task flow (issue → implement → draft PR → /docs-sync)
+      └── NO  → /patch flow (branch → commit → user ff-merge)
 ```
+
+`/review-resolve #N` is a separate entry point for PR review comments and does not go through `/work`. `/triage-issues` is also standalone and only performs user-approved issue cleanup.
 
 ## Repository Structure
 
 ```
-hooks/              # Claude Code hook scripts (PreToolUse, Stop, etc.)
-commands/           # Slash command Markdown files
+hooks/              # Claude Code / Codex hook scripts (PreToolUse, Stop, etc.)
+commands/           # Claude/Codex command Markdown files
 partials/           # Shared procedure partials (not slash commands)
 templates/          # issue.md, pr.md, readme.md scaffolds
 docs/               # Design documentation (L0–L3)
@@ -40,7 +43,7 @@ docs/               # Design documentation (L0–L3)
   L1_project/           # Project overview
   L2_development/       # Development and operation model
   L3_implementation/    # Implementation specifications
-scripts/            # Utility scripts (status line, etc.)
+scripts/            # Utility scripts (status line, token usage display, etc.)
 skills/             # Codex CLI skill wrappers
 ```
 

@@ -22,8 +22,8 @@ features:
     details: Main entry point for all tasks. Gates → investigates → routes to patch or task flow automatically.
     link: /guide/
   - icon: <i class="fa-solid fa-file-circle-plus"></i>
-    title: /new-issue
-    details: Turns a rough idea into one or more well-formed GitHub issues. Optional pre-/work entry point.
+    title: /triage-issues
+    details: Reviews open issues, classifies stale or unclear work, and gets them ready for /work #N.
     link: /guide/
   - icon: <i class="fa-solid fa-rotate"></i>
     title: /docs-sync
@@ -34,11 +34,11 @@ features:
     details: Fetches PR review comments and guides through addressing or declining each one interactively.
     link: /guide/
   - icon: <i class="fa-solid fa-book"></i>
-    title: /task & /patch
-    details: Delegated flows for implementation with or without documentation changes.
+    title: /codex-review
+    details: Runs Codex CLI review on a PR, posts the result, and hands off to /review-resolve when changes are requested.
     link: /developer/specification
   - icon: <i class="fa-solid fa-shield-halved"></i>
     title: Hooks
-    details: Auto-approve readonly commands, guard destructive operations, log token usage, and notify Slack.
+    details: Auto-approve readonly commands, guard destructive operations, log access, and track token usage.
     link: /guide/configuration
 ---

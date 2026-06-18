@@ -1,8 +1,8 @@
 # 設定
 
-## settings.json への hooks 登録
+## hooks の登録
 
-以下を `~/.claude/settings.json` に追加して hooks を有効化します。`jq` が利用可能な場合、`install.sh` が自動で設定します。
+以下を `~/.claude/settings.json` に追加して Claude Code hooks を有効化します。`jq` が利用可能な場合、`install.sh` が自動で設定します。
 
 ```json
 {
@@ -55,6 +55,8 @@
 }
 ```
 
+Codex CLI では、同じイベント構造を `~/.codex/hooks.json` に登録し、コマンドパスは `~/.codex/hooks/*.sh` を使います。インストール後は `/hooks` で hooks を確認し、trust してください。
+
 ## Hook リファレンス
 
 ### auto-approve-readonly.sh
@@ -63,6 +65,7 @@
 
 - `Read` ツールを常に自動承認
 - 読み取り専用 `Bash` コマンドを自動承認: `git status/log/diff`、`ls`、`cat`、`grep`、`fd`、`curl`（ファイルダウンロードなし）、`npm`（install なし）、`pytest` など
+- 現在セッションの `session-approved` ファイルに列挙されたスコープ内の書き込みを自動承認
 - 複合コマンド（`&&`、`||`、`;`、`|`）は分割評価 — 全セグメントが安全な場合のみ承認
 - 書き込みリダイレクト（`>`）は通常の許可フローへ
 
