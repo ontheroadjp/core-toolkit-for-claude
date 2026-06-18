@@ -28,7 +28,7 @@
 - コマンド仕様: Markdown。根拠: `commands/*.md`
 - hooks / 補助スクリプト: Bash。根拠: `hooks/*.sh`, `scripts/*.sh`, `install.sh:1-3`
 - 公開サイト: VitePress + npm。根拠: `site/package.json:1-14`, `site/package-lock.json`
-- CI: GitHub Actions + Node.js 20 + npm。根拠: `.github/workflows/deploy.yml:24-37`
+- CI: GitHub Actions + Node.js 24 + npm。根拠: `.github/workflows/deploy.yml:24-37`
 - 外部 CLI: `git`, `gh`, `jq`, `node`, `npm`, `bc`, `codex`。根拠: `commands/task.md:21-29`, `commands/codex-review.md:63-80`, `hooks/*.sh`, `scripts/statusline.sh:10-31`, `.github/workflows/deploy.yml:24-37`
 
 ## エントリポイント

@@ -14,7 +14,7 @@ GitHub Pages へ公開するため、workflow は `contents: read`、`pages: wri
 
 ## build job
 
-`build` job は `ubuntu-latest` で実行される。手順は checkout、Node.js 20 setup、npm cache 設定、`site/` での `npm ci`、`site/` での `npm run docs:build`、`site/.vitepress/dist` の Pages artifact upload である。
+`build` job は `ubuntu-latest` で実行される。手順は checkout、Node.js 24 setup、npm cache 設定、`site/` での `npm ci`、`site/` での `npm run docs:build`、`site/.vitepress/dist` の Pages artifact upload である。
 
 なぜこの構成か: 公開サイトの実体は `site/package.json` が定義する VitePress project であり、lock file は `site/package-lock.json` にある。そのため CI は repository root ではなく `site/` を working directory として npm install/build を実行し、VitePress の build output を Pages artifact として渡す。
 

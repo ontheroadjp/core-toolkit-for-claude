@@ -71,7 +71,7 @@
 
 ## 4-3. CI 定義との整合性
 
-CI は存在する。`.github/workflows/deploy.yml` は main push と workflow_dispatch で実行され、Node.js 20、npm cache、`site/package-lock.json`、`site/` working directory、`npm ci`、`npm run docs:build`、GitHub Pages artifact upload/deploy を定義する。専用 docs として `docs/L2_development/cicd.md` を生成済み。
+CI は存在する。`.github/workflows/deploy.yml` は main push と workflow_dispatch で実行され、Node.js 24、npm cache、`site/package-lock.json`、`site/` working directory、`npm ci`、`npm run docs:build`、GitHub Pages artifact upload/deploy を定義する。専用 docs として `docs/L2_development/cicd.md` を生成済み。
 
 根拠: `.github/workflows/deploy.yml:1-53`
 
