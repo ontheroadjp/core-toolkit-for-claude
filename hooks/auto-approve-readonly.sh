@@ -37,6 +37,9 @@ resolve_session_id() {
         transcript_path=$(echo "$payload" | jq -r '.transcript_path // empty')
         [ -n "$transcript_path" ] && session_id="transcript-$(hash_session_key "$transcript_path")"
     fi
+    if [ -z "$session_id" ] && [ -n "${CODEX_THREAD_ID:-}" ]; then
+        session_id="codex-$(hash_session_key "${CODEX_THREAD_ID}")"
+    fi
     if [ -z "$session_id" ]; then
         session_id="process-${PPID:-$$}"
     fi
@@ -45,6 +48,8 @@ resolve_session_id() {
 
 STATE_ROOT="${CLAUDE_CODE_KIT_STATE_HOME:-${XDG_STATE_HOME:-${HOME}/.local/state}/claude-code-kit}"
 SESSION_ID="$(resolve_session_id)"
+SESSION_ID_IS_FALLBACK=0
+case "$SESSION_ID" in process-*) SESSION_ID_IS_FALLBACK=1 ;; esac
 SESSION_DIR="${CLAUDE_CODE_KIT_SESSION_DIR:-${STATE_ROOT}/sessions/${SESSION_ID}}"
 SESSION_APPROVED_FILE="${CLAUDE_CODE_KIT_SESSION_APPROVED_FILE:-${SESSION_DIR}/session-approved}"
 
@@ -174,7 +179,7 @@ if [ "$tool_name" = "Write" ]; then
         emit_approval
         exit 0
     fi
-    if is_session_approved_file "$file_path"; then
+    if [ "$SESSION_ID_IS_FALLBACK" = "0" ] && is_session_approved_file "$file_path"; then
         log_decision "approved" "Write" "$file_path (session)"
         emit_approval
         exit 0
@@ -186,7 +191,7 @@ fi
 # Edit tool: approve if the path is session-listed
 if [ "$tool_name" = "Edit" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
-    if is_session_approved_file "$file_path"; then
+    if [ "$SESSION_ID_IS_FALLBACK" = "0" ] && is_session_approved_file "$file_path"; then
         log_decision "approved" "Edit" "$file_path (session)"
         emit_approval
         exit 0
@@ -259,7 +264,7 @@ is_safe_segment() {
     printf '%s' "$seg" | grep -qE '^pytest(\s|$)' && return 0
     printf '%s' "$seg" | grep -qE '^python3?\s+-m\s+pytest(\s|$)' && return 0
 
-    check_session_approved "$seg" && return 0
+    [ "$SESSION_ID_IS_FALLBACK" = "0" ] && check_session_approved "$seg" && return 0
 
     return 1
 }

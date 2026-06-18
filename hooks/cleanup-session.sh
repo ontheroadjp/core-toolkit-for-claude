@@ -27,6 +27,9 @@ resolve_session_id() {
         transcript_path=$(echo "$payload" | jq -r '.transcript_path // empty')
         [ -n "$transcript_path" ] && session_id="transcript-$(hash_session_key "$transcript_path")"
     fi
+    if [ -z "$session_id" ] && [ -n "${CODEX_THREAD_ID:-}" ]; then
+        session_id="codex-$(hash_session_key "${CODEX_THREAD_ID}")"
+    fi
     if [ -z "$session_id" ]; then
         session_id="process-${PPID:-$$}"
     fi
