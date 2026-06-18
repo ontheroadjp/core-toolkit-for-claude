@@ -4,19 +4,35 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 AUTO_HOOK="${REPO_DIR}/hooks/auto-approve-readonly.sh"
 GUARD_HOOK="${REPO_DIR}/hooks/guard-destructive-cmd.sh"
+CLEANUP_HOOK="${REPO_DIR}/hooks/cleanup-session.sh"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 SESSION_FILE="${TMP_DIR}/session-approved"
+SESSION_ID="test-session-fixed"
+TMP_ROOT="${TMP_DIR}/tmp-root"
+SESSION_TMP_DIR="${TMP_ROOT}/${SESSION_ID}"
 
 run_auto() {
     local command="$1"
     printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
         | CODEX_CI=1 \
             CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
-            CLAUDE_CODE_KIT_SESSION_ID="test-session-fixed" \
+            CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
             CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
+            bash "$AUTO_HOOK"
+}
+
+run_auto_file_tool() {
+    local tool_name="$1" file_path="$2"
+    printf '%s' "{\"tool_name\":\"${tool_name}\",\"tool_input\":{\"file_path\":\"${file_path}\"}}" \
+        | CODEX_CI=1 \
+            CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
+            CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
             bash "$AUTO_HOOK"
 }
 
@@ -28,9 +44,18 @@ run_auto_codex_symlink() {
     ln -sf "$AUTO_HOOK" "$codex_hook"
     printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
         | CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
-            CLAUDE_CODE_KIT_SESSION_ID="test-session-fixed" \
+            CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
             CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
             bash "$codex_hook"
+}
+
+run_cleanup() {
+    local session_id="$1"
+    printf '%s' "{\"session_id\":\"${session_id}\"}" \
+        | CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
+            bash "$CLEANUP_HOOK"
 }
 
 run_guard() {
@@ -77,6 +102,22 @@ assert_json_decision "$output" "allow"
 output=$(run_auto 'git add hooks/auto-approve-readonly.sh')
 assert_json_decision "$output" "allow"
 
+output=$(run_auto_file_tool "Write" "${SESSION_TMP_DIR}/scratch.txt")
+assert_json_decision "$output" "allow"
+
+output=$(run_auto_file_tool "Edit" "${SESSION_TMP_DIR}/scratch.txt")
+assert_json_decision "$output" "allow"
+
+output=$(run_auto_file_tool "Write" "${TMP_ROOT}/other-session/scratch.txt")
+assert_no_output "$output"
+
+rm -rf "$SESSION_TMP_DIR"
+mkdir -p "$TMP_ROOT" "${TMP_DIR}/symlink-target"
+ln -s "${TMP_DIR}/symlink-target" "$SESSION_TMP_DIR"
+output=$(run_auto_file_tool "Write" "${SESSION_TMP_DIR}/scratch.txt")
+assert_no_output "$output"
+rm -f "$SESSION_TMP_DIR"
+
 output=$(run_auto 'gh run rerun 12345')
 assert_no_output "$output"
 
@@ -88,5 +129,17 @@ assert_json_decision "$output" "block"
 
 output=$(run_guard 'git status --porcelain')
 assert_no_output "$output"
+
+mkdir -p "$SESSION_TMP_DIR" "${TMP_ROOT}/other-session"
+touch "${SESSION_TMP_DIR}/scratch.txt" "${TMP_ROOT}/other-session/scratch.txt"
+run_cleanup "$SESSION_ID"
+if [ -e "$SESSION_TMP_DIR" ]; then
+    printf 'Expected cleanup hook to remove current session temp dir: %s\n' "$SESSION_TMP_DIR" >&2
+    exit 1
+fi
+if [ ! -e "${TMP_ROOT}/other-session/scratch.txt" ]; then
+    printf 'Expected cleanup hook to preserve other session temp dir\n' >&2
+    exit 1
+fi
 
 printf 'approval hook tests passed\n'

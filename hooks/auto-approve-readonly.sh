@@ -58,6 +58,8 @@ SESSION_ID_IS_FALLBACK=0
 case "$SESSION_ID" in process-*) SESSION_ID_IS_FALLBACK=1 ;; esac
 SESSION_DIR="${CLAUDE_CODE_KIT_SESSION_DIR:-${STATE_ROOT}/sessions/${SESSION_ID}}"
 SESSION_APPROVED_FILE="${CLAUDE_CODE_KIT_SESSION_APPROVED_FILE:-${SESSION_DIR}/session-approved}"
+SESSION_TMP_ROOT="${CLAUDE_CODE_KIT_TMP_ROOT:-/tmp/claude-code-kit}"
+SESSION_TMP_DIR="${SESSION_TMP_ROOT}/${SESSION_ID}"
 
 # Announce the resolved path so Claude can locate it (task.md / patch.md Step 2)
 if [ "$SESSION_ID_IS_FALLBACK" = "0" ]; then
@@ -70,12 +72,33 @@ ensure_session_dir() {
     chmod 700 "$STATE_ROOT" "${STATE_ROOT}/sessions" "$SESSION_DIR" 2>/dev/null || true
 }
 
+ensure_session_tmp_dir() {
+    [ -L "$SESSION_TMP_ROOT" ] && return 1
+    [ -L "$SESSION_TMP_DIR" ] && return 1
+    mkdir -p "$SESSION_TMP_DIR" || return 1
+    chmod 700 "$SESSION_TMP_DIR" 2>/dev/null || true
+    [ -L "$SESSION_TMP_DIR" ] && return 1
+    return 0
+}
+
 is_session_approved_path() {
     local path="$1"
     local norm_path norm_approved
     norm_path=$(realpath -m "$path" 2>/dev/null || printf '%s' "$path")
     norm_approved=$(realpath -m "$SESSION_APPROVED_FILE" 2>/dev/null || printf '%s' "$SESSION_APPROVED_FILE")
     [ "$norm_path" = "$norm_approved" ]
+}
+
+is_session_tmp_file() {
+    local path="$1"
+    local norm_path norm_tmp
+    ensure_session_tmp_dir || return 1
+    norm_path=$(realpath -m "$path" 2>/dev/null || printf '%s' "$path")
+    norm_tmp=$(realpath -m "$SESSION_TMP_DIR" 2>/dev/null || printf '%s' "$SESSION_TMP_DIR")
+    case "$norm_path" in
+        "$norm_tmp"/*) return 0 ;;
+        *) return 1 ;;
+    esac
 }
 
 log_decision() {
@@ -158,6 +181,11 @@ fi
 # Write tool: guard session file against scope expansion; approve other paths if session-listed
 if [ "$tool_name" = "Write" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
+    if is_session_tmp_file "$file_path"; then
+        log_decision "approved" "Write" "$file_path (session-tmp)"
+        emit_approval
+        exit 0
+    fi
     if is_session_approved_path "$file_path"; then
         ensure_session_dir
         # Initial write (file absent) - approve
@@ -203,6 +231,11 @@ fi
 # Edit tool: approve if the path is session-listed
 if [ "$tool_name" = "Edit" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
+    if is_session_tmp_file "$file_path"; then
+        log_decision "approved" "Edit" "$file_path (session-tmp)"
+        emit_approval
+        exit 0
+    fi
     if [ "$SESSION_ID_IS_FALLBACK" = "0" ] && is_session_approved_file "$file_path"; then
         log_decision "approved" "Edit" "$file_path (session)"
         emit_approval
