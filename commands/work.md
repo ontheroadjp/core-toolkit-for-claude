@@ -9,6 +9,7 @@
 ### G-0: main ブランチへの切り替え
 
 `git checkout main` を実行し、main ブランチに切り替える。
+`rm -f ~/.claude/session-approved` を実行し、前回の `/work` 呼び出しの承認状態をクリアする。
 
 ### G-1: docs/.ai/repo.profile.json の存在確認
 - 存在しない場合: /init-docs の実行を促して終了する
@@ -98,8 +99,8 @@
 1. `git status --porcelain` が空でない（未コミット変更がある）場合:
     - `commands/task.md` を Read し、Phase 1 から継続する
 2. `git log main..HEAD --oneline` の出力が 1 件以上あり、ワークスペースがクリーンな場合:
-    - `commands/task.md` を Read し、Phase 2 から開始する
     - issue 番号は `gh pr view --json body` のドラフト PR 本文、またはコミットメッセージの `(#N)` パターンから取得する
+    - `commands/task.md` を Read し、Phase 1 Step 2 から開始する（session-approved 再作成のため。プランは Phase 2 操作のみを対象とする）
 3. それ以外:
     - `commands/task.md` を Read し、Phase 1 から開始する
 
