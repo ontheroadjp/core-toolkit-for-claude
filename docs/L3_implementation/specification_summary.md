@@ -74,9 +74,9 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ## Skills
 
-`skills/*/SKILL.md` は Codex 用の wrapper で、対応する `commands/*.md` を Source of Truth として読む。`coding-py` / `coding-js` / `coding-ts` は general など依存する command も読む構造を持つ。
+`skills/*/SKILL.md` は Codex 用の wrapper で、対応する `commands/*.md` を Source of Truth として読む。`coding-py` / `coding-js` / `coding-ts` は general など依存する command も読む構造を持つ。現存する skill wrapper は 13 件で、`commands/` にある各 command と対応する。
 
-根拠: `skills/init-docs/SKILL.md:1-14`, `skills/coding-ts/SKILL.md`
+根拠: `skills/init-docs/SKILL.md:1-14`, `skills/coding-ts/SKILL.md`, `skills/` 実体一覧
 
 ## Hooks
 
@@ -128,7 +128,7 @@ Stop hook。現在の hook セッションに対応する `session-approved` を
 
 `.github/workflows/deploy.yml` は main push と `workflow_dispatch` を trigger とし、Node.js 20 で `site/` に対して `npm ci` と `npm run docs:build` を実行し、`site/.vitepress/dist` を GitHub Pages に deploy する。
 
-根拠: `site/package.json:1-14`, `site/package-lock.json`, `site/.vitepress/config.mts:1-185`, `.github/workflows/deploy.yml:1-53`
+根拠: `site/package.json:1-14`, `site/package-lock.json:765-766`, `site/package-lock.json:2486-2487`, `site/.vitepress/config.mts:1-183`, `.github/workflows/deploy.yml:1-53`
 
 ## 未確認事項
 

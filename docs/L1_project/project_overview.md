@@ -21,7 +21,7 @@
 | coding 原則 | `commands/coding-*.md` | general / py / js / ts の実装規約 | `commands/coding-general.md:1-3`, `commands/coding-ts.md:1-12` |
 | Codex skills | `skills/*/SKILL.md` | 対応する command markdown を Source of Truth として実行する | `skills/init-docs/SKILL.md:1-14` |
 | hooks | `hooks/*.sh` | 自動承認、破壊的操作 guard、ログ、セッション cleanup | `hooks/auto-approve-readonly.sh`, `hooks/guard-destructive-cmd.sh`, `hooks/cleanup-session.sh` |
-| site | `site/` | VitePress による公開ドキュメントサイト | `site/package.json:1-14`, `site/.vitepress/config.mts:1-78` |
+| site | `site/` | VitePress による公開ドキュメントサイト | `site/package.json:1-14`, `site/.vitepress/config.mts:1-183` |
 
 ## 技術スタック
 
@@ -29,7 +29,7 @@
 - hooks / 補助スクリプト: Bash。根拠: `hooks/*.sh`, `scripts/*.sh`, `install.sh:1-3`
 - 公開サイト: VitePress + npm。根拠: `site/package.json:1-14`, `site/package-lock.json`
 - CI: GitHub Actions + Node.js 20 + npm。根拠: `.github/workflows/deploy.yml:24-37`
-- 外部 CLI: `git`, `gh`, `jq`, `node`, `npm`, `bc`。根拠: `commands/task.md:21-29`, `hooks/*.sh`, `scripts/statusline.sh:10-31`, `.github/workflows/deploy.yml:24-37`
+- 外部 CLI: `git`, `gh`, `jq`, `node`, `npm`, `bc`, `codex`。根拠: `commands/task.md:21-29`, `commands/codex-review.md:63-80`, `hooks/*.sh`, `scripts/statusline.sh:10-31`, `.github/workflows/deploy.yml:24-37`
 
 ## エントリポイント
 
@@ -44,7 +44,7 @@
 
 `site/package.json` は本番依存として `@fortawesome/fontawesome-free`、開発依存として `vitepress` を宣言する。lock file から `@fortawesome/fontawesome-free` は 6.7.2、`vitepress` は 1.6.4 が解決されている。
 
-根拠: `site/package.json:9-14`, `site/package-lock.json`
+根拠: `site/package.json:9-14`, `site/package-lock.json:765-766`, `site/package-lock.json:2486-2487`
 
 ## 未確認事項
 
