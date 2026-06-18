@@ -114,11 +114,11 @@ Stop hook。`~/.claude/session-approved` があれば削除する。
 
 ## Install and Status Line
 
-`install.sh` は `commands/*.md` を `~/.claude/commands/` と `~/.codex/commands/`、`hooks/*.sh` を `~/.claude/hooks/`、`skills/*/` を `~/.codex/skills/` に symlink する。その後 `jq` があれば `~/.claude/settings.json` に hook entries を追加する。
+`install.sh` は `commands/*.md` を `~/.claude/commands/` と `~/.codex/commands/`、`hooks/*.sh` を `~/.claude/hooks/` と `~/.codex/hooks/`、`skills/*/` を `~/.codex/skills/` に symlink する。その後 `jq` があれば `~/.claude/settings.json` と `~/.codex/hooks.json` に hook entries を追加する。Codex hooks は `/hooks` で review/trust してから利用する前提で案内する。
 
 `setup_statusline.sh` は `scripts/statusline.sh` を `~/.claude/statusline.sh` に symlink し、settings に `statusLine` を追加する。`scripts/statusline.sh` は stdin JSON から context / five-hour / seven-day rate limit を抽出して表示する。
 
-根拠: `install.sh:15-88`, `setup_statusline.sh:6-55`, `scripts/statusline.sh:10-83`
+根拠: `install.sh:15-149`, `setup_statusline.sh:6-55`, `scripts/statusline.sh:10-83`
 
 ## VitePress Site and CI
 

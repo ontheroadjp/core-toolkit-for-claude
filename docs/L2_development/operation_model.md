@@ -49,7 +49,7 @@
 
 | コマンド | 用途 | 根拠 |
 |---|---|---|
-| `./install.sh` | commands/hooks/skills symlink と hook settings 登録 | `install.sh:15-88` |
+| `./install.sh` | commands/hooks/skills symlink と Claude/Codex hook settings 登録 | `install.sh:15-146` |
 | `./setup_statusline.sh` | statusline symlink と settings 登録 | `setup_statusline.sh:6-55` |
 | `cd site && npm run docs:dev` | VitePress dev server | `site/package.json:4-8` |
 | `cd site && npm run docs:build` | VitePress build。CI でも実行 | `site/package.json:4-8`, `.github/workflows/deploy.yml:35-37` |

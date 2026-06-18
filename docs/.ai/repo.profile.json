@@ -130,6 +130,12 @@
       "method": "github-actions",
       "source": "site/.vitepress/dist",
       "workflow": ".github/workflows/deploy.yml"
+    },
+    "codex_hooks": {
+      "method": "symlink + hooks.json registration",
+      "source": "hooks/",
+      "target": "~/.codex/hooks/",
+      "config": "~/.codex/hooks.json"
     }
   }
 }
