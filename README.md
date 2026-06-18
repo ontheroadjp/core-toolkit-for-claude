@@ -1,6 +1,6 @@
 # core-toolkit-for-claude
 
-A structured AI-driven development workflow toolkit for Claude Code and Codex CLI. It packages slash-command specifications, Codex skills, Claude Code hooks, shared templates, and a VitePress documentation site.
+A structured AI-driven development workflow toolkit for Claude Code and Codex CLI. It packages slash-command specifications, Codex skills, Claude/Codex hook scripts, shared templates, and a VitePress documentation site.
 
 ## Features
 
@@ -35,9 +35,10 @@ A structured AI-driven development workflow toolkit for Claude Code and Codex CL
 - `commands/*.md` -> `~/.claude/commands/`
 - `commands/*.md` -> `~/.codex/commands/`
 - `hooks/*.sh` -> `~/.claude/hooks/`
+- `hooks/*.sh` -> `~/.codex/hooks/`
 - `skills/*/` -> `~/.codex/skills/`
 
-It also updates `~/.claude/settings.json` when `jq` is available.
+It also updates `~/.claude/settings.json` and `~/.codex/hooks.json` when `jq` is available. Codex users should review and trust registered hooks with `/hooks` before relying on them.
 
 ### Templates
 
@@ -99,7 +100,7 @@ CI runs `npm ci` and `npm run docs:build` in `site/` on push to `main` and on ma
 ```text
 .github/workflows/deploy.yml  GitHub Actions for VitePress -> GitHub Pages
 commands/                     Markdown command specifications
-hooks/                        Claude Code hook scripts
+hooks/                        Claude Code / Codex hook scripts
 partials/                     Shared command fragments, currently git commit flow
 skills/                       Codex skill wrappers around commands/*.md
 templates/                    Issue, PR, and README templates
