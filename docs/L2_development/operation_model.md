@@ -70,7 +70,7 @@
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` は main push と manual dispatch で実行される。build job は Node.js 20 を setup し、`site/` で `npm ci` と `npm run docs:build` を実行し、`site/.vitepress/dist` を Pages artifact として upload する。deploy job は `actions/deploy-pages@v4` で GitHub Pages に deploy する。
+`.github/workflows/deploy.yml` は main push と manual dispatch で実行される。build job は Node.js 24 を setup し、`site/` で `npm ci` と `npm run docs:build` を実行し、`site/.vitepress/dist` を Pages artifact として upload する。deploy job は `actions/deploy-pages@v4` で GitHub Pages に deploy する。
 
 根拠: `.github/workflows/deploy.yml:1-53`
 

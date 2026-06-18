@@ -58,7 +58,7 @@
       {
         "file": ".github/workflows/deploy.yml",
         "trigger": "push to main and workflow_dispatch",
-        "runtime": "Node.js 20",
+        "runtime": "Node.js 24",
         "package_manager": "npm",
         "commands": [
           "npm ci",
