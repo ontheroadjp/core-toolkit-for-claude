@@ -48,7 +48,8 @@ Phase 3: 最終報告
     - `gh issue view <番号> --json title,body` で内容を確認する
     - Step 1 はスキップして Step 2 へ進む
 
-- ユーザーが issue 番号を伝えた場合:
+- ユーザーが issue 番号を伝えた場合（`/work #N` 形式を含む）:
+    - `commands/new-issue.md` は Read しない
     - `gh issue view <番号> --json title,body` で内容を確認する
     - 以降その issue を作業の起点とする
 
@@ -63,6 +64,7 @@ Phase 3: 最終報告
 #### Step 1: 現状調査の引き継ぎと補完
 
 - work.md の現状調査結果を引き継ぐ
+- `docs/.ai/repo.profile.json` および `docs/L3_implementation/specification_summary.md` は work フェーズで既に Read 済みのため、再度 Read しない
 - Step 2（プラン策定）に必要な情報が不足している場合のみ、差分を調査・補完する
 - 未確認事項が残る場合はユーザーに報告し、確定するまで Step 2 に進まない
 

@@ -58,6 +58,7 @@
 - 不明点があれば未確認事項として明示する
 
 この調査結果は task.md または patch.md の実装フェーズに引き継がれる。
+G-1 で Read した `docs/.ai/repo.profile.json` および現状調査で Read した `docs/L3_implementation/specification_summary.md` はコンテキスト内に保持されているため、task.md / patch.md で再度 Read しない。
 
 以下の2段階でルーティングを判定する:
 
@@ -116,6 +117,7 @@
 - 不明点があれば未確認事項として明示する
 
 この調査結果は task.md または patch.md の実装フェーズに引き継がれる。
+G-1 で Read した `docs/.ai/repo.profile.json` および現状調査で Read した `docs/L3_implementation/specification_summary.md` はコンテキスト内に保持されているため、task.md / patch.md で再度 Read しない。
 
 判定後、開始フェーズとその理由を報告し、ユーザーの許可を得てから作業を開始する。
 

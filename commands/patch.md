@@ -15,6 +15,7 @@
 #### Step 1: 現状調査の引き継ぎと補完
 
 - work.md の現状調査結果を引き継ぐ
+- `docs/.ai/repo.profile.json` および `docs/L3_implementation/specification_summary.md` は work フェーズで既に Read 済みのため、再度 Read しない
 - Step 2（プラン確認）に必要な情報が不足している場合のみ、差分を調査・補完する
 
 #### Step 2: プラン確認（必須・スキップ不可）
