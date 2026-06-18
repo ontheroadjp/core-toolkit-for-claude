@@ -6,7 +6,13 @@ payload=$(cat)
 tool_name=$(echo "$payload" | jq -r '.tool_name // ""')
 
 # Resolve repo root (handles symlink from ~/.claude/hooks/)
-_SCRIPT="${BASH_SOURCE[0]}"
+HOOK_INVOKED_PATH="${BASH_SOURCE[0]}"
+CODEX_HOOK_INVOCATION=0
+case "$HOOK_INVOKED_PATH" in
+    */.codex/hooks/*) CODEX_HOOK_INVOCATION=1 ;;
+esac
+
+_SCRIPT="$HOOK_INVOKED_PATH"
 [ -L "$_SCRIPT" ] && _SCRIPT="$(readlink "$_SCRIPT")"
 REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
 LOG_FILE="${REPO_DIR}/logs/auto-approve/$(date '+%Y-%m').log"
@@ -82,7 +88,7 @@ log_decision() {
 }
 
 emit_approval() {
-    if [ -n "${CODEX_MANAGED_BY_NPM:-}" ] || [ -n "${CODEX_MANAGED_BY_BUN:-}" ] || [ -n "${CODEX_CI:-}" ] || [ -n "${CODEX_THREAD_ID:-}" ]; then
+    if [ "$CODEX_HOOK_INVOCATION" = "1" ] || [ -n "${CODEX_MANAGED_BY_NPM:-}" ] || [ -n "${CODEX_MANAGED_BY_BUN:-}" ] || [ -n "${CODEX_CI:-}" ] || [ -n "${CODEX_THREAD_ID:-}" ]; then
         echo '{"decision": "allow"}'
     else
         echo '{"decision": "approve"}'

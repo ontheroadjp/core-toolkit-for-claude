@@ -20,6 +20,19 @@ run_auto() {
             bash "$AUTO_HOOK"
 }
 
+run_auto_codex_symlink() {
+    local command="$1"
+    local codex_hook_dir="${TMP_DIR}/.codex/hooks"
+    local codex_hook="${codex_hook_dir}/auto-approve-readonly.sh"
+    mkdir -p "$codex_hook_dir"
+    ln -sf "$AUTO_HOOK" "$codex_hook"
+    printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
+        | CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_SESSION_ID="test-session-fixed" \
+            CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            bash "$codex_hook"
+}
+
 run_guard() {
     local command="$1"
     printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
@@ -56,6 +69,9 @@ output=$(run_auto 'git reset --hard')
 assert_json_decision "$output" "block"
 
 output=$(run_auto 'git status --porcelain')
+assert_json_decision "$output" "allow"
+
+output=$(run_auto_codex_symlink 'git status --porcelain')
 assert_json_decision "$output" "allow"
 
 output=$(run_auto 'git add hooks/auto-approve-readonly.sh')
