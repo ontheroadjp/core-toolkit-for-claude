@@ -15,6 +15,7 @@ run_auto() {
     printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
         | CODEX_CI=1 \
             CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_SESSION_ID="test-session-fixed" \
             CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
             bash "$AUTO_HOOK"
 }
