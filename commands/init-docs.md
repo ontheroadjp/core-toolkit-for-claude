@@ -27,7 +27,7 @@
 ---
 
 ## 実行方針（最重要）
-- まず現状分析 → Repo Profile 生成 → ドキュメント生成 → 整合性検証 → CLAUDE.md 更新
+- まず現状分析 → local tooling 観測 → Repo Profile 生成 → ドキュメント生成 → 整合性検証 → CLAUDE.md / AGENTS.md 更新
 - ドキュメントは「なぜそうなっているか」を必ず説明する
 - 冗長な百科事典は禁止。根拠と決定事項を中心に書く
 - 生成後、必ず差分サマリ（新規 / 更新 / 保留）を出す
@@ -68,6 +68,39 @@
 #### Step 5. 主要依存関係の裏取り
 - 本番依存（dependencies）と開発依存（devDependencies）を分けて確認する
 - バージョンは実際の lock ファイルから取得する（推測しない）
+
+#### Step 6. Local tooling の観測
+
+このステップは command workflow に環境依存の注意を固定しないために行う。観測結果は repo-local な AI 運用情報として Phase 6 で `CLAUDE.md` に出力する。
+
+以下を実行し、成功 / 失敗 / 未検出を分けて記録する:
+
+```bash
+command -v gh
+gh --version
+gh auth status
+command -v node
+node --version
+command -v npm
+npm --version
+```
+
+Node.js runtime manager のヒントとして、存在する場合のみ以下を確認する:
+
+- `.nvmrc`
+- `.node-version`
+- `.tool-versions`
+- `mise.toml`
+- `.mise.toml`
+- `mise current`
+
+記録ルール:
+- バージョン番号やパスは観測できた事実のみを書く
+- `gh auth status` はログイン可否・対象 host・必要な権限不足など、作業に影響する範囲だけを書く
+- token 値や個人情報は記録しない
+- `gh` / `node` / `npm` が未検出でも自動 install / upgrade は行わない
+- 古い `gh` で API schema / compatibility 由来のエラーが出る可能性がある場合は、固定回避策ではなく「失敗時に `gh --version` を確認し、更新できない場合は `gh api` REST または GitHub Web UI に切り替える」という条件付き注意として扱う
+- nvm / mise / asdf 等では shell 初期化状態により `node` / `npm` が見えないことがあるため、npm 操作前の availability check として `node --version` / `npm --version` を案内する
 
 ---
 
@@ -237,10 +270,10 @@ scaffold 後、README.md の内容が実体と矛盾していないことを Pha
 
 ---
 
-### Phase 6: CLAUDE.md 更新
+### Phase 6: CLAUDE.md / AGENTS.md 更新
 
-CLAUDE.md を AI 運用の起点として更新する。
-以下のセクションを必ず含め、内容は現時点の各コマンドの実態に合わせて更新する:
+`CLAUDE.md` を AI 運用の single source of truth として更新する。
+以下のセクションを必ず含め、内容は現時点の各コマンドの実態と Phase 1 Step 6 の local tooling 観測結果に合わせて更新する:
 
 ```md
 ## Custom / Command の使い分け（AI向けルール）
@@ -250,6 +283,35 @@ CLAUDE.md を AI 運用の起点として更新する。
 - docs-sync.md: git diff を事実として docs を最小更新し、ドラフト PR を公開する。HARD STOP 時は /init-docs を要求して終了する。
 - init-docs.md: repo の実態把握と設計ドキュメント再構築。重い初期化。docs-sync が説明不能になった時点でここに戻る。
 ```
+
+```md
+## Local Tooling Environment
+
+Observed by /init-docs:
+- gh: <version or not found>
+- gh auth: <logged in / not logged in / unconfirmed>
+- node: <version or not found>
+- npm: <version or not found>
+- Node runtime manager hints: <nvm / mise / asdf / none observed / unconfirmed>
+
+Notes:
+- If `gh` operations fail with API schema or compatibility errors, check `gh --version` first. Prefer upgrading `gh` when possible; if upgrading is impossible, use an equivalent `gh api` REST call or GitHub Web UI for the affected operation.
+- Before npm operations, run `node --version` and `npm --version` to confirm Node.js and npm are available in the current shell. This also initializes Node.js in lazy-loaded runtime manager environments such as nvm.
+- Do not install or upgrade `gh`, Node.js, or npm automatically without explicit user confirmation.
+```
+
+`AGENTS.md` は `CLAUDE.md` への symlink として作成し、Codex CLI も同じ AI 運用情報を読む構成にする。
+
+AGENTS.md の扱い:
+- `AGENTS.md` が存在しない場合: `ln -s CLAUDE.md AGENTS.md` で symlink を作成する
+- `AGENTS.md` が既に `CLAUDE.md` への symlink の場合: 何もしない
+- `AGENTS.md` が通常ファイルの場合:
+    - `CLAUDE.md` との差分を確認し、ユーザーに報告する
+    - ユーザーの明示的な確認を得てから、通常ファイルを `CLAUDE.md` への symlink に置き換える
+    - 確認が得られない場合は置き換えず、未確認事項として報告する
+- symlink を作成できない環境の場合:
+    - `AGENTS.md` を `CLAUDE.md` と同内容のコピーとして生成する
+    - ファイル先頭に「`CLAUDE.md` が source of truth であり、このファイルは同期コピーである」旨を明記する
 
 Phase 6 完了後、以下の形式で最終報告を行い、Phase 7 へ進む。
 
@@ -303,7 +365,8 @@ docs: initialize project documentation (init-docs)
 - Add docs/.ai/repo.profile.json
 - Update repo.profile.json (add L0 doc_root, primary_docs)
 - Update README.md (add Installation, Design Principles sections)
-- Add CLAUDE.md (project-level AI guidance)
+- Add/update CLAUDE.md (project-level AI guidance and local tooling notes)
+- Add/update AGENTS.md (symlink to CLAUDE.md, or copy fallback when symlinks are unavailable)
 ```
 
 実際の変更内容に合わせて箇条書きを調整する。

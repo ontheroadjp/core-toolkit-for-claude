@@ -35,9 +35,11 @@
 
 ## init-docs flow
 
-`init-docs.md` は repo 再観測、repo profile 生成、L0-L3 docs 生成、整合性検証、README scaffold 確認、CLAUDE.md 更新を行い、最後にユーザー確認後だけ commit と draft PR 作成へ進む。
+`init-docs.md` は repo 再観測、local tooling 観測、repo profile 生成、L0-L3 docs 生成、整合性検証、README scaffold 確認、CLAUDE.md / AGENTS.md 更新を行い、最後にユーザー確認後だけ commit と draft PR 作成へ進む。
 
-根拠: `commands/init-docs.md:21-317`
+local tooling 観測では `gh`、`node`、`npm`、Node.js runtime manager hints を確認し、環境依存の注意を `CLAUDE.md` に出力する。`AGENTS.md` は原則として `CLAUDE.md` への symlink として作成する。
+
+根拠: `commands/init-docs.md:21-370`
 
 ## review-resolve flow
 

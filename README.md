@@ -110,8 +110,8 @@ scripts/                      status line and token usage utilities
 tests/                        verification scripts for hooks and workflows
 install.sh                    symlink installer for commands/hooks/skills
 setup_statusline.sh           status line installer
-CLAUDE.md                     Claude Code AI operating guidance
-AGENTS.md                     Codex CLI AI operating guidance
+CLAUDE.md                     AI operating guidance source of truth
+AGENTS.md                     symlink to CLAUDE.md for Codex CLI
 ```
 
 ## License
