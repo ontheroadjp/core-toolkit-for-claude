@@ -176,6 +176,7 @@ if [ "$tool_name" = "Write" ]; then
         emit_approval
         exit 0
     fi
+    log_decision "user_prompt" "Write" "$file_path"
     exit 0
 fi
 
@@ -187,10 +188,14 @@ if [ "$tool_name" = "Edit" ]; then
         emit_approval
         exit 0
     fi
+    log_decision "user_prompt" "Edit" "$file_path"
     exit 0
 fi
 
-[ "$tool_name" != "Bash" ] && exit 0
+if [ "$tool_name" != "Bash" ]; then
+    log_decision "user_prompt" "${tool_name:-unknown}" ""
+    exit 0
+fi
 
 command=$(echo "$payload" | jq -r '.tool_input.command // ""')
 
