@@ -26,7 +26,7 @@ core-toolkit-for-claude/
 
 ### `commands/`
 
-Claude Code / Codex CLI が読む Markdown command 仕様を置く。`work.md` が通常入口で、`task.md` と `patch.md` は `work.md` から Read される委譲先である。`docs-sync.md`、`init-docs.md`、`new-issue.md`、`review-resolve.md`、`coding-*.md` も同じ command 群として管理される。
+Claude Code / Codex CLI が読む Markdown command 仕様を置く。`work.md` が通常入口で、`task.md` と `patch.md` は `work.md` から Read される委譲先である。`docs-sync.md`、`init-docs.md`、`new-issue.md`、`review-resolve.md`、`triage-issues.md`、`coding-*.md` も同じ command 群として管理される。
 
 根拠: `commands/work.md:1-4`, `commands/task.md:1-9`, `commands/patch.md:1-8`, `commands/new-issue.md:1-9`
 
