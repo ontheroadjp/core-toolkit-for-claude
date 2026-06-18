@@ -96,6 +96,7 @@ Phase 3: 最終報告
     - Write ツールで `~/.claude/session-approved` を作成する。内容（1行1エントリ）:
         - 利用ツールカテゴリ（例: `tool:git_write`）
         - 新規作成・編集ファイルの絶対パス（例: `file:/abs/path/to/file.md`）
+    - 注: `session-approved` はこの Step で 1 度だけ書き込む。実行中にスコープを追加しようとすると hook がブロックする。スコープ変更が必要な場合はこの Step に戻り、ユーザーの許可を得てから再書き込みすること。
     - 調査結果・作業プランを対象 issue の本文に追記する
     - Step 3 へ進む
 
