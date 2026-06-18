@@ -29,7 +29,10 @@ is_session_approved_file() {
             ''|\#*) continue ;;
             file:*)
                 local approved="${line#file:}"
-                [ "$path" = "$approved" ] && return 0
+                local norm_path norm_approved
+                norm_path=$(realpath -m "$path" 2>/dev/null || printf '%s' "$path")
+                norm_approved=$(realpath -m "$approved" 2>/dev/null || printf '%s' "$approved")
+                [ "$norm_path" = "$norm_approved" ] && return 0
                 ;;
         esac
     done < "$SESSION_APPROVED_FILE"
@@ -46,7 +49,7 @@ check_session_approved() {
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+add(\s|$)' && return 0
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+commit(\s|$)' && return 0
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+merge(\s|$)' && return 0
-                printf '%s' "$seg" | grep -qE '^git[[:space:]]+stash([[:space:]]+(push|pop|apply|drop|clear))?(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^git[[:space:]]+stash([[:space:]]+(push|pop|apply)(\s|$)|[[:space:]]*$)' && return 0
                 if printf '%s' "$seg" | grep -qE '^git[[:space:]]+push(\s|$)'; then
                     printf '%s' "$seg" | grep -qE '(--force|-f[[:space:]]|-f$|--force-with-lease)' || return 0
                 fi
@@ -63,7 +66,7 @@ check_session_approved() {
                 printf '%s' "$seg" | grep -qE '^gh[[:space:]]+issue[[:space:]]+(create|edit|close|delete|comment|reopen)(\s|$)' && return 0
                 ;;
             tool:gh_pr_write)
-                printf '%s' "$seg" | grep -qE '^gh[[:space:]]+pr[[:space:]]+(create|edit|merge|close|comment|reopen|ready|review|checkout)(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^gh[[:space:]]+pr[[:space:]]+(create|edit|close|comment|reopen|ready|review|checkout)(\s|$)' && return 0
                 ;;
         esac
     done < "$SESSION_APPROVED_FILE"
@@ -127,6 +130,9 @@ is_safe_segment() {
     local seg
     seg=$(printf '%s' "$1" | sed 's/^[[:space:]]*//')
     [ -z "$seg" ] && return 0
+
+    # tee writes to files — block unconditionally regardless of future allowlist additions
+    printf '%s' "$seg" | grep -qE '^tee(\s|$)' && return 1
 
     # git read-only subcommands
     printf '%s' "$seg" | grep -qE '^git[[:space:]]+(status|log|diff|show|branch|remote|tag|describe|rev-parse|ls-files|ls-tree|cat-file|blame|shortlog|reflog|(stash[[:space:]]+list)|(config[[:space:]]+(--(list|get))?)|(worktree[[:space:]]+list))(\s|$)' && return 0
