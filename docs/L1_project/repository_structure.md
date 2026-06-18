@@ -4,8 +4,8 @@
 
 ```text
 core-toolkit-for-claude/
-├── AGENTS.md                    # Codex CLI 向け AI 運用指示
-├── CLAUDE.md                    # Claude Code 向け AI 運用指示
+├── AGENTS.md                    # CLAUDE.md への symlink（Codex CLI 向け入口）
+├── CLAUDE.md                    # AI 運用指示の source of truth
 ├── README.md                    # 人間向け概要、インストール、利用手順
 ├── install.sh                   # commands/hooks/skills symlink と Claude/Codex hook settings 登録
 ├── setup_statusline.sh          # status line symlink と settings 登録
