@@ -72,8 +72,8 @@ fi
 [ -f "$CODEX_HOOKS_FILE" ] || echo '{}' > "$CODEX_HOOKS_FILE"
 
 # Idempotently add a hook entry: skip if the command is already registered for that event.
-# Usage: add_hook <event> <matcher> <command>
-add_hook() {
+# Usage: add_claude_hook <event> <matcher> <command>
+add_claude_hook() {
     local event="$1" matcher="$2" cmd="$3"
     local current
     current=$(cat "$SETTINGS_FILE")
@@ -119,13 +119,15 @@ add_codex_hook() {
     echo "  Added [Codex ${event}]: ${cmd}"
 }
 
-add_hook "PreToolUse"       ""     "bash ~/.claude/hooks/auto-approve-readonly.sh"
-add_hook "PreToolUse"       "Bash" "bash ~/.claude/hooks/guard-destructive-cmd.sh"
-add_hook "UserPromptSubmit" ""     "bash ~/.claude/hooks/log-access-prompt.sh"
-add_hook "PostToolUse"      ""     "bash ~/.claude/hooks/log-access-tool.sh"
-add_hook "Stop"             ""     "bash ~/.claude/hooks/log-token-usage.sh"
-add_hook "Stop"             ""     "bash ~/.claude/hooks/log-access-stop.sh"
-add_hook "Stop"             ""     "bash ~/.claude/hooks/cleanup-session.sh"
+add_claude_hook "PreToolUse"       ""     "bash ~/.claude/hooks/auto-approve-readonly.sh"
+add_claude_hook "PreToolUse"       "Bash" "bash ~/.claude/hooks/guard-destructive-cmd.sh"
+add_claude_hook "UserPromptSubmit" ""     "bash ~/.claude/hooks/log-access-prompt.sh"
+add_claude_hook "PostToolUse"      ""     "bash ~/.claude/hooks/log-access-tool.sh"
+add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/log-token-usage.sh"
+add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/log-access-stop.sh"
+add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/cleanup-session.sh"
+add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/notify-slack.sh"
+add_claude_hook "Notification"     ""     "bash ~/.claude/hooks/notify-slack.sh"
 
 echo "Configuring ${CODEX_HOOKS_FILE}..."
 add_codex_hook "PreToolUse"       ""     "bash ~/.codex/hooks/auto-approve-readonly.sh"
@@ -135,6 +137,8 @@ add_codex_hook "PostToolUse"      ""     "bash ~/.codex/hooks/log-access-tool.sh
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/log-token-usage.sh"
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/log-access-stop.sh"
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/cleanup-session.sh"
+add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/notify-slack.sh"
+add_codex_hook "Notification"     ""     "bash ~/.codex/hooks/notify-slack.sh"
 echo "  Review and trust Codex hooks with /hooks before relying on them."
 
 echo "Done."
