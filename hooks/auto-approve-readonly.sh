@@ -67,6 +67,14 @@ log_decision() {
         "$(date '+%Y-%m-%d %H:%M:%S')" "$result" "$tool" "$short" >> "$LOG_FILE" || true
 }
 
+emit_approval() {
+    if [ -n "${CODEX_MANAGED_BY_NPM:-}" ] || [ -n "${CODEX_MANAGED_BY_BUN:-}" ] || [ -n "${CODEX_CI:-}" ] || [ -n "${CODEX_THREAD_ID:-}" ]; then
+        echo '{"decision": "allow"}'
+    else
+        echo '{"decision": "approve"}'
+    fi
+}
+
 is_session_approved_file() {
     local path="$1"
     [ -f "$SESSION_APPROVED_FILE" ] || return 1
@@ -123,7 +131,7 @@ check_session_approved() {
 if [ "$tool_name" = "Read" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // "-"')
     log_decision "approved" "Read" "$file_path"
-    echo '{"decision": "approve"}'
+    emit_approval
     exit 0
 fi
 
@@ -135,7 +143,7 @@ if [ "$tool_name" = "Write" ]; then
         # Initial write (file absent) - approve
         if [ ! -f "$SESSION_APPROVED_FILE" ]; then
             log_decision "approved" "Write" "$file_path (session-file initial)"
-            echo '{"decision": "approve"}'
+            emit_approval
             exit 0
         fi
         new_content=$(echo "$payload" | jq -r '.tool_input.content // ""')
@@ -143,7 +151,7 @@ if [ "$tool_name" = "Write" ]; then
         # Identical content - approve (idempotent)
         if [ "$new_content" = "$existing_content" ]; then
             log_decision "approved" "Write" "$file_path (session-file idempotent)"
-            echo '{"decision": "approve"}'
+            emit_approval
             exit 0
         fi
         # Detect scope expansion: any non-comment line in new content absent from existing
@@ -160,12 +168,12 @@ if [ "$tool_name" = "Write" ]; then
         fi
         # New content is narrower than or equal to existing - approve
         log_decision "approved" "Write" "$file_path (session-file narrower)"
-        echo '{"decision": "approve"}'
+        emit_approval
         exit 0
     fi
     if is_session_approved_file "$file_path"; then
         log_decision "approved" "Write" "$file_path (session)"
-        echo '{"decision": "approve"}'
+        emit_approval
         exit 0
     fi
     exit 0
@@ -176,7 +184,7 @@ if [ "$tool_name" = "Edit" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
     if is_session_approved_file "$file_path"; then
         log_decision "approved" "Edit" "$file_path (session)"
-        echo '{"decision": "approve"}'
+        emit_approval
         exit 0
     fi
     exit 0
@@ -257,5 +265,5 @@ while IFS= read -r segment; do
 done < <(printf '%s\n' "$command_normalized" | sed 's/&&/\n/g; s/||/\n/g; s/;/\n/g; s/|/\n/g')
 
 log_decision "approved" "Bash" "$command"
-echo '{"decision": "approve"}'
+emit_approval
 exit 0
