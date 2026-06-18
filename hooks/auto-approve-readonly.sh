@@ -81,11 +81,38 @@ if [ "$tool_name" = "Read" ]; then
     exit 0
 fi
 
-# Write tool: approve session file itself unconditionally; approve other paths if session-listed
+# Write tool: guard session file against scope expansion; approve other paths if session-listed
 if [ "$tool_name" = "Write" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
     if [ "$file_path" = "$SESSION_APPROVED_FILE" ]; then
-        log_decision "approved" "Write" "$file_path (session-file)"
+        # Initial write (file absent) — approve
+        if [ ! -f "$SESSION_APPROVED_FILE" ]; then
+            log_decision "approved" "Write" "$file_path (session-file initial)"
+            echo '{"decision": "approve"}'
+            exit 0
+        fi
+        new_content=$(echo "$payload" | jq -r '.tool_input.content // ""')
+        existing_content=$(cat "$SESSION_APPROVED_FILE")
+        # Identical content — approve (idempotent)
+        if [ "$new_content" = "$existing_content" ]; then
+            log_decision "approved" "Write" "$file_path (session-file idempotent)"
+            echo '{"decision": "approve"}'
+            exit 0
+        fi
+        # Detect scope expansion: any non-comment line in new content absent from existing
+        expanded=""
+        while IFS= read -r line; do
+            case "$line" in ''|\#*) continue ;; esac
+            grep -qxF "$line" "$SESSION_APPROVED_FILE" 2>/dev/null || expanded="${expanded}+ ${line}\n"
+        done <<< "$new_content"
+        if [ -n "$expanded" ]; then
+            reason=$(printf 'session-approved scope expansion blocked.\nNew entries not presented to user in Step 2:\n%b\nTo grant additional permissions, return to Step 2 and obtain user approval.' "$expanded")
+            log_decision "blocked" "Write" "$file_path (scope expansion: $expanded)"
+            printf '%s' "$reason" | jq -Rs '{"decision": "block", "reason": .}'
+            exit 0
+        fi
+        # New content is narrower than or equal to existing — approve
+        log_decision "approved" "Write" "$file_path (session-file narrower)"
         echo '{"decision": "approve"}'
         exit 0
     fi

@@ -74,9 +74,9 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ### `hooks/auto-approve-readonly.sh`
 
-PreToolUse hook。Read は常に承認し、Write/Edit は `~/.claude/session-approved` に一致する場合だけ承認する。Bash は read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。
+PreToolUse hook。Read は常に承認し、Write は `~/.claude/session-approved` 自体への書き込みをスコープガードで保護する（初回書き込みは承認・同一内容の再書き込みは承認・新エントリを追加しようとする再書き込みは block してユーザーに差分を提示）。session-listed パスへの Write/Edit は承認する。Bash は read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。
 
-根拠: `hooks/auto-approve-readonly.sh:76-187`
+根拠: `hooks/auto-approve-readonly.sh:76-214`
 
 ### `hooks/guard-destructive-cmd.sh`
 
