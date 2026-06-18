@@ -10,7 +10,53 @@ _SCRIPT="${BASH_SOURCE[0]}"
 [ -L "$_SCRIPT" ] && _SCRIPT="$(readlink "$_SCRIPT")"
 REPO_DIR="$(cd "$(dirname "$_SCRIPT")/.." && pwd)"
 LOG_FILE="${REPO_DIR}/logs/auto-approve/$(date '+%Y-%m').log"
-SESSION_APPROVED_FILE="${HOME}/.claude/session-approved"
+
+sanitize_session_id() {
+    printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_'
+}
+
+hash_session_key() {
+    local key="$1"
+    if command -v sha256sum >/dev/null 2>&1; then
+        printf '%s' "$key" | sha256sum | cut -c1-16
+    else
+        printf '%s' "$key" | cksum | awk '{print $1}'
+    fi
+}
+
+resolve_session_id() {
+    local session_id transcript_path
+    session_id="${CLAUDE_CODE_KIT_SESSION_ID:-}"
+    if [ -z "$session_id" ]; then
+        session_id=$(echo "$payload" | jq -r '.session_id // empty')
+    fi
+    if [ -z "$session_id" ]; then
+        transcript_path=$(echo "$payload" | jq -r '.transcript_path // empty')
+        [ -n "$transcript_path" ] && session_id="transcript-$(hash_session_key "$transcript_path")"
+    fi
+    if [ -z "$session_id" ]; then
+        session_id="process-${PPID:-$$}"
+    fi
+    sanitize_session_id "$session_id"
+}
+
+STATE_ROOT="${CLAUDE_CODE_KIT_STATE_HOME:-${XDG_STATE_HOME:-${HOME}/.local/state}/claude-code-kit}"
+SESSION_ID="$(resolve_session_id)"
+SESSION_DIR="${CLAUDE_CODE_KIT_SESSION_DIR:-${STATE_ROOT}/sessions/${SESSION_ID}}"
+SESSION_APPROVED_FILE="${CLAUDE_CODE_KIT_SESSION_APPROVED_FILE:-${SESSION_DIR}/session-approved}"
+
+ensure_session_dir() {
+    mkdir -p "$SESSION_DIR"
+    chmod 700 "$STATE_ROOT" "${STATE_ROOT}/sessions" "$SESSION_DIR" 2>/dev/null || true
+}
+
+is_session_approved_path() {
+    local path="$1"
+    local norm_path norm_approved
+    norm_path=$(realpath -m "$path" 2>/dev/null || printf '%s' "$path")
+    norm_approved=$(realpath -m "$SESSION_APPROVED_FILE" 2>/dev/null || printf '%s' "$SESSION_APPROVED_FILE")
+    [ "$norm_path" = "$norm_approved" ]
+}
 
 log_decision() {
     local result="$1" tool="$2" detail="${3:-}"
@@ -84,8 +130,9 @@ fi
 # Write tool: guard session file against scope expansion; approve other paths if session-listed
 if [ "$tool_name" = "Write" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // ""')
-    if [ "$file_path" = "$SESSION_APPROVED_FILE" ]; then
-        # Initial write (file absent) — approve
+    if is_session_approved_path "$file_path"; then
+        ensure_session_dir
+        # Initial write (file absent) - approve
         if [ ! -f "$SESSION_APPROVED_FILE" ]; then
             log_decision "approved" "Write" "$file_path (session-file initial)"
             echo '{"decision": "approve"}'
@@ -93,7 +140,7 @@ if [ "$tool_name" = "Write" ]; then
         fi
         new_content=$(echo "$payload" | jq -r '.tool_input.content // ""')
         existing_content=$(cat "$SESSION_APPROVED_FILE")
-        # Identical content — approve (idempotent)
+        # Identical content - approve (idempotent)
         if [ "$new_content" = "$existing_content" ]; then
             log_decision "approved" "Write" "$file_path (session-file idempotent)"
             echo '{"decision": "approve"}'
@@ -111,7 +158,7 @@ if [ "$tool_name" = "Write" ]; then
             printf '%s' "$reason" | jq -Rs '{"decision": "block", "reason": .}'
             exit 0
         fi
-        # New content is narrower than or equal to existing — approve
+        # New content is narrower than or equal to existing - approve
         log_decision "approved" "Write" "$file_path (session-file narrower)"
         echo '{"decision": "approve"}'
         exit 0

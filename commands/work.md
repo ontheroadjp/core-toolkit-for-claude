@@ -9,7 +9,7 @@
 ### G-0: main ブランチへの切り替え
 
 `git checkout main` を実行し、main ブランチに切り替える。
-`rm -f ~/.claude/session-approved` を実行し、前回の `/work` 呼び出しの承認状態をクリアする。
+現在の hook セッションに対応する `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を削除し、前回の `/work` 呼び出しの承認状態をクリアする。
 
 ### G-1: docs/.ai/repo.profile.json の存在確認
 - 存在しない場合: /init-docs の実行を促して終了する

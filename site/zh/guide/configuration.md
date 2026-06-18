@@ -91,7 +91,7 @@
 
 ### cleanup-session.sh
 
-在会话结束时删除 `~/.claude/session-approved`，防止一个会话的批准权限延续到下一个会话。
+在会话结束时删除 `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` 下当前会话的批准文件，防止批准权限延续到下一个会话或在并发会话之间混用。
 
 ## 状态栏
 
