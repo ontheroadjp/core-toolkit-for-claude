@@ -100,7 +100,7 @@
     - `commands/task.md` を Read し、Phase 1 から継続する
 2. `git log main..HEAD --oneline` の出力が 1 件以上あり、ワークスペースがクリーンな場合:
     - issue 番号は `gh pr view --json body` のドラフト PR 本文、またはコミットメッセージの `(#N)` パターンから取得する
-    - `commands/task.md` を Read し、Phase 1 Step 2 から開始する（session-approved 再作成のため。プランは Phase 2 操作のみを対象とする）
+    - `commands/task.md` を Read し、Phase 1 Step 2 から開始する（session-approved 再作成のため）。session-approved 作成後は Step 3 をスキップし、直接 Phase 2 へ進む
 3. それ以外:
     - `commands/task.md` を Read し、Phase 1 から開始する
 
