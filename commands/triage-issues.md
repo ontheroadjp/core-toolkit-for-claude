@@ -9,15 +9,6 @@ open issue が溜まったタイミングで実行する、issue トリアージ
 
 ---
 
-## github 操作の注意点
-
-- gh コマンドでは GraphQL 関連エラーが発生することがある
-- `gh issue create/edit` の本文は `\n` では改行されない
-- 改行が必要な場合は `--body-file -` で標準入力を使用する
-- Issue の内容取得は `--json` オプションで JSON 形式で取得する
-
----
-
 ## ワークフロー
 
 ### Step 0: 前提確認
