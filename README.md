@@ -7,6 +7,7 @@ A structured AI-driven development workflow toolkit for Claude Code and Codex CL
 | Command | Purpose |
 |---|---|
 | `/work` | Main entry point for development tasks. Gates, investigates, then routes to patch or task flow. |
+| `/triage-issues` | Standalone entry point for reviewing and cleaning up open issues so they are ready for `/work #N`. |
 | `/new-issue` | Optional pre-`/work` entry point. Turns a rough idea into one or more GitHub issues. |
 | `/review-resolve` | Handles PR review comments interactively without going through `/work`. |
 | `/codex-review` | Reviews a PR using the Codex CLI non-interactively, posts the result as a PR approval or change request (requires `CODEX_REVIEW_TOKEN`), and auto-invokes `/review-resolve` when changes are requested. |
