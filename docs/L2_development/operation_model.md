@@ -45,12 +45,25 @@
 
 根拠: `commands/review-resolve.md:1-175`
 
+## codex-review flow
+
+`codex-review.md` は PR 番号を受け取り、PR branch へ checkout して `codex review --base origin/<baseRefName>` を実行する。レビュー結果を一時ファイルに保存し、`CODEX_REVIEW_TOKEN` が設定されている場合だけ `gh pr review --approve` または `--request-changes` を提出する。問題ありの場合は `/review-resolve #<PR番号>` を続けて実行する。
+
+根拠: `commands/codex-review.md:1-155`
+
+## triage-issues flow
+
+`triage-issues.md` は open issue を取得し、repo profile と仕様サマリに照らして stale / inconsistent / duplicated / unclear / ready に分類する。close / comment / edit / label などの issue 操作はユーザー承認後のみ実行する。
+
+根拠: `commands/triage-issues.md:1-187`
+
 ## ローカル・CI コマンド
 
 | コマンド | 用途 | 根拠 |
 |---|---|---|
 | `./install.sh` | commands/hooks/skills symlink と Claude/Codex hook settings 登録 | `install.sh:15-146` |
 | `./setup_statusline.sh` | statusline symlink と settings 登録 | `setup_statusline.sh:6-55` |
+| `cd site && npm ci` | CI と同じ lockfile-based install | `.github/workflows/deploy.yml:31-33` |
 | `cd site && npm run docs:dev` | VitePress dev server | `site/package.json:4-8` |
 | `cd site && npm run docs:build` | VitePress build。CI でも実行 | `site/package.json:4-8`, `.github/workflows/deploy.yml:35-37` |
 | `cd site && npm run docs:preview` | built site preview | `site/package.json:4-8` |
@@ -60,6 +73,8 @@
 `.github/workflows/deploy.yml` は main push と manual dispatch で実行される。build job は Node.js 20 を setup し、`site/` で `npm ci` と `npm run docs:build` を実行し、`site/.vitepress/dist` を Pages artifact として upload する。deploy job は `actions/deploy-pages@v4` で GitHub Pages に deploy する。
 
 根拠: `.github/workflows/deploy.yml:1-53`
+
+詳細: `docs/L2_development/cicd.md`
 
 ## 未確認事項
 

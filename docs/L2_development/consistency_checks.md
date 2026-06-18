@@ -2,7 +2,7 @@
 
 このファイルは `/init-docs` Phase 4 の整合性検証結果を記録する。
 
-最終実行: 2026-06-17（CI / VitePress site / templates path / hooks 実体を再観測し、settings 登録を現存 hook のみに揃えた後に再検証）
+最終実行: 2026-06-18（CI / VitePress site / command 一覧 / skill 一覧 / hooks 実体を再観測し、repo profile と L0-L3 docs を再検証）
 
 ## 4-1. docs -> 実体 の検証
 
@@ -16,6 +16,8 @@
 | `commands/docs-sync.md` | yes | `rg --files -uu` |
 | `commands/init-docs.md` | yes | `rg --files -uu` |
 | `commands/review-resolve.md` | yes | `rg --files -uu` |
+| `commands/codex-review.md` | yes | `rg --files -uu` |
+| `commands/triage-issues.md` | yes | `rg --files -uu` |
 | `commands/new-issue.md` | yes | `rg --files -uu` |
 | `commands/coding-general.md` | yes | `rg --files -uu` |
 | `commands/coding-py.md` | yes | `rg --files -uu` |
@@ -43,6 +45,7 @@
 | `docs/L1_project/repository_structure.md` | yes | this run |
 | `docs/L2_development/operation_model.md` | yes | this run |
 | `docs/L2_development/consistency_checks.md` | yes | this run |
+| `docs/L2_development/cicd.md` | yes | this run |
 | `docs/L3_implementation/specification_summary.md` | yes | this run |
 
 ### コマンド
@@ -51,6 +54,7 @@
 |---|---|---|
 | `./install.sh` | executable script in repo root | `install.sh:1-149` |
 | `./setup_statusline.sh` | executable script in repo root | `setup_statusline.sh:1-57` |
+| `cd site && npm ci` | CI install command in `site/` | `.github/workflows/deploy.yml:31-33` |
 | `cd site && npm run docs:dev` | npm script | `site/package.json:4-8` |
 | `cd site && npm run docs:build` | npm script and CI command | `site/package.json:4-8`, `.github/workflows/deploy.yml:35-37` |
 | `cd site && npm run docs:preview` | npm script | `site/package.json:4-8` |
@@ -67,7 +71,7 @@
 
 ## 4-3. CI 定義との整合性
 
-CI は存在する。`.github/workflows/deploy.yml` は main push と workflow_dispatch で実行され、Node.js 20、npm cache、`site/package-lock.json`、`site/` working directory、`npm ci`、`npm run docs:build`、GitHub Pages artifact upload/deploy を定義する。
+CI は存在する。`.github/workflows/deploy.yml` は main push と workflow_dispatch で実行され、Node.js 20、npm cache、`site/package-lock.json`、`site/` working directory、`npm ci`、`npm run docs:build`、GitHub Pages artifact upload/deploy を定義する。専用 docs として `docs/L2_development/cicd.md` を生成済み。
 
 根拠: `.github/workflows/deploy.yml:1-53`
 
@@ -85,8 +89,8 @@ CI は存在する。`.github/workflows/deploy.yml` は main push と workflow_d
 
 | 条件 | 判定 | 理由 |
 |---|---|---|
-| docs に記載された事実が実体と矛盾していない | yes | 存在しない hook への登録・案内を削除済み |
-| repo.profile.json と docs が相互に説明可能 | yes | commands / hooks / templates / site / CI を docs に反映 |
+| docs に記載された事実が実体と矛盾していない | yes | command / skill / hook / CI / site paths を再観測し、存在確認済み |
+| repo.profile.json と docs が相互に説明可能 | yes | commands / active_commands / hooks / templates / site / CI を docs に反映 |
 | CI 定義と docs の手順が一致している | yes | `npm ci` と `npm run docs:build` を operation_model と repo profile に反映 |
 | 未確認事項が明示的に分離されている | yes | dedicated test command の不在のみ記録 |
 

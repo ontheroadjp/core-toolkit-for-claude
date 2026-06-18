@@ -10,18 +10,21 @@
   "commands": {
     "install": "./install.sh",
     "statusline:install": "./setup_statusline.sh",
+    "ci:install": "cd site && npm ci",
     "site:dev": "cd site && npm run docs:dev",
     "site:build": "cd site && npm run docs:build",
     "site:preview": "cd site && npm run docs:preview"
   },
   "active_commands": [
     "commands/work.md",
+    "commands/triage-issues.md",
+    "commands/new-issue.md",
+    "commands/review-resolve.md",
+    "commands/codex-review.md",
     "commands/task.md",
     "commands/patch.md",
     "commands/docs-sync.md",
     "commands/init-docs.md",
-    "commands/review-resolve.md",
-    "commands/new-issue.md",
     "commands/coding-general.md",
     "commands/coding-py.md",
     "commands/coding-js.md",
@@ -47,7 +50,8 @@
     "jq",
     "node",
     "npm",
-    "bc"
+    "bc",
+    "codex"
   ],
   "ci": {
     "workflows": [
@@ -73,7 +77,9 @@
     "lock_file": "site/package-lock.json"
   },
   "skills": [
+    "skills/codex-review/SKILL.md",
     "skills/work/SKILL.md",
+    "skills/triage-issues/SKILL.md",
     "skills/task/SKILL.md",
     "skills/patch/SKILL.md",
     "skills/docs-sync/SKILL.md",
