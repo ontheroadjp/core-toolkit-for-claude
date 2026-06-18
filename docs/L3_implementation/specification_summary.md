@@ -10,11 +10,13 @@
 
 ### `/work` (`commands/work.md`)
 
-全作業の通常入口。main へ checkout し、`docs/.ai/repo.profile.json` を確認し、workspace 差分の扱いをユーザーに選ばせ、現状調査後に task または patch へ委譲する。
+全作業の通常入口。G-0 で main へ checkout し `~/.claude/session-approved` を削除して前回の承認状態をクリアする。その後 `docs/.ai/repo.profile.json` を確認し、workspace 差分の扱いをユーザーに選ばせ、現状調査後に task または patch へ委譲する。
 
 ルーティングは issue 起点かどうか、次に docs 変更が必要かで決まる。docs 変更が必要なら `commands/task.md`、不要なら `commands/patch.md` を Read して進む。
 
-根拠: `commands/work.md:7-119`
+非 main ブランチからの再開（case B scenario 2: コミットあり・ワークスペースクリーン）では、Phase 2 直接開始ではなく Phase 1 Step 2 から開始し session-approved を再作成する。
+
+根拠: `commands/work.md:7-120`
 
 ### `/task` (`commands/task.md`)
 
