@@ -82,15 +82,21 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ### `hooks/auto-approve-readonly.sh`
 
-PreToolUse hook。Read は常に承認する。`session-approved` は `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を既定パスとし、payload の `session_id`、`CLAUDE_CODE_KIT_SESSION_ID`、`CLAUDE_CODE_KIT_SESSION_DIR`、`CLAUDE_CODE_KIT_SESSION_APPROVED_FILE`、`CLAUDE_CODE_KIT_STATE_HOME` で現在セッションの承認ファイルを解決する。Write は現在セッションの `session-approved` 自体への書き込みをスコープガードで保護し、初回書き込み時は session directory を作成する。session-listed パスへの Write/Edit は承認する。Bash は read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。
+PreToolUse hook。Read は常に承認する。`session-approved` は `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を既定パスとし、payload の `session_id`、`CLAUDE_CODE_KIT_SESSION_ID`、`CLAUDE_CODE_KIT_SESSION_DIR`、`CLAUDE_CODE_KIT_SESSION_APPROVED_FILE`、`CLAUDE_CODE_KIT_STATE_HOME` で現在セッションの承認ファイルを解決する。Write は現在セッションの `session-approved` 自体への書き込みをスコープガードで保護し、初回書き込み時は session directory を作成する。session-listed パスへの Write/Edit は承認する。Bash は `hooks/lib/approval-safety.sh` の破壊的操作判定を最初に実行し、該当する場合は JSON block decision を返す。その後、read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。
 
-根拠: `hooks/auto-approve-readonly.sh:76-214`
+根拠: `hooks/auto-approve-readonly.sh:14-17`, `hooks/auto-approve-readonly.sh:202-273`, `hooks/lib/approval-safety.sh:1-87`
+
+### `hooks/lib/approval-safety.sh`
+
+PreToolUse hook で共有する Bash safety helper。system directory 破壊、block device 操作、fork bomb、history rewrite、force push、hard reset、checkout/restore dot、clean、branch -D、stash drop/clear を破壊的操作として検出し、JSON block decision を生成する。
+
+根拠: `hooks/lib/approval-safety.sh:1-87`
 
 ### `hooks/guard-destructive-cmd.sh`
 
-PreToolUse Bash guard。Lv0 は system directory 破壊、block device 操作、fork bomb、history rewrite などを即時ブロックする。Lv1 は force push、hard reset、checkout/restore dot、clean、branch -D、stash drop/clear をユーザー手動実行へ委譲する。
+PreToolUse Bash guard の互換 wrapper。Bash 以外は何も出力せず終了する。Bash の場合は `hooks/lib/approval-safety.sh` を読み込み、破壊的操作に該当する場合のみ JSON block decision を返す。平文 stdout は出力しない。
 
-根拠: `hooks/guard-destructive-cmd.sh:12-127`
+根拠: `hooks/guard-destructive-cmd.sh:1-25`, `hooks/lib/approval-safety.sh:1-87`
 
 ### `hooks/cleanup-session.sh`
 
@@ -111,6 +117,12 @@ Stop hook。現在の hook セッションに対応する `session-approved` を
 `partials/git-commit.md` は commit 手順の共通部品で、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。
 
 根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`, `partials/git-commit.md:1-80`
+
+## Tests
+
+`tests/hooks/test-approval-hooks.sh` は PreToolUse hook の shell verification である。破壊的 Bash block、session-approved があっても破壊的操作を block すること、read-only approval、session-approved approval、write-effect / ambiguous command の prompt fallback、`guard-destructive-cmd.sh` の JSON block output を検証する。
+
+根拠: `tests/hooks/test-approval-hooks.sh:1-75`
 
 ## Install and Status Line
 
