@@ -91,7 +91,7 @@ Records the user prompt, file access order, and modified files for `/work` sessi
 
 ### cleanup-session.sh
 
-Deletes `~/.claude/session-approved` at session end so one session's approvals do not carry over to the next session.
+Deletes the current session's approval file under `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` so approvals do not carry over or mix across concurrent sessions.
 
 ## Status Line
 

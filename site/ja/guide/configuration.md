@@ -91,7 +91,7 @@
 
 ### cleanup-session.sh
 
-セッション終了時に `~/.claude/session-approved` を削除し、あるセッションの承認が次のセッションに持ち越されないようにします。
+セッション終了時に `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` 配下の現在セッションの承認ファイルを削除し、承認が次のセッションへ持ち越されたり、同時セッション間で混線したりしないようにします。
 
 ## ステータスライン
 
