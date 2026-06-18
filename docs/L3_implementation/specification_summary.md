@@ -10,7 +10,7 @@
 
 ### `/work` (`commands/work.md`)
 
-全作業の通常入口。G-0 で main へ checkout し `~/.claude/session-approved` を削除して前回の承認状態をクリアする。その後 `docs/.ai/repo.profile.json` を確認し、workspace 差分の扱いをユーザーに選ばせ、現状調査後に task または patch へ委譲する。
+全作業の通常入口。G-0 で main へ checkout し、現在の hook セッションに対応する `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を削除して前回の承認状態をクリアする。その後 `docs/.ai/repo.profile.json` を確認し、workspace 差分の扱いをユーザーに選ばせ、現状調査後に task または patch へ委譲する。
 
 ルーティングは issue 起点かどうか、次に docs 変更が必要かで決まる。docs 変更が必要なら `commands/task.md`、不要なら `commands/patch.md` を Read して進む。
 
@@ -82,7 +82,7 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ### `hooks/auto-approve-readonly.sh`
 
-PreToolUse hook。Read は常に承認し、Write は `~/.claude/session-approved` 自体への書き込みをスコープガードで保護する（初回書き込みは承認・同一内容の再書き込みは承認・新エントリを追加しようとする再書き込みは block してユーザーに差分を提示）。session-listed パスへの Write/Edit は承認する。Bash は read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。
+PreToolUse hook。Read は常に承認する。`session-approved` は `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を既定パスとし、payload の `session_id`、`CLAUDE_CODE_KIT_SESSION_ID`、`CLAUDE_CODE_KIT_SESSION_DIR`、`CLAUDE_CODE_KIT_SESSION_APPROVED_FILE`、`CLAUDE_CODE_KIT_STATE_HOME` で現在セッションの承認ファイルを解決する。Write は現在セッションの `session-approved` 自体への書き込みをスコープガードで保護し、初回書き込み時は session directory を作成する。session-listed パスへの Write/Edit は承認する。Bash は read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。
 
 根拠: `hooks/auto-approve-readonly.sh:76-214`
 
@@ -94,7 +94,7 @@ PreToolUse Bash guard。Lv0 は system directory 破壊、block device 操作、
 
 ### `hooks/cleanup-session.sh`
 
-Stop hook。`~/.claude/session-approved` があれば削除する。
+Stop hook。現在の hook セッションに対応する `session-approved` を削除し、空になった session directory のみ削除する。別セッションの承認ファイルは削除しない。
 
 根拠: `hooks/cleanup-session.sh:1-7`
 
