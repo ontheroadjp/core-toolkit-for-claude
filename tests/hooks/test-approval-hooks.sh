@@ -21,7 +21,7 @@ SESSION_TMP_DIR="${TMP_ROOT}/${SESSION_ID}"
 
 run_auto() {
     local command="$1"
-    printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
+    jq -cn --arg command "$command" '{tool_name:"Bash",tool_input:{command:$command}}' \
         | env -u CODEX_MANAGED_BY_NPM -u CODEX_MANAGED_BY_BUN -u CODEX_CI -u CODEX_THREAD_ID \
             CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
             CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
@@ -32,7 +32,8 @@ run_auto() {
 
 run_auto_file_tool() {
     local tool_name="$1" file_path="$2"
-    printf '%s' "{\"tool_name\":\"${tool_name}\",\"tool_input\":{\"file_path\":\"${file_path}\"}}" \
+    jq -cn --arg tool_name "$tool_name" --arg file_path "$file_path" \
+        '{tool_name:$tool_name,tool_input:{file_path:$file_path}}' \
         | CODEX_CI=1 \
             CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
             CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
@@ -47,7 +48,7 @@ run_auto_codex_symlink() {
     local codex_hook="${codex_hook_dir}/auto-approve-readonly.sh"
     mkdir -p "$codex_hook_dir"
     ln -sf "$AUTO_HOOK" "$codex_hook"
-    printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
+    jq -cn --arg command "$command" '{tool_name:"Bash",tool_input:{command:$command}}' \
         | CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
             CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
             CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
@@ -57,7 +58,7 @@ run_auto_codex_symlink() {
 
 run_cleanup() {
     local session_id="$1"
-    printf '%s' "{\"session_id\":\"${session_id}\"}" \
+    jq -cn --arg session_id "$session_id" '{session_id:$session_id}' \
         | CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
             CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
             bash "$CLEANUP_HOOK"
@@ -65,7 +66,7 @@ run_cleanup() {
 
 run_auto_without_session() {
     local command="$1"
-    printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
+    jq -cn --arg command "$command" '{tool_name:"Bash",tool_input:{command:$command}}' \
         | env -u CLAUDE_CODE_KIT_SESSION_ID \
             -u CODEX_MANAGED_BY_NPM -u CODEX_MANAGED_BY_BUN -u CODEX_CI -u CODEX_THREAD_ID \
             CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
@@ -74,7 +75,7 @@ run_auto_without_session() {
 
 run_guard() {
     local command="$1"
-    printf '%s' "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"${command}\"}}" \
+    jq -cn --arg command "$command" '{tool_name:"Bash",tool_input:{command:$command}}' \
         | bash "$GUARD_HOOK"
 }
 
@@ -112,6 +113,78 @@ assert_json_decision "$output" "block"
 output=$(run_auto 'rm -fr /usr')
 assert_json_decision "$output" "block"
 
+for command in \
+    'nl -ba README.md' \
+    'cd site' \
+    'test -f README.md && echo present' \
+    'if [ -f README.md ]; then sed -n '\''1p'\'' README.md; else echo missing; fi' \
+    'gh pr checks 143' \
+    'git -C /tmp status --porcelain' \
+    'rg -n "foo|bar" README.md' \
+    'printf value | sed -n '\''1p'\''' \
+    'curl --head localhost' \
+    'node --version' \
+    'npm --version' \
+    'python --version' \
+    'go version' \
+    'bash --version' \
+    'npm view vitepress version' \
+    'npm list --depth=0' \
+    'npm config get registry' \
+    'npm run'; do
+    output=$(run_auto "$command")
+    assert_json_decision "$output" "approve"
+done
+
+output=$(run_auto $'git diff --check\nnode --version\ncd site')
+assert_json_decision "$output" "approve"
+
+output=$(run_auto $'gh pr view 143 --json mergeable,mergeStateStatus,isDraft,state,url,headRefOid\ngh pr checks 143')
+assert_json_decision "$output" "approve"
+
+for command in \
+    'if [ -f README.md ]; then touch unsafe; fi' \
+    'printf value | some-unknown-command' \
+    'echo value & touch unsafe' \
+    'git branch new-branch' \
+    'git branch -d old-branch' \
+    'git remote add origin ../repo.git' \
+    'git tag v1.0.0' \
+    'git tag -d v1.0.0' \
+    'git reflog expire --all' \
+    'git config user.name example' \
+    'git diff --output=/tmp/diff.txt' \
+    'find . -delete' \
+    'sed -i s/a/b/ README.md' \
+    'sort -o /tmp/sorted README.md' \
+    'yq -i .key=value config.yml' \
+    'awk '\''BEGIN { system("touch /tmp/unsafe") }'\''' \
+    'env echo value' \
+    'date --set tomorrow' \
+    'hostname changed-host' \
+    'curl -X POST localhost' \
+    'curl --data value localhost' \
+    'curl -dvalue localhost' \
+    'curl -T artifact localhost' \
+    'curl -oartifact localhost' \
+    'curl -K curl.conf localhost' \
+    'npm run docs:build' \
+    'npm publish' \
+    'npm audit --fix' \
+    'npm exec tool' \
+    'npm test' \
+    'npm version patch' \
+    'bash version' \
+    'python -v script.py' \
+    'ruby version' \
+    'pytest' \
+    'python -m pytest' \
+    'echo "$(some-unknown-command)"' \
+    'cat <(some-unknown-command)'; do
+    output=$(run_auto "$command")
+    assert_no_output "$output"
+done
+
 mkdir -p "$(dirname "$SESSION_FILE")"
 printf '%s\n' 'tool:git_write' > "$SESSION_FILE"
 output=$(run_auto 'git reset --hard')
@@ -130,6 +203,32 @@ assert_json_decision "$output" "approve"
 assert_log_matches '] agent=claude session=n/a result=approved[[:space:]]+tool=Bash[[:space:]]+git status --porcelain$'
 
 output=$(run_auto 'git add hooks/auto-approve-readonly.sh')
+assert_json_decision "$output" "approve"
+
+for command in \
+    'git fetch origin main' \
+    'git -C /tmp fetch origin main' \
+    'git pull --ff-only origin main'; do
+    output=$(run_auto "$command")
+    assert_json_decision "$output" "approve"
+done
+
+output=$(run_auto $'git status --porcelain\ngit checkout main\ngit pull --ff-only origin main\ngit status --short\ngit log -1 --oneline')
+assert_json_decision "$output" "approve"
+
+output=$(run_auto $'if [ -f ~/.config/claude-code-kit/partials/git-commit.md ]; then\n  sed -n '\''1,280p'\'' ~/.config/claude-code-kit/partials/git-commit.md\nelse\n  sed -n '\''1,280p'\'' partials/git-commit.md\nfi\ngit add docs/L3_implementation/specification_summary.md\ngit diff --staged\ngit commit -m "docs: sync documentation"\ngit push origin feature\ngit status --porcelain')
+assert_json_decision "$output" "approve"
+
+for command in \
+    'git pull origin main' \
+    'git pull --ff-only --rebase origin main' \
+    'gh pr merge 143'; do
+    output=$(run_auto "$command")
+    assert_no_output "$output"
+done
+
+printf '%s\n' 'tool:git_write' 'tool:gh_pr_write' > "$SESSION_FILE"
+output=$(run_auto 'gh pr merge 143')
 assert_json_decision "$output" "approve"
 
 output=$(run_auto_file_tool "Write" "${SESSION_TMP_DIR}/scratch.txt")
