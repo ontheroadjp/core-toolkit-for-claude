@@ -473,22 +473,19 @@ is_safe_segment() {
     # Runtime version checks
     printf '%s' "$seg" | grep -qE '^(node|npm|npx|python3?|pip3?|ruby|go|cargo|rustc|bash|zsh)[[:space:]]+(--version|-v|version)(\s|$)' && return 0
 
-    # curl — allowed for HTTP requests; blocked when downloading to a file
+    # curl — allow default GET/HEAD requests only; reject writes and custom methods
     if printf '%s' "$seg" | grep -qE '^curl(\s|$)'; then
-        printf '%s' "$seg" | grep -qE '(^|\s)(-o([[:space:]]|$)|--output([[:space:]]|=|$)|-O([[:space:]]|$)|--remote-name([[:space:]]|=|$)|--remote-name-all([[:space:]]|$))' && return 1
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-o[^[:space:]]*|-O|-X[^[:space:]]*|-d[^[:space:]]*|-F[^[:space:]]*|-T[^[:space:]]*|-K[^[:space:]]*|--output|--remote-name|--remote-name-all|--request|--data[^[:space:]]*|--form[^[:space:]]*|--upload-file|--json|--config)([=[:space:]]|$)' && return 1
         return 0
     fi
 
-    # npm — allowed except install/uninstall operations and global installs
+    # npm — allow metadata inspection only; scripts and package mutations require a prompt
     if printf '%s' "$seg" | grep -qE '^npm(\s|$)'; then
-        printf '%s' "$seg" | grep -qE '^npm[[:space:]]+(install|i|ci|uninstall|un|remove|rm|r|link|rebuild)(\s|$)' && return 1
-        printf '%s' "$seg" | grep -qE '(-g|--global)(\s|$)' && return 1
-        return 0
+        printf '%s' "$seg" | grep -qE '^npm[[:space:]]+(view|info|show|search|list|ls|outdated|explain|why|prefix|root|help)([[:space:]]|$)' && return 0
+        printf '%s' "$seg" | grep -qE '^npm[[:space:]]+config[[:space:]]+(get|list|ls)([[:space:]]|$)' && return 0
+        printf '%s' "$seg" | grep -qE '^npm[[:space:]]+run[[:space:]]*$' && return 0
+        return 1
     fi
-
-    # pytest and python -m pytest
-    printf '%s' "$seg" | grep -qE '^pytest(\s|$)' && return 0
-    printf '%s' "$seg" | grep -qE '^python3?\s+-m\s+pytest(\s|$)' && return 0
 
     [ "$SESSION_ID_IS_FALLBACK" = "0" ] && check_session_approved "$seg" && return 0
 

@@ -121,7 +121,12 @@ for command in \
     'gh pr checks 143' \
     'git -C /tmp status --porcelain' \
     'rg -n "foo|bar" README.md' \
-    'printf value | sed -n '\''1p'\'''; do
+    'printf value | sed -n '\''1p'\''' \
+    'curl --head localhost' \
+    'npm view vitepress version' \
+    'npm list --depth=0' \
+    'npm config get registry' \
+    'npm run'; do
     output=$(run_auto "$command")
     assert_json_decision "$output" "approve"
 done
@@ -152,6 +157,19 @@ for command in \
     'env echo value' \
     'date --set tomorrow' \
     'hostname changed-host' \
+    'curl -X POST localhost' \
+    'curl --data value localhost' \
+    'curl -dvalue localhost' \
+    'curl -T artifact localhost' \
+    'curl -oartifact localhost' \
+    'curl -K curl.conf localhost' \
+    'npm run docs:build' \
+    'npm publish' \
+    'npm audit --fix' \
+    'npm exec tool' \
+    'npm test' \
+    'pytest' \
+    'python -m pytest' \
     'echo "$(some-unknown-command)"' \
     'cat <(some-unknown-command)'; do
     output=$(run_auto "$command")
