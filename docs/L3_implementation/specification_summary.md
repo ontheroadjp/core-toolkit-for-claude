@@ -116,9 +116,9 @@ Stop hook。現在の hook セッションに対応する `session-approved` と
 
 `templates/issue.md` は issue draft、`templates/pr.md` は PR body、`templates/readme.md` は README scaffold の template である。commands は installed path として `~/.config/claude-code-kit/templates/*.md` を参照する。
 
-`partials/git-commit.md` は commit 手順の共通部品で、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。
+`partials/git-commit.md` は commit 手順の共通部品で、WIP commits の正規化（`wip:` commits を `git reset --soft merge-base` で staging area に展開）、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。呼び出し元の状態に依存せず、どのような状態で呼ばれても正しく動作するよう自己完結した設計になっている。
 
-根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`, `partials/git-commit.md:1-80`
+根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`, `partials/git-commit.md:1-103`
 
 ## Tests
 
