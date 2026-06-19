@@ -108,12 +108,12 @@ Stop hook。現在の hook セッションに対応する `session-approved` と
 
 ### `hooks/tmux-agent-status.sh`
 
-Standalone helper called by UserPromptSubmit, Notification, and Stop hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one argument (⚪, 🔵, or 🟠). Silently exits when `$TMUX` is unset (no-op outside tmux). Strips any existing status prefix before setting the new one to prevent stacking. No existing hook scripts are modified; registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
+Standalone helper called by UserPromptSubmit, Notification, and Stop hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one argument (✅, 🔵, or 🔴). Silently exits when `$TMUX` is unset (no-op outside tmux). Strips any existing status prefix before setting the new one to prevent stacking. No existing hook scripts are modified; registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
 
-Semantic mapping: `UserPromptSubmit` → 🔵 (executing), `Notification` → 🟠 (permission/input needed), `Stop` → ⚪ (idle). For startup ⚪ (before any hook fires), add shell wrapper functions to `~/.zshrc`:
+Semantic mapping: `UserPromptSubmit` → 🔵 (executing), `Notification` → 🔴 (permission/input needed), `Stop` → ✅ (idle). For startup ✅ (before any hook fires), add shell wrapper functions to `~/.zshrc`:
 ```bash
-claude() { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command claude "$@"; }
-codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command codex  "$@"; }
+claude() { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command claude "$@"; }
+codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command codex  "$@"; }
 ```
 
 根拠: `hooks/tmux-agent-status.sh:1-20`, `install.sh:122-141`

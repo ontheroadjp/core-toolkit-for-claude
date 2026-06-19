@@ -14,7 +14,7 @@ CURRENT=$(tmux display-message -p '#W' 2>/dev/null) || exit 0
 
 # Strip any existing status prefix (one of our known emojis followed by a space)
 CLEAN="$CURRENT"
-for prefix in "⚪ " "🔵 " "🟠 "; do
+for prefix in "✅ " "🔵 " "🔴 "; do
     if [[ "$CURRENT" == "${prefix}"* ]]; then
         CLEAN="${CURRENT#"${prefix}"}"
         break
