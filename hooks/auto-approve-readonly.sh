@@ -59,6 +59,19 @@ case "$SESSION_ID" in process-*) SESSION_ID_IS_FALLBACK=1 ;; esac
 SESSION_DIR="${CLAUDE_CODE_KIT_SESSION_DIR:-${STATE_ROOT}/sessions/${SESSION_ID}}"
 SESSION_APPROVED_FILE="${CLAUDE_CODE_KIT_SESSION_APPROVED_FILE:-${SESSION_DIR}/session-approved}"
 
+is_codex_invocation() {
+    [ "$CODEX_HOOK_INVOCATION" = "1" ] ||
+        [ -n "${CODEX_MANAGED_BY_NPM:-}" ] ||
+        [ -n "${CODEX_MANAGED_BY_BUN:-}" ] ||
+        [ -n "${CODEX_CI:-}" ] ||
+        [ -n "${CODEX_THREAD_ID:-}" ]
+}
+
+AGENT="claude"
+is_codex_invocation && AGENT="codex"
+LOG_SESSION_ID="$SESSION_ID"
+[ "$SESSION_ID_IS_FALLBACK" = "1" ] && LOG_SESSION_ID="n/a"
+
 # Announce the resolved path so Claude can locate it (task.md / patch.md Step 2)
 if [ "$SESSION_ID_IS_FALLBACK" = "0" ]; then
     mkdir -p "$STATE_ROOT" 2>/dev/null || true
@@ -83,12 +96,13 @@ log_decision() {
     mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || return 0
     local short
     short=$(printf '%s' "$detail" | tr '\n' ' ' | cut -c1-120)
-    printf '[%s] result=%-12s tool=%-10s %s\n' \
-        "$(date '+%Y-%m-%d %H:%M:%S')" "$result" "$tool" "$short" >> "$LOG_FILE" || true
+    printf '[%s] agent=%s session=%s result=%-12s tool=%-10s %s\n' \
+        "$(date '+%Y-%m-%d %H:%M:%S')" "$AGENT" "$LOG_SESSION_ID" \
+        "$result" "$tool" "$short" >> "$LOG_FILE" || true
 }
 
 emit_approval() {
-    if [ "$CODEX_HOOK_INVOCATION" = "1" ] || [ -n "${CODEX_MANAGED_BY_NPM:-}" ] || [ -n "${CODEX_MANAGED_BY_BUN:-}" ] || [ -n "${CODEX_CI:-}" ] || [ -n "${CODEX_THREAD_ID:-}" ]; then
+    if is_codex_invocation; then
         echo '{"decision": "allow"}'
     else
         echo '{"decision": "approve"}'
