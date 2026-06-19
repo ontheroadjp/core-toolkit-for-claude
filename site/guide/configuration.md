@@ -53,7 +53,7 @@ Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `i
         "matcher": "",
         "hooks": [{
           "type": "command",
-          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🟠"
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔴"
         }]
       }
     ],
@@ -64,7 +64,7 @@ Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `i
           { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
           { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" },
           { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" },
-          { "type": "command", "command": "bash ~/.claude/hooks/tmux-agent-status.sh ⚪" }
+          { "type": "command", "command": "bash ~/.claude/hooks/tmux-agent-status.sh ✅" }
         ]
       }
     ]
@@ -120,14 +120,14 @@ Displays real-time AI agent status as an emoji prefix on the current tmux window
 | Event | Emoji | Meaning |
 |---|---|---|
 | `UserPromptSubmit` | 🔵 | Executing |
-| `Notification` | 🟠 | Permission / input needed |
-| `Stop` | ⚪ | Idle |
+| `Notification` | 🔴 | Permission / input needed |
+| `Stop` | ✅ | Idle |
 
-To also show ⚪ at startup (before any hook fires), add shell wrapper functions to `~/.zshrc`:
+To also show ✅ at startup (before any hook fires), add shell wrapper functions to `~/.zshrc`:
 
 ```bash
-claude() { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command claude "$@"; }
-codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command codex  "$@"; }
+claude() { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command claude "$@"; }
+codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command codex  "$@"; }
 ```
 
 ## Status Line
