@@ -471,7 +471,10 @@ is_safe_segment() {
     printf '%s' "$seg" | grep -qE '^hostname[[:space:]]*$' && return 0
 
     # Runtime version checks
-    printf '%s' "$seg" | grep -qE '^(node|npm|npx|python3?|pip3?|ruby|go|cargo|rustc|bash|zsh)[[:space:]]+(--version|-v|version)(\s|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^(node|npm|npx|ruby)[[:space:]]+(--version|-v)[[:space:]]*$' && return 0
+    printf '%s' "$seg" | grep -qE '^(python3?|pip3?|cargo|rustc)[[:space:]]+(--version|-V)[[:space:]]*$' && return 0
+    printf '%s' "$seg" | grep -qE '^go[[:space:]]+version[[:space:]]*$' && return 0
+    printf '%s' "$seg" | grep -qE '^(bash|zsh)[[:space:]]+--version[[:space:]]*$' && return 0
 
     # curl — allow default GET/HEAD requests only; reject writes and custom methods
     if printf '%s' "$seg" | grep -qE '^curl(\s|$)'; then

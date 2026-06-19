@@ -123,6 +123,11 @@ for command in \
     'rg -n "foo|bar" README.md' \
     'printf value | sed -n '\''1p'\''' \
     'curl --head localhost' \
+    'node --version' \
+    'npm --version' \
+    'python --version' \
+    'go version' \
+    'bash --version' \
     'npm view vitepress version' \
     'npm list --depth=0' \
     'npm config get registry' \
@@ -168,6 +173,10 @@ for command in \
     'npm audit --fix' \
     'npm exec tool' \
     'npm test' \
+    'npm version patch' \
+    'bash version' \
+    'python -v script.py' \
+    'ruby version' \
     'pytest' \
     'python -m pytest' \
     'echo "$(some-unknown-command)"' \
