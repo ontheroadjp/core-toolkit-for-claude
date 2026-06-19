@@ -114,6 +114,120 @@ is_session_tmp_file() {
     esac
 }
 
+normalize_git_directory_prefix() {
+    local seg="$1"
+    local git_c_pattern
+    git_c_pattern="^git[[:space:]]+-C[[:space:]]+(\"[^\"]*\"|'[^']*'|[^[:space:]]+)[[:space:]]+(.+)$"
+    if [[ "$seg" =~ $git_c_pattern ]]; then
+        printf 'git %s' "${BASH_REMATCH[2]}"
+    else
+        printf '%s' "$seg"
+    fi
+}
+
+has_unsupported_expansion() {
+    printf '%s' "$1" | grep -qE '\$\(|`|[<>]\('
+}
+
+is_safe_test_expression() {
+    local expression="$1"
+    has_unsupported_expansion "$expression" && return 1
+    printf '%s' "$expression" | grep -qE '[;&|<>]' && return 1
+    printf '%s' "$expression" | grep -qE '^(test[[:space:]]+.+|\[[[:space:]].*[[:space:]]\])$'
+}
+
+is_safe_git_read_command() {
+    local seg
+    seg=$(normalize_git_directory_prefix "$1")
+
+    has_unsupported_expansion "$seg" && return 1
+    printf '%s' "$seg" | grep -qE '(^|[[:space:]])--output([=[:space:]]|$)' && return 1
+
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+(status|log|diff|show|describe|rev-parse|ls-files|ls-tree|cat-file|blame|shortlog)([[:space:]]|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+stash[[:space:]]+list([[:space:]]|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+worktree[[:space:]]+list([[:space:]]|$)' && return 0
+
+    [ "$seg" = "git branch" ] && return 0
+    if printf '%s' "$seg" | grep -qE '^git[[:space:]]+branch[[:space:]]+'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-d|-D|-m|-M|-c|-C|--delete|--move|--copy|--edit-description|--set-upstream-to|--unset-upstream)([=[:space:]]|$)' && return 1
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(--list|--show-current|--contains|--no-contains|--merged|--no-merged|-a|-r|-v|-vv)([=[:space:]]|$)' && return 0
+        return 1
+    fi
+
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+remote([[:space:]]+-v)?[[:space:]]*$' && return 0
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+remote[[:space:]]+(show|get-url)([[:space:]]|$)' && return 0
+
+    [ "$seg" = "git tag" ] && return 0
+    if printf '%s' "$seg" | grep -qE '^git[[:space:]]+tag[[:space:]]+'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-d|-a|-s|-u|-m|-F|-f|--delete|--annotate|--sign|--local-user|--message|--file|--force)([=[:space:]]|$)' && return 1
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-l|-n|-v|--list|--contains|--no-contains|--points-at|--merged|--no-merged)([=[:space:]]|$)' && return 0
+        return 1
+    fi
+
+    [ "$seg" = "git reflog" ] && return 0
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+reflog[[:space:]]+(show|exists)([[:space:]]|$)' && return 0
+
+    printf '%s' "$seg" | grep -qE '^git[[:space:]]+config[[:space:]]+(-l|--list|--get|--get-all|--get-regexp|--get-urlmatch)([=[:space:]]|$)' && return 0
+
+    return 1
+}
+
+split_shell_segments() {
+    local input="$1" current="" quote="" char next
+    local escaped=0 i
+    for ((i = 0; i < ${#input}; i++)); do
+        char="${input:i:1}"
+        next="${input:i+1:1}"
+
+        if [ "$quote" = "'" ]; then
+            current+="$char"
+            [ "$char" = "'" ] && quote=""
+            continue
+        fi
+        if [ "$escaped" = "1" ]; then
+            current+="$char"
+            escaped=0
+            continue
+        fi
+        if [ "$char" = "\\" ]; then
+            current+="$char"
+            escaped=1
+            continue
+        fi
+        if [ "$quote" = '"' ]; then
+            current+="$char"
+            [ "$char" = '"' ] && quote=""
+            continue
+        fi
+        if [ "$char" = "'" ] || [ "$char" = '"' ]; then
+            quote="$char"
+            current+="$char"
+            continue
+        fi
+
+        case "$char" in
+            $'\n'|';'|'|')
+                printf '%s\n' "$current"
+                current=""
+                [ "$next" = "$char" ] && i=$((i + 1))
+                ;;
+            '&')
+                if [ "$next" = '&' ]; then
+                    printf '%s\n' "$current"
+                    current=""
+                    i=$((i + 1))
+                else
+                    printf '%s\n' "$current"
+                    printf '%s\n' '__UNSUPPORTED_BACKGROUND_OPERATOR__'
+                    current=""
+                fi
+                ;;
+            *) current+="$char" ;;
+        esac
+    done
+    printf '%s\n' "$current"
+}
+
 log_decision() {
     local result="$1" tool="$2" detail="${3:-}"
     mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || return 0
@@ -151,7 +265,8 @@ is_session_approved_file() {
 }
 
 check_session_approved() {
-    local seg="$1"
+    local seg
+    seg=$(normalize_git_directory_prefix "$1")
     [ -f "$SESSION_APPROVED_FILE" ] || return 1
     while IFS= read -r category; do
         case "$category" in
@@ -160,6 +275,13 @@ check_session_approved() {
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+add(\s|$)' && return 0
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+commit(\s|$)' && return 0
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+merge(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^git[[:space:]]+fetch(\s|$)' && return 0
+                if printf '%s' "$seg" | grep -qE '^git[[:space:]]+pull(\s|$)'; then
+                    if printf '%s' "$seg" | grep -qE '(^|[[:space:]])--ff-only([[:space:]]|$)' \
+                        && ! printf '%s' "$seg" | grep -qE '(^|[[:space:]])(--no-ff|--rebase|-r|--force|-f)([=[:space:]]|$)'; then
+                        return 0
+                    fi
+                fi
                 printf '%s' "$seg" | grep -qE '^git[[:space:]]+stash([[:space:]]+(push|pop|apply)(\s|$)|[[:space:]]*$)' && return 0
                 if printf '%s' "$seg" | grep -qE '^git[[:space:]]+push(\s|$)'; then
                     printf '%s' "$seg" | grep -qE '(--force|-f[[:space:]]|-f$|--force-with-lease)' || return 0
@@ -177,7 +299,7 @@ check_session_approved() {
                 printf '%s' "$seg" | grep -qE '^gh[[:space:]]+issue[[:space:]]+(create|edit|close|delete|comment|reopen)(\s|$)' && return 0
                 ;;
             tool:gh_pr_write)
-                printf '%s' "$seg" | grep -qE '^gh[[:space:]]+pr[[:space:]]+(create|edit|close|comment|reopen|ready|review|checkout)(\s|$)' && return 0
+                printf '%s' "$seg" | grep -qE '^gh[[:space:]]+pr[[:space:]]+(create|edit|close|comment|reopen|ready|review|checkout|merge)(\s|$)' && return 0
                 ;;
         esac
     done < "$SESSION_APPROVED_FILE"
@@ -287,21 +409,66 @@ if printf '%s' "$command_normalized" | grep -qE '>[^&]'; then
 fi
 
 is_safe_segment() {
-    local seg
-    seg=$(printf '%s' "$1" | sed 's/^[[:space:]]*//')
+    local seg condition
+    seg=$(printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
     [ -z "$seg" ] && return 0
+
+    has_unsupported_expansion "$seg" && return 1
+
+    case "$seg" in
+        then|else|fi) return 0 ;;
+        then[[:space:]]*) is_safe_segment "${seg#then}" && return 0; return 1 ;;
+        else[[:space:]]*) is_safe_segment "${seg#else}" && return 0; return 1 ;;
+    esac
+    case "$seg" in
+        if[[:space:]]*)
+            condition="${seg#if}"
+            condition=$(printf '%s' "$condition" | sed 's/^[[:space:]]*//')
+            is_safe_test_expression "$condition" && return 0
+            return 1
+            ;;
+    esac
+    is_safe_test_expression "$seg" && return 0
 
     # tee writes to files — block unconditionally regardless of future allowlist additions
     printf '%s' "$seg" | grep -qE '^tee(\s|$)' && return 1
 
     # git read-only subcommands
-    printf '%s' "$seg" | grep -qE '^git[[:space:]]+(status|log|diff|show|branch|remote|tag|describe|rev-parse|ls-files|ls-tree|cat-file|blame|shortlog|reflog|(stash[[:space:]]+list)|(config[[:space:]]+(--(list|get))?)|(worktree[[:space:]]+list))(\s|$)' && return 0
+    is_safe_git_read_command "$seg" && return 0
 
     # gh read-only subcommands
     printf '%s' "$seg" | grep -qE '^gh[[:space:]]+(issue|pr|label|repo|release|run|workflow)[[:space:]]+(list|view|status)(\s|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^gh[[:space:]]+pr[[:space:]]+checks(\s|$)' && return 0
     printf '%s' "$seg" | grep -qE '^gh[[:space:]]+auth[[:space:]]+status(\s|$)' && return 0
     # Standard read-only Unix tools (prefer fd over find)
-    printf '%s' "$seg" | grep -qE '^(ls|ll|la|cat|head|tail|grep|egrep|fgrep|rg|fd|find|wc|sort|uniq|cut|tr|awk|sed|echo|printf|pwd|which|type|env|printenv|du|df|stat|file|basename|dirname|date|uname|hostname|whoami|id|groups|ps|jq|yq|column)(\s|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^cd(\s|$)' && return 0
+    printf '%s' "$seg" | grep -qE '^(ls|ll|la|cat|head|tail|grep|egrep|fgrep|rg|fd|wc|uniq|cut|tr|echo|printf|pwd|which|type|printenv|du|df|stat|file|basename|dirname|uname|whoami|id|groups|ps|jq|column|nl)(\s|$)' && return 0
+    if printf '%s' "$seg" | grep -qE '^find(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])-(delete|exec|execdir|ok|okdir|fls|fprint|fprintf)([[:space:]]|$)' && return 1
+        return 0
+    fi
+    if printf '%s' "$seg" | grep -qE '^sed(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-i|--in-place)([^[:space:]]*|$)' && return 1
+        return 0
+    fi
+    if printf '%s' "$seg" | grep -qE '^sort(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-o|--output)([=[:space:]]|$)' && return 1
+        return 0
+    fi
+    if printf '%s' "$seg" | grep -qE '^yq(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-i|--inplace)([=[:space:]]|$)' && return 1
+        return 0
+    fi
+    if printf '%s' "$seg" | grep -qE '^awk(\s|$)'; then
+        printf '%s' "$seg" | grep -qE 'system[[:space:]]*\(' && return 1
+        return 0
+    fi
+    printf '%s' "$seg" | grep -qE '^env[[:space:]]*$' && return 0
+    if printf '%s' "$seg" | grep -qE '^date(\s|$)'; then
+        printf '%s' "$seg" | grep -qE '(^|[[:space:]])(-s|--set)([=[:space:]]|$)' && return 1
+        return 0
+    fi
+    printf '%s' "$seg" | grep -qE '^hostname[[:space:]]*$' && return 0
 
     # Runtime version checks
     printf '%s' "$seg" | grep -qE '^(node|npm|npx|python3?|pip3?|ruby|go|cargo|rustc|bash|zsh)[[:space:]]+(--version|-v|version)(\s|$)' && return 0
@@ -337,7 +504,7 @@ while IFS= read -r segment; do
         log_decision "user_prompt" "Bash" "$command"
         exit 0
     fi
-done < <(printf '%s\n' "$command_normalized" | sed 's/&&/\n/g; s/||/\n/g; s/;/\n/g; s/|/\n/g')
+done < <(split_shell_segments "$command_normalized")
 
 log_decision "approved" "Bash" "$command"
 emit_approval
