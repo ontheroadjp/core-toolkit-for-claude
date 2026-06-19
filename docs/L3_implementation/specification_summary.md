@@ -84,9 +84,9 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ### `hooks/auto-approve-readonly.sh`
 
-PreToolUse hook。Read、session temp / session-listed file、read-only Bash、session-approved tool category を自動承認する。Bash は destructive guard、write redirect、quote-aware segment分割、read-only判定、session-approved判定の順で評価し、分類不能な構文やwrite modeは通常許可フローへ戻す。詳細な許可順序・対象・除外条件は[auto-approve-readonly hook specification](https://github.com/ontheroadjp/core-toolkit-for-claude/blob/main/docs/L3_implementation/hooks/auto_approve_readonly.md)を参照する。decision log は `agent=claude|codex` と `session=<id|n/a>` を含む。
+PreToolUse hook。Read、session temp / session-listed file、read-only Bash、session-approved tool category を自動承認する。Write / Edit / apply_patch は working repo（Claude/Codex 起動時の PWD が属する git リポジトリ）内であれば WIP commit 後に承認する動的防御を持つ。Bash は session-approved fast path → repo 内 rm -rf 動的防御 → destructive guard → write redirect → quote-aware segment 分割 → read-only 判定の順で評価し、分類不能な構文や write mode は通常許可フローへ戻す。詳細な許可順序・対象・除外条件は[auto-approve-readonly hook specification](https://github.com/ontheroadjp/core-toolkit-for-claude/blob/main/docs/L3_implementation/hooks/auto_approve_readonly.md)を参照する。decision log は `agent=claude|codex` と `session=<id|n/a>` を含む。
 
-根拠: `hooks/auto-approve-readonly.sh:23-511`, `hooks/lib/approval-safety.sh:1-87`, `docs/L3_implementation/hooks/auto_approve_readonly.md`
+根拠: `hooks/auto-approve-readonly.sh:23-617`, `hooks/lib/approval-safety.sh:1-87`, `docs/L3_implementation/hooks/auto_approve_readonly.md`
 
 ### `hooks/lib/approval-safety.sh`
 
@@ -122,9 +122,9 @@ Stop hook。現在の hook セッションに対応する `session-approved` と
 
 ## Tests
 
-`tests/hooks/test-approval-hooks.sh` は PreToolUse hook の shell verification である。破壊的 Bash block、session-approved があっても破壊的操作を block すること、read-only approval、session-approved approval、session temp 配下の Write/Edit approval、session temp 範囲外や symlink session temp の prompt fallback、cleanup hook による current session temp directory 削除、write-effect / ambiguous command の prompt fallback、`guard-destructive-cmd.sh` の JSON block output を検証する。
+`tests/hooks/test-approval-hooks.sh` は PreToolUse hook の shell verification である。破壊的 Bash block、session-approved があっても破壊的操作を block すること、read-only approval、session-approved approval、session temp 配下の Write/Edit approval、session temp 範囲外や symlink session temp の prompt fallback、cleanup hook による current session temp directory 削除、write-effect / ambiguous command の prompt fallback、`guard-destructive-cmd.sh` の JSON block output を検証する。また working repo dynamic defense として、Write / Edit / apply_patch / rm -rf の repo 内パス承認・WIP commit 作成・repo 外 prompt fallback・repo root / .git / 複数パス / 変数展開の除外・clean tree での WIP commit 非作成を検証する。
 
-根拠: `tests/hooks/test-approval-hooks.sh:1-274`
+根拠: `tests/hooks/test-approval-hooks.sh:1-407`
 
 ## Install and Status Line
 

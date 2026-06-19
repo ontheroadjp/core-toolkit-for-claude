@@ -306,6 +306,62 @@ check_session_approved() {
     return 1
 }
 
+detect_working_repo_root() {
+    git -C "$PWD" rev-parse --show-toplevel 2>/dev/null
+}
+
+is_in_working_repo() {
+    local path="$1"
+    local repo_root
+    repo_root=$(detect_working_repo_root) || return 1
+    local norm_path norm_root
+    norm_path=$(realpath -m "$path" 2>/dev/null || printf '%s' "$path")
+    norm_root=$(realpath -m "$repo_root" 2>/dev/null || printf '%s' "$repo_root")
+    case "$norm_path" in
+        "$norm_root"/*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+do_wip_commit() {
+    local detail="${1:-write}"
+    local repo_root
+    repo_root=$(detect_working_repo_root) || return 1
+    git -C "$repo_root" status --porcelain 2>/dev/null | grep -q . || return 0
+    git -C "$repo_root" add -A >/dev/null 2>&1 &&
+        git -C "$repo_root" commit --no-verify \
+            -m "wip: $(date '+%Y-%m-%d %H:%M:%S') before $detail" >/dev/null 2>&1
+}
+
+is_rm_rf_on_working_repo_path() {
+    local cmd="$1"
+    printf '%s' "$cmd" | grep -qE '^rm[[:space:]]+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*[[:space:]]+\S' || \
+        printf '%s' "$cmd" | grep -qE '^rm[[:space:]]+-[a-zA-Z]*f[a-zA-Z]*r[a-zA-Z]*[[:space:]]+\S' || return 1
+    local path
+    path=$(printf '%s' "$cmd" | sed 's/^rm[[:space:]]*-[a-zA-Z]*[[:space:]]*//')
+    case "$path" in
+        ''|*' '*|*$'\t'*|*'$'*|*';'*|*'|'*|*'&'*|*'>'*|*'<'*|*'`'*|*'*'*|*'?'*) return 1 ;;
+    esac
+    local abs_path
+    case "$path" in
+        /*) abs_path="$path" ;;
+        ./*) abs_path="${PWD}/${path#./}" ;;
+        *) abs_path="${PWD}/${path}" ;;
+    esac
+    local repo_root norm_abs norm_root
+    repo_root=$(detect_working_repo_root) || return 1
+    norm_abs=$(realpath -m "$abs_path" 2>/dev/null || printf '%s' "$abs_path")
+    norm_root=$(realpath -m "$repo_root" 2>/dev/null || printf '%s' "$repo_root")
+    [ "$norm_abs" = "$norm_root" ] && return 1
+    case "$norm_abs" in
+        "$norm_root/.git"|"$norm_root/.git/"*) return 1 ;;
+    esac
+    case "$norm_abs" in
+        "$norm_root"/*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 # Always approve Read tool
 if [ "$tool_name" = "Read" ]; then
     file_path=$(echo "$payload" | jq -r '.tool_input.file_path // "-"')
@@ -360,6 +416,12 @@ if [ "$tool_name" = "Write" ]; then
         emit_approval
         exit 0
     fi
+    if is_in_working_repo "$file_path"; then
+        do_wip_commit "Write $(basename "$file_path")" 2>/dev/null || true
+        log_decision "approved" "Write" "$file_path (working-repo)"
+        emit_approval
+        exit 0
+    fi
     log_decision "user_prompt" "Write" "$file_path"
     exit 0
 fi
@@ -377,7 +439,25 @@ if [ "$tool_name" = "Edit" ]; then
         emit_approval
         exit 0
     fi
+    if is_in_working_repo "$file_path"; then
+        do_wip_commit "Edit $(basename "$file_path")" 2>/dev/null || true
+        log_decision "approved" "Edit" "$file_path (working-repo)"
+        emit_approval
+        exit 0
+    fi
     log_decision "user_prompt" "Edit" "$file_path"
+    exit 0
+fi
+
+# apply_patch tool: approve if PWD is within a git repo (working repo dynamic defense)
+if [ "$tool_name" = "apply_patch" ]; then
+    if detect_working_repo_root > /dev/null 2>&1; then
+        do_wip_commit "apply_patch" 2>/dev/null || true
+        log_decision "approved" "apply_patch" "(working-repo)"
+        emit_approval
+        exit 0
+    fi
+    log_decision "user_prompt" "apply_patch" ""
     exit 0
 fi
 
@@ -387,6 +467,32 @@ if [ "$tool_name" != "Bash" ]; then
 fi
 
 command=$(echo "$payload" | jq -r '.tool_input.command // ""')
+
+# Step 1: session-approved fast path — all segments must match a session-approved category
+if [ "$SESSION_ID_IS_FALLBACK" = "0" ] && [ -f "$SESSION_APPROVED_FILE" ]; then
+    _sa_norm=$(printf '%s' "$command" \
+        | sed 's/\\|/__ESCAPED_PIPE__/g; s/[0-9]*>>\/dev\/null//g; s/[0-9]*>\/dev\/null//g; s/&>>\/dev\/null//g; s/&>\/dev\/null//g')
+    _sa_all=1
+    while IFS= read -r _sa_seg; do
+        _sa_seg=$(printf '%s' "$_sa_seg" | sed 's/__ESCAPED_PIPE__/\\|/g; s/^[[:space:]]*//; s/[[:space:]]*$//')
+        [ -z "$_sa_seg" ] && continue
+        check_session_approved "$_sa_seg" || { _sa_all=0; break; }
+    done < <(split_shell_segments "$_sa_norm")
+    if [ "$_sa_all" = "1" ]; then
+        log_decision "approved" "Bash" "$command (session)"
+        emit_approval
+        exit 0
+    fi
+fi
+
+# Step 2: in-repo rm -rf → dynamic defense (before approval_safety)
+if is_rm_rf_on_working_repo_path "$command"; then
+    _rm_path=$(printf '%s' "$command" | sed 's/^rm[[:space:]]*-[a-zA-Z]*[[:space:]]*//' | cut -c1-40)
+    do_wip_commit "rm $_rm_path" 2>/dev/null || true
+    log_decision "approved" "Bash" "$command (working-repo rm)"
+    emit_approval
+    exit 0
+fi
 
 if destructive_reason=$(approval_safety_destructive_reason "$command"); then
     log_decision "blocked" "Bash" "$command ($destructive_reason)"

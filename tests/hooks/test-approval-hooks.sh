@@ -271,4 +271,137 @@ if [ ! -e "${TMP_ROOT}/other-session/scratch.txt" ]; then
     exit 1
 fi
 
+# --- Working repo dynamic defense tests ---
+
+TEST_GIT_REPO="${TMP_DIR}/test-git-repo"
+mkdir -p "$TEST_GIT_REPO"
+git -C "$TEST_GIT_REPO" init -q
+git -C "$TEST_GIT_REPO" config user.email "ci-test-noreply"
+git -C "$TEST_GIT_REPO" config user.name "Test"
+echo "initial" > "${TEST_GIT_REPO}/initial.txt"
+git -C "$TEST_GIT_REPO" add -A
+git -C "$TEST_GIT_REPO" commit --no-verify -q -m "initial commit"
+
+run_auto_in_repo() {
+    local command="$1"
+    jq -cn --arg command "$command" '{tool_name:"Bash",tool_input:{command:$command}}' \
+        | env -u CODEX_MANAGED_BY_NPM -u CODEX_MANAGED_BY_BUN -u CODEX_CI -u CODEX_THREAD_ID \
+            CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
+            CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
+            bash -c "cd '$TEST_GIT_REPO' && bash '$AUTO_HOOK'"
+}
+
+run_file_tool_in_repo() {
+    local tool_name="$1" file_path="$2"
+    jq -cn --arg tool_name "$tool_name" --arg file_path "$file_path" \
+        '{tool_name:$tool_name,tool_input:{file_path:$file_path}}' \
+        | env -u CODEX_MANAGED_BY_NPM -u CODEX_MANAGED_BY_BUN -u CODEX_CI -u CODEX_THREAD_ID \
+            CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
+            CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
+            bash -c "cd '$TEST_GIT_REPO' && bash '$AUTO_HOOK'"
+}
+
+run_apply_patch_in_repo() {
+    jq -cn '{tool_name:"apply_patch",tool_input:{patch:"dummy"}}' \
+        | env -u CODEX_MANAGED_BY_NPM -u CODEX_MANAGED_BY_BUN -u CODEX_CI -u CODEX_THREAD_ID \
+            CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+            CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
+            CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+            CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
+            bash -c "cd '$TEST_GIT_REPO' && bash '$AUTO_HOOK'"
+}
+
+# Write on repo-internal path → approved
+output=$(run_file_tool_in_repo "Write" "${TEST_GIT_REPO}/new.txt")
+assert_json_decision "$output" "approve"
+
+# Write outside repo → user_prompt
+output=$(run_file_tool_in_repo "Write" "/tmp/outside.txt")
+assert_no_output "$output"
+
+# Edit on repo-internal path → approved
+output=$(run_file_tool_in_repo "Edit" "${TEST_GIT_REPO}/initial.txt")
+assert_json_decision "$output" "approve"
+
+# Edit outside repo → user_prompt
+output=$(run_file_tool_in_repo "Edit" "/tmp/outside.txt")
+assert_no_output "$output"
+
+# apply_patch inside repo → approved
+output=$(run_apply_patch_in_repo)
+assert_json_decision "$output" "approve"
+
+# apply_patch outside any repo → user_prompt
+output=$(jq -cn '{tool_name:"apply_patch",tool_input:{patch:"dummy"}}' \
+    | env -u CODEX_MANAGED_BY_NPM -u CODEX_MANAGED_BY_BUN -u CODEX_CI -u CODEX_THREAD_ID \
+        CLAUDE_CODE_KIT_STATE_HOME="$TMP_DIR/state" \
+        CLAUDE_CODE_KIT_SESSION_ID="$SESSION_ID" \
+        CLAUDE_CODE_KIT_SESSION_APPROVED_FILE="$SESSION_FILE" \
+        CLAUDE_CODE_KIT_TMP_ROOT="$TMP_ROOT" \
+        bash -c "cd /tmp && bash '$AUTO_HOOK'")
+assert_no_output "$output"
+
+# make dirty state for WIP commit tests
+echo "modified" >> "${TEST_GIT_REPO}/initial.txt"
+
+# rm -rf on repo-internal subdir → approved + WIP commit created
+mkdir -p "${TEST_GIT_REPO}/subdir"
+commits_before=$(git -C "$TEST_GIT_REPO" log --oneline | wc -l | tr -d ' ')
+output=$(run_auto_in_repo "rm -rf ${TEST_GIT_REPO}/subdir")
+assert_json_decision "$output" "approve"
+commits_after=$(git -C "$TEST_GIT_REPO" log --oneline | wc -l | tr -d ' ')
+if [ "$commits_after" -le "$commits_before" ]; then
+    printf 'Expected WIP commit to be created for rm -rf, got %s (before %s)\n' \
+        "$commits_after" "$commits_before" >&2
+    exit 1
+fi
+if ! git -C "$TEST_GIT_REPO" log --oneline -1 | grep -q "wip:"; then
+    printf 'Expected latest commit to be a wip: commit\n' >&2
+    exit 1
+fi
+
+# rm -rf on system directory → blocked (static defense, unaffected by repo check)
+output=$(run_auto_in_repo "rm -rf /usr")
+assert_json_decision "$output" "block"
+
+# rm -rf on repo root itself → NOT approved by dynamic defense (defeats safety net)
+output=$(run_auto_in_repo "rm -rf ${TEST_GIT_REPO}")
+assert_no_output "$output"
+
+# rm -rf with variable → NOT approved (ambiguous, falls to approval_safety)
+output=$(run_auto_in_repo 'rm -rf $SOME_DIR')
+assert_no_output "$output"
+
+# rm -rf with multiple paths → NOT approved (ambiguous)
+output=$(run_auto_in_repo "rm -rf ${TEST_GIT_REPO}/a ${TEST_GIT_REPO}/b")
+assert_no_output "$output"
+
+# Write on repo-internal path with dirty tree → WIP commit is created
+echo "more changes" >> "${TEST_GIT_REPO}/initial.txt"
+commits_before=$(git -C "$TEST_GIT_REPO" log --oneline | wc -l | tr -d ' ')
+output=$(run_file_tool_in_repo "Write" "${TEST_GIT_REPO}/initial.txt")
+assert_json_decision "$output" "approve"
+commits_after=$(git -C "$TEST_GIT_REPO" log --oneline | wc -l | tr -d ' ')
+if [ "$commits_after" -le "$commits_before" ]; then
+    printf 'Expected WIP commit for Write with dirty tree, got %s (before %s)\n' \
+        "$commits_after" "$commits_before" >&2
+    exit 1
+fi
+
+# Write on repo-internal path with clean tree → still approved (no WIP commit needed)
+# The WIP commit above captured all dirty changes, so tree is now clean
+commits_before=$(git -C "$TEST_GIT_REPO" log --oneline | wc -l | tr -d ' ')
+output=$(run_file_tool_in_repo "Write" "${TEST_GIT_REPO}/initial.txt")
+assert_json_decision "$output" "approve"
+commits_after=$(git -C "$TEST_GIT_REPO" log --oneline | wc -l | tr -d ' ')
+if [ "$commits_after" -ne "$commits_before" ]; then
+    printf 'Expected no WIP commit for Write on clean tree, got %s (before %s)\n' \
+        "$commits_after" "$commits_before" >&2
+    exit 1
+fi
+
 printf 'approval hook tests passed\n'
