@@ -22,13 +22,36 @@ git branch --show-current
 - `git branch` で非 main ブランチを1つ特定する
 - `git checkout <そのブランチ>` で移動してからコミットを続行する
 
-### 2. ステージ済み diff の取得
+### 2. 状態の正規化（WIP commits の squash）
+
+まず `wip:` commits が存在するかを確認する:
+
+```bash
+git log $(git merge-base HEAD main)..HEAD --format="%s"
+```
+
+出力に `wip:` で始まる行が含まれる場合、次を実行する:
+
+```bash
+git reset --soft $(git merge-base HEAD main)
+```
+
+これにより:
+- HEAD が merge-base（ブランチ分岐点）に戻る
+- index（staging area）はそのまま — WIP commits の全変更がステージ済みになる
+- working tree は不変
+
+`wip:` commits がない場合はこのステップをスキップする（後方互換）。
+
+このステップは呼び出し元の状態に依存せず、**どのような状態で呼ばれても**正しく動作するための正規化である。
+
+### 3. ステージ済み diff の取得
 ```bash
 git diff --staged
 ```
 ステージされている変更がない場合は、コミット対象を確認してユーザーに報告し、中止する。
 
-### 3. コミット前チェック（必須）
+### 4. コミット前チェック（必須）
 取得した diff の内容に以下が含まれていないことを必ず確認する:
 
 - 個人情報（メールアドレス・氏名・電話番号等）
@@ -38,7 +61,7 @@ git diff --staged
 
 検出された場合: コミットを中止し、検出箇所をユーザーに報告して指示を仰ぐ。
 
-### 4. コミットメッセージの決定
+### 5. コミットメッセージの決定
 
 #### `fixed_message` が指定されている場合
 そのまま commit する:
@@ -47,15 +70,15 @@ git commit -m "<fixed_message>"
 ```
 
 #### `fixed_message` が指定されていない場合
-3.1. `allowed_types` の中から、変更内容に最も合致する type を 1 つ選ぶ
-3.2. 変更内容を要約した短い英語の説明文（命令形・小文字始まり推奨）を生成する
-3.3. メッセージを組み立てる:
+5.1. `allowed_types` の中から、変更内容に最も合致する type を 1 つ選ぶ
+5.2. 変更内容を要約した短い英語の説明文（命令形・小文字始まり推奨）を生成する
+5.3. メッセージを組み立てる:
 - `issue_number` が指定されている場合: `<type>(#<issue_number>): <description>`
   - 例: `feat(#23): implement user auth endpoint`
 - `issue_number` が `none` の場合: `<type>: <description>`
   - 例: `refactor: simplify routing dispatch`
 
-### 5. コミット実行
+### 6. コミット実行
 ```bash
 git commit -m "<生成したメッセージ>"
 ```
