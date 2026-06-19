@@ -106,6 +106,18 @@ Stop hook。現在の hook セッションに対応する `session-approved` と
 
 根拠: `hooks/cleanup-session.sh:39-58`
 
+### `hooks/tmux-agent-status.sh`
+
+Standalone helper called by UserPromptSubmit, Notification, and Stop hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one argument (⚪, 🔵, or 🟠). Silently exits when `$TMUX` is unset (no-op outside tmux). Strips any existing status prefix before setting the new one to prevent stacking. No existing hook scripts are modified; registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
+
+Semantic mapping: `UserPromptSubmit` → 🔵 (executing), `Notification` → 🟠 (permission/input needed), `Stop` → ⚪ (idle). For startup ⚪ (before any hook fires), add shell wrapper functions to `~/.zshrc`:
+```bash
+claude() { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command claude "$@"; }
+codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command codex  "$@"; }
+```
+
+根拠: `hooks/tmux-agent-status.sh:1-20`, `install.sh:122-141`
+
 ### access / token log hooks
 
 `log-access-prompt.sh`、`log-access-tool.sh`、`log-access-stop.sh` はユーザー指示、tool access、modified files を session file / pending file / monthly log に記録する。`log-token-usage.sh` は transcript usage を集計して token usage log に追記する。

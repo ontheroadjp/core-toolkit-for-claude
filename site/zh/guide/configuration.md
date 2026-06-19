@@ -30,6 +30,13 @@
           "type": "command",
           "command": "bash ~/.claude/hooks/log-access-prompt.sh"
         }]
+      },
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
+        }]
       }
     ],
     "PostToolUse": [
@@ -41,13 +48,23 @@
         }]
       }
     ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🟠"
+        }]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
           { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" },
-          { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" }
+          { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" },
+          { "type": "command", "command": "bash ~/.claude/hooks/tmux-agent-status.sh ⚪" }
         ]
       }
     ]
@@ -95,6 +112,23 @@
 ### cleanup-session.sh
 
 在会话结束时删除 `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` 下当前会话的批准文件，防止批准权限延续到下一个会话或在并发会话之间混用。
+
+### tmux-agent-status.sh
+
+在 tmux 窗口标题左端以表情符号前缀实时显示 AI agent 状态。在 tmux 外部运行时静默退出。
+
+| 事件 | 表情符号 | 含义 |
+|---|---|---|
+| `UserPromptSubmit` | 🔵 | 执行中 |
+| `Notification` | 🟠 | 等待许可/输入 |
+| `Stop` | ⚪ | 空闲 |
+
+若希望在启动时（任何 hook 触发之前）也显示 ⚪，请在 `~/.zshrc` 中添加 shell 包装函数：
+
+```bash
+claude() { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command claude "$@"; }
+codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command codex  "$@"; }
+```
 
 ## 状态栏
 

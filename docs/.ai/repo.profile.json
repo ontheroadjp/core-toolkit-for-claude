@@ -42,7 +42,8 @@
     "hooks/log-access-prompt.sh",
     "hooks/log-access-stop.sh",
     "hooks/log-access-tool.sh",
-    "hooks/log-token-usage.sh"
+    "hooks/log-token-usage.sh",
+    "hooks/tmux-agent-status.sh"
   ],
   "external_cli_deps": [
     "git",

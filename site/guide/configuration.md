@@ -30,6 +30,13 @@ Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `i
           "type": "command",
           "command": "bash ~/.claude/hooks/log-access-prompt.sh"
         }]
+      },
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
+        }]
       }
     ],
     "PostToolUse": [
@@ -41,13 +48,23 @@ Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `i
         }]
       }
     ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🟠"
+        }]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           { "type": "command", "command": "bash ~/.claude/hooks/log-token-usage.sh" },
           { "type": "command", "command": "bash ~/.claude/hooks/log-access-stop.sh" },
-          { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" }
+          { "type": "command", "command": "bash ~/.claude/hooks/cleanup-session.sh" },
+          { "type": "command", "command": "bash ~/.claude/hooks/tmux-agent-status.sh ⚪" }
         ]
       }
     ]
@@ -95,6 +112,23 @@ Records the user prompt, file access order, and modified files for `/work` sessi
 ### cleanup-session.sh
 
 Deletes the current session's approval file under `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` so approvals do not carry over or mix across concurrent sessions.
+
+### tmux-agent-status.sh
+
+Displays real-time AI agent status as an emoji prefix on the current tmux window title. Silently exits when not running inside tmux.
+
+| Event | Emoji | Meaning |
+|---|---|---|
+| `UserPromptSubmit` | 🔵 | Executing |
+| `Notification` | 🟠 | Permission / input needed |
+| `Stop` | ⚪ | Idle |
+
+To also show ⚪ at startup (before any hook fires), add shell wrapper functions to `~/.zshrc`:
+
+```bash
+claude() { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command claude "$@"; }
+codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ⚪; command codex  "$@"; }
+```
 
 ## Status Line
 
