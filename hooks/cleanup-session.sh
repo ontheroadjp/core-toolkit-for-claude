@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop hook: delete the current AI session approval file
+# Stop hook: delete the current AI session approval file and temp directory
 set -euo pipefail
 
 payload=$(cat)
@@ -40,9 +40,19 @@ STATE_ROOT="${CLAUDE_CODE_KIT_STATE_HOME:-${XDG_STATE_HOME:-${HOME}/.local/state
 SESSION_ID="$(resolve_session_id)"
 SESSION_DIR="${CLAUDE_CODE_KIT_SESSION_DIR:-${STATE_ROOT}/sessions/${SESSION_ID}}"
 SESSION_APPROVED_FILE="${CLAUDE_CODE_KIT_SESSION_APPROVED_FILE:-${SESSION_DIR}/session-approved}"
+SESSION_TMP_ROOT="${CLAUDE_CODE_KIT_TMP_ROOT:-/tmp/claude-code-kit}"
+SESSION_TMP_DIR="${SESSION_TMP_ROOT}/${SESSION_ID}"
 
 [ -f "$SESSION_APPROVED_FILE" ] && rm -f "$SESSION_APPROVED_FILE"
 case "$SESSION_DIR" in
     "$STATE_ROOT"/sessions/*) rmdir "$SESSION_DIR" 2>/dev/null || true ;;
+esac
+case "$SESSION_TMP_DIR" in
+    "$SESSION_TMP_ROOT"/*)
+        if [ -d "$SESSION_TMP_DIR" ] && [ ! -L "$SESSION_TMP_DIR" ]; then
+            rm -rf "$SESSION_TMP_DIR"
+        fi
+        rmdir "$SESSION_TMP_ROOT" 2>/dev/null || true
+        ;;
 esac
 exit 0

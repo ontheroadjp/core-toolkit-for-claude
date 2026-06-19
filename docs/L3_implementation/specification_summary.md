@@ -84,9 +84,9 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ### `hooks/auto-approve-readonly.sh`
 
-PreToolUse hook。Read は常に承認する。`session-approved` は `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を既定パスとし、payload の `session_id`、`CLAUDE_CODE_KIT_SESSION_ID`、`CLAUDE_CODE_KIT_SESSION_DIR`、`CLAUDE_CODE_KIT_SESSION_APPROVED_FILE`、`CLAUDE_CODE_KIT_STATE_HOME` で現在セッションの承認ファイルを解決する。PPID フォールバックでない場合は解決したパスを `${STATE_ROOT}/current-session-approved-path` に書き出す（task.md / patch.md Step 2 が `cat` で参照する）。Write は現在セッションの `session-approved` 自体への書き込みをスコープガードで保護し、初回書き込み時は session directory を作成する。session-listed パスへの Write/Edit は承認する。Bash は `hooks/lib/approval-safety.sh` の破壊的操作判定を最初に実行し、該当する場合は JSON block decision を返す。その後、read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。各 decision log は既存フィールドの前に `agent=claude|codex` と `session=<id|n/a>` を記録し、process fallback しか得られない場合は session を `n/a` とする。
+PreToolUse hook。Read は常に承認する。`session-approved` は `${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/sessions/<session-id>/session-approved` を既定パスとし、payload の `session_id`、`CLAUDE_CODE_KIT_SESSION_ID`、`CLAUDE_CODE_KIT_SESSION_DIR`、`CLAUDE_CODE_KIT_SESSION_APPROVED_FILE`、`CLAUDE_CODE_KIT_STATE_HOME` で現在セッションの承認ファイルを解決する。PPID フォールバックでない場合は解決したパスを `${STATE_ROOT}/current-session-approved-path` に書き出す（task.md / patch.md Step 2 が `cat` で参照する）。Write は現在セッションの `session-approved` 自体への書き込みをスコープガードで保護し、初回書き込み時は session directory を作成する。session-listed パスへの Write/Edit は承認する。`/tmp/claude-code-kit/<session-id>/` 配下の Write/Edit は、session temp directory が symlink でないことを確認し、`realpath -m` で正規化した containment 判定を通した場合のみ承認する。Bash は `hooks/lib/approval-safety.sh` の破壊的操作判定を最初に実行し、該当する場合は JSON block decision を返す。その後、read-only whitelist、runtime version check、curl HTTP request、npm non-install operation、pytest、session-approved git/gh write 操作を承認する。Bash の write redirect や `tee` の承認範囲は広げない。各 decision log は既存フィールドの前に `agent=claude|codex` と `session=<id|n/a>` を記録し、process fallback しか得られない場合は session を `n/a` とする。
 
-根拠: `hooks/auto-approve-readonly.sh:14-17`, `hooks/auto-approve-readonly.sh:202-273`, `hooks/lib/approval-safety.sh:1-87`
+根拠: `hooks/auto-approve-readonly.sh:55-133`, `hooks/auto-approve-readonly.sh:187-260`, `hooks/lib/approval-safety.sh:1-87`
 
 ### `hooks/lib/approval-safety.sh`
 
@@ -102,9 +102,9 @@ PreToolUse Bash guard の互換 wrapper。Bash 以外は何も出力せず終了
 
 ### `hooks/cleanup-session.sh`
 
-Stop hook。現在の hook セッションに対応する `session-approved` を削除し、空になった session directory のみ削除する。別セッションの承認ファイルは削除しない。
+Stop hook。現在の hook セッションに対応する `session-approved` と `/tmp/claude-code-kit/<session-id>/` を削除し、空になった session directory と temp root のみ削除する。別セッションの承認ファイルや temp directory は削除しない。
 
-根拠: `hooks/cleanup-session.sh:1-7`
+根拠: `hooks/cleanup-session.sh:39-58`
 
 ### access / token log hooks
 
@@ -122,9 +122,9 @@ Stop hook。現在の hook セッションに対応する `session-approved` を
 
 ## Tests
 
-`tests/hooks/test-approval-hooks.sh` は PreToolUse hook の shell verification である。破壊的 Bash block、session-approved があっても破壊的操作を block すること、read-only approval、session-approved approval、write-effect / ambiguous command の prompt fallback、`guard-destructive-cmd.sh` の JSON block output を検証する。
+`tests/hooks/test-approval-hooks.sh` は PreToolUse hook の shell verification である。破壊的 Bash block、session-approved があっても破壊的操作を block すること、read-only approval、session-approved approval、session temp 配下の Write/Edit approval、session temp 範囲外や symlink session temp の prompt fallback、cleanup hook による current session temp directory 削除、write-effect / ambiguous command の prompt fallback、`guard-destructive-cmd.sh` の JSON block output を検証する。
 
-根拠: `tests/hooks/test-approval-hooks.sh:1-75`
+根拠: `tests/hooks/test-approval-hooks.sh:1-175`
 
 ## Install and Status Line
 
