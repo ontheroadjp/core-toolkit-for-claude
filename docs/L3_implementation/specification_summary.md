@@ -20,7 +20,7 @@
 
 ### `/task` (`commands/task.md`)
 
-`/work` から呼ばれる docs 変更を伴う実装 flow。issue がなければ `commands/new-issue.md` Step 1-5 を使って作成し、プラン策定とユーザー許可後に実装する。実装後は `/git-commit` を呼び出して commit し、draft PR を作成し、`/docs-sync` を自動実行する。
+`/work` から呼ばれる docs 変更を伴う実装 flow。issue がなければプラン策定とユーザー許可を先に行い、承認後に `commands/new-issue.md` Step 4-5 を使ってユーザー確認なしで issue を自動作成する（Step 1-3 の対話はスキップし、確定済みプランの内容で各セクションを埋める）。実装後は `/git-commit` を呼び出して commit し、draft PR を作成し、`/docs-sync` を自動実行する。
 
 根拠: `commands/task.md:1-15`, `commands/task.md:42-154`
 
