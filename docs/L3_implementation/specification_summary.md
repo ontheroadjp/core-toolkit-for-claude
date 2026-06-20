@@ -2,7 +2,7 @@
 
 ## 対象
 
-このサマリは、`commands/`、`skills/`、`hooks/`、`templates/`、`partials/`、`site/`、CI の現在の実体を、確認できた範囲で整理する。
+このサマリは、`commands/`、`skills/`、`hooks/`、`templates/`、`site/`、CI の現在の実体を、確認できた範囲で整理する。
 
 根拠: `rg --files -uu`, `docs/.ai/repo.profile.json`
 
@@ -20,7 +20,7 @@
 
 ### `/task` (`commands/task.md`)
 
-`/work` から呼ばれる docs 変更を伴う実装 flow。issue がなければ `commands/new-issue.md` Step 1-5 を使って作成し、プラン策定とユーザー許可後に実装する。実装後は `partials/git-commit.md` に従って commit し、draft PR を作成し、`/docs-sync` を自動実行する。
+`/work` から呼ばれる docs 変更を伴う実装 flow。issue がなければ `commands/new-issue.md` Step 1-5 を使って作成し、プラン策定とユーザー許可後に実装する。実装後は `/git-commit` を呼び出して commit し、draft PR を作成し、`/docs-sync` を自動実行する。
 
 根拠: `commands/task.md:1-15`, `commands/task.md:42-154`
 
@@ -74,11 +74,17 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 根拠: `commands/coding-general.md:1-3`, `commands/coding-py.md:1-4`, `commands/coding-js.md:1-4`, `commands/coding-ts.md:1-12`
 
+### `/git-commit` (`commands/git-commit.md`)
+
+コミット作成手順を定義するスラッシュコマンド。WIP commits の正規化（`wip:` commits を `git reset --soft merge-base` で staging area に展開）、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。呼び出し元の状態に依存せず、どのような状態で呼ばれても正しく動作するよう自己完結した設計になっている。`task.md`・`patch.md`・`review-resolve.md`・`docs-sync.md` から `/git-commit` として呼び出される。
+
+根拠: `commands/git-commit.md:1-103`
+
 ## Skills
 
-`skills/*/SKILL.md` は Codex 用の wrapper で、対応する `commands/*.md` を Source of Truth として読む。`coding-py` / `coding-js` / `coding-ts` は general など依存する command も読む構造を持つ。現存する skill wrapper は 13 件で、`commands/` にある各 command と対応する。
+`skills/*/SKILL.md` は Codex 用の wrapper で、対応する `commands/*.md` を Source of Truth として読む。`coding-py` / `coding-js` / `coding-ts` は general など依存する command も読む構造を持つ。現存する skill wrapper は 14 件で、`commands/` にある各 command と対応する。
 
-根拠: `skills/init-docs/SKILL.md:1-14`, `skills/coding-ts/SKILL.md`, `skills/` 実体一覧
+根拠: `skills/init-docs/SKILL.md:1-14`, `skills/coding-ts/SKILL.md`, `skills/git-commit/SKILL.md`, `skills/` 実体一覧
 
 ## Hooks
 
@@ -124,13 +130,11 @@ codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command codex  "$@"; }
 
 根拠: `hooks/log-access-prompt.sh`, `hooks/log-access-tool.sh`, `hooks/log-access-stop.sh`, `hooks/log-token-usage.sh`
 
-## Templates and Partials
+## Templates
 
 `templates/issue.md` は issue draft、`templates/pr.md` は PR body、`templates/readme.md` は README scaffold の template である。commands は installed path として `~/.config/claude-code-kit/templates/*.md` を参照する。
 
-`partials/git-commit.md` は commit 手順の共通部品で、WIP commits の正規化（`wip:` commits を `git reset --soft merge-base` で staging area に展開）、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。呼び出し元の状態に依存せず、どのような状態で呼ばれても正しく動作するよう自己完結した設計になっている。
-
-根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`, `partials/git-commit.md:1-103`
+根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`
 
 ## Tests
 

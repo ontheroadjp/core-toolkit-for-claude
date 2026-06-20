@@ -54,7 +54,7 @@
     - TypeScript (.ts / .tsx): `commands/coding-ts.md`
     - その他の言語: `commands/coding-general.md`
 - 変更を実施する（ユーザー確認不要）
-- コミットは複数回でも可。各コミットで `~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
+- コミットは複数回でも可。各コミットで `/git-commit` を実行する
     - パラメータ: `issue_number=none`, `allowed_types=[fix, refactor, chore, style, test, docs]`
     - 注: patch フローは新機能追加を行わないため `feat` は許可しない
 
@@ -90,7 +90,8 @@ Phase 2 の実行中に **この前提が崩れた** と判断した場合、tas
 - ユーザーから追加指示があり、スコープが patch の範囲を超えた
 
 **引き継ぎ手順:**
-1. 現時点の変更をコミットする（未コミットの場合）
+1. 未コミット変更がある場合: `/git-commit` を実行する
+    - パラメータ: `issue_number=none`, `allowed_types=[fix, refactor, chore, style, test, docs]`
 2. ユーザーに報告: 「patch フローの前提（軽微・局所・追跡不要）が崩れたため task フローに切り替えます。理由: <実際のエスカレーション理由>」
 3. `~/.config/claude-code-kit/templates/issue.md` をもとに issue のドラフトを作成する
     - 「/patch で実施済みの変更」と「追加スコープ（エスカレーション理由）」を必ず記載する

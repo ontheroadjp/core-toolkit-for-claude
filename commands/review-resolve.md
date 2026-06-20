@@ -100,7 +100,7 @@ gh api repos/{owner}/{repo}/pulls/<PR番号>/reviews \
 - スコープが大きすぎると判断した場合:
   - 「このコメントへの対応はスコープが大きいため、`/work` で別途対応してください」と報告する
   - このコメントをスキップして次へ進む
-- 実装完了後、`~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
+- 実装完了後、`/git-commit` を実行する
   - パラメータ: `issue_number=none`, `allowed_types=[fix, refactor, style]`
 - `git push` を実行する
 - このコメントへ返信する:

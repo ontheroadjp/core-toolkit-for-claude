@@ -99,9 +99,8 @@ CI runs `npm ci` and `npm run docs:build` in `site/` on push to `main` and on ma
 
 ```text
 .github/workflows/deploy.yml  GitHub Actions for VitePress -> GitHub Pages
-commands/                     Markdown command specifications
+commands/                     Markdown command specifications (includes /git-commit)
 hooks/                        Claude Code / Codex hook scripts and shared helpers
-partials/                     Shared command fragments, currently git commit flow
 skills/                       Codex skill wrappers around commands/*.md
 templates/                    Issue, PR, and README templates
 docs/                         /init-docs generated L0-L3 design docs
