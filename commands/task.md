@@ -10,7 +10,7 @@
 
 ```
 Phase 1: 実装（コード変更を完結させる）
-Phase 2: ドラフト PR 作成 → /docs-sync 自動実行
+Phase 2: PR 本文の準備 → /docs-sync 自動実行 → /git-pr 自動実行
 Phase 3: 最終報告
 ```
 
@@ -136,7 +136,7 @@ Phase 3: 最終報告
 
 ---
 
-### Phase 2: ドラフト PR 作成
+### Phase 2: PR 本文の準備
 
 ガード:
 - main ブランチ以外にいること
@@ -144,22 +144,30 @@ Phase 3: 最終報告
 - ワークスペースがクリーンであること
     - クリーンでない場合: `git stash push -m "task-phase2: auto stash"` で退避してから進む
 
-#### Step 1. ドラフト PR 作成
+#### Step 1. PR 本文・タイトルの準備
+
+セッション temp ディレクトリを特定する:
+```bash
+APPROVED_PATH=$(cat "${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/current-session-approved-path" 2>/dev/null)
+SESSION_ID=$(basename "$(dirname "$APPROVED_PATH")" 2>/dev/null)
+SESSION_TMP_DIR="/tmp/claude-code-kit/${SESSION_ID}"
+mkdir -p "$SESSION_TMP_DIR"
+```
 
 - `~/.config/claude-code-kit/templates/pr.md` をもとに PR 本文を作成する
 - **PR のタイトル・本文は英語で記述する**
-- PR はドラフトとして作成する。本文は `--body-file -` で標準入力から渡す:
-    ```bash
-    gh pr create --draft --title "#<issue number> <PR title in English>" --body-file - <<'EOF'
-    [~/.config/claude-code-kit/templates/pr.md の内容を実際の値で埋めたものを展開]
-    EOF
-    ```
-- 作成完了後、ユーザーに確認する:
-    **「追加の変更はありますか？」**
-    - あり → Step 3 に戻って実装・コミットする（`git push` で PR に自動反映される）
-    - なし → `/docs-sync` を自動実行する（docs 同期 → PR 公開まで完結させる）
-- `/docs-sync` が HARD STOP した場合はそこで処理が止まり、ユーザーへ報告される
-- `/docs-sync` 完了後、Phase 3 へ進む
+- 以下のファイルを SESSION_TMP_DIR に書き出す:
+    - `${SESSION_TMP_DIR}/pr-title.txt`: PR タイトル（形式: `#<issue番号> <英語タイトル>`）
+    - `${SESSION_TMP_DIR}/pr-body.md`: PR 本文（テンプレートを実際の値で埋めたもの）
+
+ユーザーに確認する:
+**「追加の変更はありますか？」**
+- あり → Phase 1 Step 3 に戻って実装・コミットする（push 前のため commit 操作は自由）
+- なし → `/docs-sync` を自動実行し、完了後にユーザー確認なしで即座に `/git-pr` を自動実行する
+
+`/docs-sync` が HARD STOP した場合はそこで処理が止まり、ユーザーへ報告される（`/git-pr` は実行しない）。
+`/docs-sync` 完了後、ユーザー確認なしに即座に `/git-pr` を実行する（push → PR 作成まで完結）。
+Phase 3 へ進む。
 
 ---
 
@@ -169,4 +177,4 @@ A. 実装したファイル（テストを除く）
 B. 作成/更新したテスト
 C. テストの実行結果
 D. issue URL
-E. PR URL（/docs-sync により公開済み）
+E. PR URL（/git-pr により公開済み）

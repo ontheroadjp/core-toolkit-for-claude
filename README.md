@@ -13,7 +13,8 @@ A structured AI-driven development workflow toolkit for Claude Code and Codex CL
 | `/codex-review` | Reviews a PR using the Codex CLI non-interactively, posts the result as a PR approval or change request (requires `CODEX_REVIEW_TOKEN`), and auto-invokes `/review-resolve` when changes are requested. |
 | `/patch` | Delegated by `/work` for lightweight fixes without docs changes. |
 | `/task` | Delegated by `/work` for implementation that requires docs changes. |
-| `/docs-sync` | Syncs `docs/*` and README from `git diff`, auto-updates L3 per-file doc change history, then publishes the draft PR. |
+| `/docs-sync` | Syncs `docs/*` and README from `git diff`, auto-updates L3 per-file doc change history, then writes Docs Sync Result to session temp for `/git-pr`. |
+| `/git-pr` | Reads PR title/body/docs-sync-result from session temp (falls back to `git diff`), runs `git push`, and creates the PR as ready for review. |
 | `/init-docs` | Re-observes the repository and reconstructs project design docs. |
 | `/coding-general` | Language-independent coding principles. |
 | `/coding-py` | Python-specific coding conventions. |
@@ -99,7 +100,7 @@ CI runs `npm ci` and `npm run docs:build` in `site/` on push to `main` and on ma
 
 ```text
 .github/workflows/deploy.yml  GitHub Actions for VitePress -> GitHub Pages
-commands/                     Markdown command specifications (includes /git-commit)
+commands/                     Markdown command specifications (includes /git-commit, /git-pr)
 hooks/                        Claude Code / Codex hook scripts and shared helpers
 skills/                       Codex skill wrappers around commands/*.md
 templates/                    Issue, PR, and README templates

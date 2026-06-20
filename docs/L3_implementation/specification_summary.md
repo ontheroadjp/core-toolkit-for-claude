@@ -20,9 +20,9 @@
 
 ### `/task` (`commands/task.md`)
 
-`/work` から呼ばれる docs 変更を伴う実装 flow。issue がなければプラン策定とユーザー許可を先に行い、承認後に `commands/new-issue.md` Step 4-5 を使ってユーザー確認なしで issue を自動作成する（Step 1-3 の対話はスキップし、確定済みプランの内容で各セクションを埋める）。Step 1 では変更対象ファイルが確定した後に対応する L3 per-file doc（`docs/L3_implementation/<source-path>.md`）が存在する場合は必ず Read する。Step 2 では L3 per-file doc のパスを session-approved に含める。実装後・`/git-commit` 前に変更した各ソースファイルの L3 per-file doc を作成または更新し（現状スナップショット + 設計意図、changelog ではない）、`/git-commit` で commit し、draft PR を作成し、`/docs-sync` を自動実行する。`docs/*` の変更は原則行わないが、L3 per-file doc（`docs/L3_implementation/<source-path>.md`）は実装フローの一部として例外的に task が管理する。
+`/work` から呼ばれる docs 変更を伴う実装 flow。issue がなければプラン策定とユーザー許可を先に行い、承認後に `commands/new-issue.md` Step 4-5 を使ってユーザー確認なしで issue を自動作成する（Step 1-3 の対話はスキップし、確定済みプランの内容で各セクションを埋める）。Step 1 では変更対象ファイルが確定した後に対応する L3 per-file doc（`docs/L3_implementation/<source-path>.md`）が存在する場合は必ず Read する。Step 2 では L3 per-file doc のパスを session-approved に含める。実装後・`/git-commit` 前に変更した各ソースファイルの L3 per-file doc を作成または更新し（現状スナップショット + 設計意図、changelog ではない）、`/git-commit` で commit する。Phase 2 では PR 本文・タイトルを SESSION_TMP_DIR（`/tmp/claude-code-kit/<session-id>/`）の `pr-body.md` / `pr-title.txt` に書き出し、`/docs-sync` → `/git-pr` を順に自動実行する（push・PR 作成は `/git-pr` が担う）。`docs/*` の変更は原則行わないが、L3 per-file doc（`docs/L3_implementation/<source-path>.md`）は実装フローの一部として例外的に task が管理する。
 
-根拠: `commands/task.md:1-15`, `commands/task.md:50-66`, `commands/task.md:94-95`, `commands/task.md:119-128`
+根拠: `commands/task.md:1-15`, `commands/task.md:50-66`, `commands/task.md:94-95`, `commands/task.md:139-170`
 
 ### `/patch` (`commands/patch.md`)
 
@@ -32,11 +32,11 @@
 
 ### `/docs-sync` (`commands/docs-sync.md`)
 
-PR branch 上で `git diff main...HEAD` を事実として docs と README を最小更新する。PR 存在確認、draft 状態確認、HARD STOP 判定、更新、commit/push、draft PR ready 化を行う。L0 は通常更新しない。
+PR branch 上で `git diff main...HEAD` を事実として docs と README を最小更新する。G-4（PR 存在確認）は廃止。補助情報は GitHub PR body の代わりに SESSION_TMP_DIR の `pr-body.md` から取得する（存在しない場合は git diff のみで判断）。HARD STOP 判定、更新、commit、`pr-docs-sync-result.md` 書き出しを行う。push・PR 作成は行わない（`/git-pr` が担う）。L0 は通常更新しない。4 フェーズ構成（Phase 4 は最終報告）。
 
 Phase 3 では docs・README.md 更新に加え、L3 per-file doc の変更履歴セクションを自動更新する。`git diff --name-only` で取得したソースファイル（`docs/` 配下を除く）に対応する `docs/L3_implementation/<path>.md` が存在する場合、`git log --oneline -10 -- <file>` を実行し `## 変更履歴（git log より自動生成）` セクションを更新または末尾追加する。L3 doc が存在しないファイルはスキップ（L3 doc 新規作成は `/task` が担う）。
 
-根拠: `commands/docs-sync.md:1-180`
+根拠: `commands/docs-sync.md:1-175`
 
 ### `/init-docs` (`commands/init-docs.md`)
 
@@ -82,11 +82,17 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 根拠: `commands/git-commit.md:1-109`
 
+### `/git-pr` (`commands/git-pr.md`)
+
+`git push` と `gh pr create` を担う単一責任のスラッシュコマンド。`/task` Phase 2 から `/docs-sync` 完了後に自動呼び出しされる。SESSION_TMP_DIR（`/tmp/claude-code-kit/<session-id>/`）の `pr-title.txt`（タイトル）・`pr-body.md`（本文）・`pr-docs-sync-result.md`（docs sync 結果）を参照し、存在しない場合は git diff / テンプレートから生成する。PR は ready for review として直接作成する（draft → ready 遷移なし）。ユーザーが手動で呼び出すこともできる。
+
+根拠: `commands/git-pr.md:1-60`
+
 ## Skills
 
-`skills/*/SKILL.md` は Codex 用の wrapper で、対応する `commands/*.md` を Source of Truth として読む。`coding-py` / `coding-js` / `coding-ts` は general など依存する command も読む構造を持つ。現存する skill wrapper は 14 件で、`commands/` にある各 command と対応する。
+`skills/*/SKILL.md` は Codex 用の wrapper で、対応する `commands/*.md` を Source of Truth として読む。`coding-py` / `coding-js` / `coding-ts` は general など依存する command も読む構造を持つ。現存する skill wrapper は 15 件で、`commands/` にある各 command と対応する。
 
-根拠: `skills/init-docs/SKILL.md:1-14`, `skills/coding-ts/SKILL.md`, `skills/git-commit/SKILL.md`, `skills/` 実体一覧
+根拠: `skills/init-docs/SKILL.md:1-14`, `skills/coding-ts/SKILL.md`, `skills/git-commit/SKILL.md`, `skills/git-pr/SKILL.md`, `skills/` 実体一覧
 
 ## Hooks
 
