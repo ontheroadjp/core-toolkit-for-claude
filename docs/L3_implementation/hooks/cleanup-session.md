@@ -60,6 +60,7 @@ Stop hook はターン終了ごとに発火するため、`/task` → `/docs-syn
 
 ## 変更履歴（git log より自動生成）
 
+- 780f8c3 fix(#169): remove SESSION_TMP_DIR cleanup from Stop hook
 - 4e96f9c feat(#142): add session-scoped temp hook access
 - 677e75b fix: use CODEX_THREAD_ID for session identity and disable session-approved in PPID fallback
 - dd29feb feat(#129): store session approvals per session
