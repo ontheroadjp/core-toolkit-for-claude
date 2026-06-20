@@ -259,17 +259,7 @@ assert_json_decision "$output" "block"
 output=$(run_guard 'git status --porcelain')
 assert_no_output "$output"
 
-mkdir -p "$SESSION_TMP_DIR" "${TMP_ROOT}/other-session"
-touch "${SESSION_TMP_DIR}/scratch.txt" "${TMP_ROOT}/other-session/scratch.txt"
 run_cleanup "$SESSION_ID"
-if [ -e "$SESSION_TMP_DIR" ]; then
-    printf 'Expected cleanup hook to remove current session temp dir: %s\n' "$SESSION_TMP_DIR" >&2
-    exit 1
-fi
-if [ ! -e "${TMP_ROOT}/other-session/scratch.txt" ]; then
-    printf 'Expected cleanup hook to preserve other session temp dir\n' >&2
-    exit 1
-fi
 
 # --- Working repo dynamic defense tests ---
 

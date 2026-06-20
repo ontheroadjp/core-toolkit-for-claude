@@ -116,9 +116,9 @@ PreToolUse Bash guard の互換 wrapper。Bash 以外は何も出力せず終了
 
 ### `hooks/cleanup-session.sh`
 
-Stop hook。現在の hook セッションに対応する `session-approved` と `/tmp/claude-code-kit/<session-id>/` を削除し、空になった session directory と temp root のみ削除する。別セッションの承認ファイルや temp directory は削除しない。
+Stop hook。現在の hook セッションに対応する `session-approved` を削除し、空になった session directory のみ削除する。SESSION_TMP_DIR（`/tmp/claude-code-kit/<session-id>/`）は削除しない。Stop hook はターン終了ごとに発火するため、スキル間（`/task` → `/docs-sync` → `/git-pr`）で temp ファイルが消えてしまう問題を避けるため。`/tmp` の自動クリーンアップ（OS 再起動 / tmpfiles.d）に委ねる。
 
-根拠: `hooks/cleanup-session.sh:39-58`
+根拠: `hooks/cleanup-session.sh:39-50`
 
 ### `hooks/tmux-agent-status.sh`
 
