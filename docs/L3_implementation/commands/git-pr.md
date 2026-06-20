@@ -72,3 +72,7 @@ SESSION_TMP_DIR="/tmp/claude-code-kit/${SESSION_ID}"
 - PR は ready for review として作成する（draft では作成しない）
 - SESSION_TMP_DIR が特定できない場合は temp ファイルなしとして動作する（エラーにしない）
 - 手動呼び出し時に temp ファイルがなければ diff からタイトル・本文を生成するため、単独でも動作する
+
+## 変更履歴（git log より自動生成）
+
+- 82717a1 feat(#167): add /git-pr command; refactor push and PR creation out of /task and /docs-sync

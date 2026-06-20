@@ -96,6 +96,7 @@ Phase 4: 最終報告
 
 ## 変更履歴（git log より自動生成）
 
+- 82717a1 feat(#167): add /git-pr command; refactor push and PR creation out of /task and /docs-sync
 - 5c9d8f2 feat(#165): extend docs-sync to auto-insert git log into L3 per-file docs
 - 89d5fad feat(#157): move git-commit to commands/, add skill wrapper, update all callers to /git-commit
 - f6288ac feat(#98): add git push to /docs-sync Phase 3
@@ -105,4 +106,3 @@ Phase 4: 最終報告
 - dfb9eb8 chore: enforce English for issue and PR titles and bodies
 - ebbdebf feat(#21): add L0_concept layer and explicit L2/L3 placement for additional docs
 - fc261f8 feat(#19): add pre-commit privacy/security check to all commands
-- 45e34c4 refactor: reduce token usage in task.md and docs-sync.md
