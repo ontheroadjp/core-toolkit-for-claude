@@ -109,11 +109,34 @@
 
 ---
 
-### Phase 3: docs・README.md 最小更新
+### Phase 3: docs・README.md 最小更新 + L3 変更履歴更新
 
+#### Step 1: docs/* および README.md の最小更新
 - 作業プランに従って docs/* および README.md の最小更新を行う
 - 作業プラン外の変更は絶対に行わない
 - 完了後、更新内容をユーザーに報告する
+
+#### Step 2: L3 per-file doc の変更履歴セクション更新
+- Phase 1 Step 1 で取得したファイル一覧から、`docs/` 配下を除くソースファイルを対象とする
+- 各ソースファイルについて、対応する L3 doc が存在するか確認する:
+    - 対応パス: `docs/L3_implementation/<ソースファイルパス>.md`（例: `commands/docs-sync.md` → `docs/L3_implementation/commands/docs-sync.md`）
+- 存在する場合:
+    1. `git log --oneline -10 -- <ソースファイルパス>` を実行する
+    2. L3 doc 内の `## 変更履歴（git log より自動生成）` セクションを更新する:
+        - セクションが存在しない場合: ファイル末尾に追加する
+        - セクションが既に存在する場合: そのセクションの内容を差し替える（次の `##` ヘッダーまで、またはファイル末尾まで）
+    3. セクション内容のフォーマット:
+        ```
+        ## 変更履歴（git log より自動生成）
+
+        - <hash> <commit message>
+        - <hash> <commit message>
+        ...
+        ```
+- 存在しない場合: スキップ（L3 doc の新規作成は `/task` が担う）
+- `docs/` 配下のファイル（`docs/L3_implementation/` を含む）はこのステップの対象外とする
+
+#### Step 3: コミットとプッシュ
 - `/git-commit` を実行する
     - パラメータ: `fixed_message="docs: sync documentation"`
 - `git push` を実行する

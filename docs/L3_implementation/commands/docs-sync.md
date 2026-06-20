@@ -1,0 +1,102 @@
+# /docs-sync specification
+
+## 目的・役割
+
+`commands/docs-sync.md` は PR ブランチ上で `git diff main...HEAD` を事実として docs と README.md を最小更新し、L3 per-file doc の変更履歴セクションを自動更新するドキュメント同期専用コマンドである。
+
+`/task` から自動呼び出しされるほか、ユーザーが手動で呼び出すこともある。実装ファイルへの変更は一切行わない。
+
+根拠: `commands/docs-sync.md:1-10`
+
+## 動作の概要
+
+5 フェーズで構成される:
+
+```
+Phase 1: 変更の把握（git diff --name-only + PR 本文）
+Phase 2: 更新対象の特定（docs/* および README.md）
+Phase 3: docs・README.md 最小更新 + L3 変更履歴更新
+Phase 4: PR 公開
+Phase 5: 最終報告
+```
+
+根拠: `commands/docs-sync.md:37-165`
+
+## 主要なフロー
+
+### 実行前提ゲート
+
+- G-1: `docs/.ai/repo.profile.json` の存在確認
+- G-2: `docs/` の存在確認
+- G-3: main ブランチ以外にいること
+- G-4: PR の存在確認（`gh pr view --json isDraft,number,url`）
+    - isDraft=true: 通常モード（PR 本文も取得して引き継ぎ事項を解析）
+    - isDraft=false: docs・README.md 更新のみモード（PR 公開スキップ）
+    - PR 本文に「/docs-sync への引き継ぎ事項」がない場合は git diff のみで判断
+
+根拠: `commands/docs-sync.md:13-34`
+
+### Phase 1: 変更の把握
+
+`git diff main...HEAD --name-only` でファイル一覧のみ取得し（全量 diff は取得しない）、PR 本文の引き継ぎ事項を解析する。矛盾時は git diff を優先する。
+
+根拠: `commands/docs-sync.md:39-76`
+
+### Phase 2: 更新対象の特定
+
+変更領域に対応する更新対象 docs を根拠付きで列挙する。HARD STOP 判定はファイル名パターンで行う（10件以上かつ3領域以上、主要レイヤ新出、エントリポイント変更）。L0_concept は更新しない。
+
+根拠: `commands/docs-sync.md:79-109`
+
+### Phase 3: docs・README.md 最小更新 + L3 変更履歴更新
+
+3 つのステップで構成される:
+
+**Step 1**: docs/* および README.md の最小更新（作業プランに従い、プラン外の変更は禁止）
+
+**Step 2**: L3 per-file doc の変更履歴セクション更新
+- Phase 1 で取得したファイル一覧から `docs/` 配下を除くソースファイルを対象とする
+- 各ファイルに対応する `docs/L3_implementation/<path>.md` が存在する場合のみ処理する
+- `git log --oneline -10 -- <file>` を実行し、`## 変更履歴（git log より自動生成）` セクションを更新または末尾に追加する
+- L3 doc が存在しないファイルはスキップ（L3 doc 新規作成は `/task` が担う）
+- `docs/` 配下のファイル（`docs/L3_implementation/` を含む）は対象外
+
+**Step 3**: `/git-commit`（`fixed_message="docs: sync documentation"`）→ `git push`
+
+根拠: `commands/docs-sync.md:112-143`
+
+## 重要な設計判断
+
+### git diff を事実とし PR 本文を補助とする理由
+
+PR 本文は主観的な説明を含む可能性があるが、git diff は変更の実態そのものである。矛盾が生じた場合に git diff を優先することで、docs が実装と乖離するリスクを防ぐ。
+
+### L3 変更履歴の更新を docs-sync が担う理由
+
+`/task` が L3 doc を作成するタイミングでは `/git-commit` がまだ実行されていないため、最新コミットが `git log` に含まれない。docs-sync はコミット後に実行されるため、当該コミットを含む正確な履歴を記録できる。
+
+また docs-sync は `git diff --name-only` で修正ファイルの全量を把握しており、L3 doc の存在確認と git log 実行を機械的に行える。
+
+### HARD STOP（/init-docs が必要なケース）
+
+以下の場合は docs-sync の前提（局所更新）が崩れているため処理を止める:
+- 新しい主要レイヤ/トップレベル構造の追加疑い
+- 起動経路・エントリポイントの変更疑い
+- 変更ファイルが 10 件以上かつ 3 領域以上
+
+根拠: `commands/docs-sync.md:64-75`, `commands/docs-sync.md:106-109`
+
+## 統合ポイント
+
+- 呼び出し元: `commands/task.md`（Phase 2 Step 1 から自動呼び出し）、ユーザーの手動呼び出し
+- 呼び出すもの: `/git-commit`（`fixed_message="docs: sync documentation"`）
+- 依存: `docs/.ai/repo.profile.json`、PR ブランチ、`gh` CLI
+
+## 注意事項
+
+- `docs/L3_implementation/` 配下のファイルは Phase 3 Step 2 の L3 変更履歴更新の対象外（自己参照ループを防ぐ）
+- isDraft=false（公開済み PR）の場合は Phase 4 をスキップする
+- HARD STOP 時は `/init-docs` を実行してから `/task → /docs-sync` をやり直す
+
+## 変更履歴（git log より自動生成）
+
