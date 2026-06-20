@@ -22,7 +22,9 @@ ${XDG_STATE_HOME:-~/.local/state}/claude-code-kit/sessions/<session-id>/session-
 
 ---
 
-## SESSION_TMP_DIR（PR 作成フロー用）
+## SESSION_TMP_DIR（AI agent セッション I/O 領域）
+
+AI agent がセッション内で自由に読み書きできる汎用ディレクトリ。`session-approved` に関係なく、自セッションの `SESSION_TMP_DIR` 配下への Write / Edit は `auto-approve-readonly` hook が常に自動承認する。
 
 ### パス
 
@@ -32,7 +34,7 @@ ${XDG_STATE_HOME:-~/.local/state}/claude-code-kit/sessions/<session-id>/session-
 
 `<session-id>` は `session-approved` のパスから `basename $(dirname ...)` で取得する。
 
-### 格納ファイル
+### 利用例: PR 作成フロー
 
 | ファイル | 作成 | 参照 |
 |---|---|---|
