@@ -76,9 +76,9 @@ PR 番号を受け取り、PR ブランチに checkout し、`codex review --bas
 
 ### `/git-commit` (`commands/git-commit.md`)
 
-コミット作成手順を定義するスラッシュコマンド。WIP commits の正規化（`wip:` commits を `git reset --soft merge-base` で staging area に展開）、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。呼び出し元の状態に依存せず、どのような状態で呼ばれても正しく動作するよう自己完結した設計になっている。`task.md`・`patch.md`・`review-resolve.md`・`docs-sync.md` から `/git-commit` として呼び出される。
+コミット作成手順を定義するスラッシュコマンド。WIP commits の正規化（HEAD が `wip:` の場合のみ、最近の non-WIP commit まで遡り `git reset --soft` で staging area に展開。non-WIP commits には一切触れない）、staged diff 取得、個人情報等のチェック、Conventional Commits message 作成、commit 実行を定義する。`task.md`・`patch.md`・`review-resolve.md`・`docs-sync.md` から `/git-commit` として呼び出される。
 
-根拠: `commands/git-commit.md:1-103`
+根拠: `commands/git-commit.md:1-109`
 
 ## Skills
 
