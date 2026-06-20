@@ -120,6 +120,8 @@ Stop hook。現在の hook セッションに対応する `session-approved` を
 
 根拠: `hooks/cleanup-session.sh:39-50`
 
+詳細（生成される中間ファイルと削除タイミング全体）: `docs/L3_implementation/intermediate-files.md`
+
 ### `hooks/tmux-agent-status.sh`
 
 Standalone helper called by UserPromptSubmit, Notification, and Stop hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one argument (✅, 🔵, or 🔴). Silently exits when `$TMUX` is unset (no-op outside tmux). Strips any existing status prefix before setting the new one to prevent stacking. No existing hook scripts are modified; registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
