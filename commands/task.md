@@ -107,7 +107,7 @@ Phase 3: 最終報告
         - Step 2（必要に応じて Step 1）へ戻る
         - ゲートは通過済みの前提で作業を続ける
     - ユーザーから OK が出た場合:
-        - `~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
+        - `/git-commit` を実行する
             - パラメータ: `issue_number=<Step 0 で確定した issue 番号>`, `allowed_types=[feat, fix, refactor, chore, style, test, docs]`
         - 作業内容を対象 issue のコメントとして投稿する
         - ユーザー確認なしに即座に Phase 2 へ進む

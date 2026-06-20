@@ -114,7 +114,7 @@
 - 作業プランに従って docs/* および README.md の最小更新を行う
 - 作業プラン外の変更は絶対に行わない
 - 完了後、更新内容をユーザーに報告する
-- `~/.config/claude-code-kit/partials/git-commit.md` を Read し、その手順に従ってコミットする
+- `/git-commit` を実行する
     - パラメータ: `fixed_message="docs: sync documentation"`
 - `git push` を実行する
 
