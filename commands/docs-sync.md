@@ -4,8 +4,9 @@
 
 - **実装ファイルへの変更は一切行わない**
 - docs/* および README.md の最小更新のみを行う
-- 判断の根拠: `git diff main...HEAD`（事実）+ ドラフト PR 本文（補助）
-- 作業完了後、ドラフト PR を公開（ready for review）に変換する
+- 判断の根拠: `git diff main...HEAD`（事実）+ セッション temp の `pr-body.md`（補助）
+- 作業完了後、docs sync 結果をセッション temp の `pr-docs-sync-result.md` に書き出す
+- push・PR 作成は `/git-pr` が担う
 - レビュー・マージは人間が行う
 
 ---
@@ -21,17 +22,6 @@
 ### G-3: main ブランチ以外にいること
 - main にいる場合: 作業対象ブランチへ checkout することを促して終了する
 
-### G-4: PR の存在確認
-- まず `gh pr view --json isDraft,number,url` でステータスのみ確認する（body は取得しない）
-- PR が存在しない場合: /task を先に実行することを促して終了する
-- PR が存在する場合:
-    - isDraft=true（ドラフト）: 通常モードで進む
-    - isDraft=false（公開済み）: 「PR は既に公開済みのため docs 追記・再公開はスキップし、docs・README.md 更新のみ行う」モードで進む（body 取得不要）
-- 通常モードの場合のみ、続けて `gh pr view --json body -q .body` で本文を取得する
-- PR 本文に「/docs-sync への引き継ぎ事項」セクションが存在しない場合:
-    - 終了しない
-    - 「補助情報なし: git diff のみで判断する」モードで Phase 1 に進む
-
 ---
 
 ## ワークフロー
@@ -43,12 +33,21 @@
 - 差分取得不能な場合: /init-git を促して終了する
 - この時点では詳細差分は取得しない
 
-#### Step 2. PR 本文から引き継ぎ事項を取得（補助情報）
-- G-4 で取得済みの PR 本文を使用する（再取得不要）
-- 「/docs-sync への引き継ぎ事項」セクションが存在する場合のみ解析する
+#### Step 2. セッション temp からの補助情報取得
+
+セッション temp ディレクトリを特定する:
+```bash
+APPROVED_PATH=$(cat "${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/current-session-approved-path" 2>/dev/null)
+SESSION_ID=$(basename "$(dirname "$APPROVED_PATH")" 2>/dev/null)
+SESSION_TMP_DIR="/tmp/claude-code-kit/${SESSION_ID}"
+```
+
+- `${SESSION_TMP_DIR}/pr-body.md` が存在する場合:
+    - 「/docs-sync への引き継ぎ事項」セクションが存在する場合のみ解析する
     - 設計意図・背景、git diff に現れない影響、注意箇所を読み取る
-- セクションが存在しない場合: 補助情報なしとして git diff のみで判断する（エラーではない）
-- PR 本文と git diff が矛盾する場合は常に git diff を優先する
+    - セクションが存在しない場合: 補助情報なしとして git diff のみで判断する
+- ファイルが存在しない場合: 補助情報なしとして git diff のみで判断する（エラーではない）
+- `pr-body.md` の内容と git diff が矛盾する場合は常に git diff を優先する
 
 #### Step 3. 関係ファイルの絞り込みとピンポイント diff 取得
 - Step 1 のファイル一覧と Step 2 の引き継ぎ事項をもとに、docs および README.md の更新に関係するファイルを絞り込む
@@ -100,7 +99,7 @@
 - タスクリストを作成する
 - **更新対象がゼロの場合**:
     - 「docs・README.md 更新不要」とユーザーに報告する
-    - Phase 3 をスキップして Phase 4 に進む
+    - Phase 3 Step 1・Step 2 をスキップし、Step 3（結果書き出し）へ進む
 - ユーザーに更新プランを報告し、許可を得る
 
 ##### HARD STOP（/init-docs が必要）:
@@ -136,53 +135,39 @@
 - 存在しない場合: スキップ（L3 doc の新規作成は `/task` が担う）
 - `docs/` 配下のファイル（`docs/L3_implementation/` を含む）はこのステップの対象外とする
 
-#### Step 3: コミットとプッシュ
-- `/git-commit` を実行する
-    - パラメータ: `fixed_message="docs: sync documentation"`
-- `git push` を実行する
+#### Step 3: コミットと結果書き出し
 
----
+**docs 変更があった場合:**
+- `/git-commit` を実行する（パラメータ: `fixed_message="docs: sync documentation"`）
 
-### Phase 4: PR 公開
+**セッション temp への書き出し（常に実行）:**
 
-G-4 で isDraft=false（公開済み）と判定された場合、このフェーズは全てスキップする。
-
-#### Step 1. PR 本文に「Docs 同期結果」セクションを追記する
-
-既存本文を保持したまま追記する:
-
+セッション temp ディレクトリを特定する（Step 2 で取得済みの場合は再利用）:
 ```bash
-# 現在の PR 本文を取得
-current_body=$(gh pr view --json body -q .body)
-
-# 追記内容を末尾に結合して PATCH する
-new_body="${current_body}
-
-## Docs Sync Result
-- Updated files: [list]
-- Basis: git diff main...HEAD adopted as fact, PR handoff notes referenced as supplement
-- HARD STOP: none / yes (details)"
-
-gh api repos/{owner}/{repo}/pulls/{number} \
-  --method PATCH \
-  -f body="$new_body"
+APPROVED_PATH=$(cat "${XDG_STATE_HOME:-$HOME/.local/state}/claude-code-kit/current-session-approved-path" 2>/dev/null)
+SESSION_ID=$(basename "$(dirname "$APPROVED_PATH")" 2>/dev/null)
+SESSION_TMP_DIR="/tmp/claude-code-kit/${SESSION_ID}"
 ```
 
-- `{owner}` `{repo}` `{number}` は実行時に実際の値に置換する
+`${SESSION_TMP_DIR}` が特定できた場合: `${SESSION_TMP_DIR}/pr-docs-sync-result.md` を書き出す:
 
-#### Step 2. ドラフト PR を公開状態に変換する
-- `gh pr ready` を実行する
+```
+## Docs Sync Result
+- Updated files: [list、または "none"]
+- Basis: git diff main...HEAD adopted as fact, pr-body.md referenced as supplement
+- HARD STOP: none
+```
 
 ---
 
-### Phase 5: 最終報告
+### Phase 4: 最終報告
 
 A. 更新した docs ファイル一覧と更新内容サマリ（更新なしの場合はその旨）
-B. PR URL と状態（公開済み / 元から公開済みのためスキップ）
-C. 次のステップ: レビュアーが PR をレビュー・マージする
+B. 次のステップ: `/git-pr` が自動実行される（または手動で `/git-pr` を実行する）
 
 ---
 
 ## 注意事項
-- git diff を「事実」、PR 本文を「補助」として扱う。矛盾時は git diff を優先する
+- git diff を「事実」、`pr-body.md` を「補助」として扱う。矛盾時は git diff を優先する
 - HARD STOP 時は /init-docs を実行してから /task → /docs-sync をやり直す
+- push・PR 作成は行わない（`/git-pr` が担う）

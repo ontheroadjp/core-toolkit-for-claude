@@ -29,7 +29,8 @@
     "commands/coding-py.md",
     "commands/coding-js.md",
     "commands/coding-ts.md",
-    "commands/git-commit.md"
+    "commands/git-commit.md",
+    "commands/git-pr.md"
   ],
   "templates": [
     "templates/issue.md",
@@ -92,7 +93,8 @@
     "skills/coding-py/SKILL.md",
     "skills/coding-js/SKILL.md",
     "skills/coding-ts/SKILL.md",
-    "skills/git-commit/SKILL.md"
+    "skills/git-commit/SKILL.md",
+    "skills/git-pr/SKILL.md"
   ],
   "primary_docs": {
     "investigation": "docs/L3_implementation/specification_summary.md",
