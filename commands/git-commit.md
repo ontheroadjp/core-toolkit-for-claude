@@ -22,28 +22,34 @@ git branch --show-current
 - `git branch` で非 main ブランチを1つ特定する
 - `git checkout <そのブランチ>` で移動してからコミットを続行する
 
-### 2. 状態の正規化（WIP commits の squash）
+### 2. 状態の正規化（直前の WIP commits の squash）
 
-まず `wip:` commits が存在するかを確認する:
+HEAD の commit message を確認する:
 
 ```bash
-git log $(git merge-base HEAD main)..HEAD --format="%s"
+git log -1 --format="%s"
 ```
 
-出力に `wip:` で始まる行が含まれる場合、次を実行する:
+`wip:` で始まらない場合はこのステップをスキップする。
+
+`wip:` で始まる場合、HEAD から遡り最初に見つかった non-WIP commit の hash を取得する:
 
 ```bash
-git reset --soft $(git merge-base HEAD main)
+git log HEAD --format="%H %s" | awk '!/^[a-f0-9]+ wip:/{print $1; exit}'
+```
+
+取得した hash に対して reset する:
+
+```bash
+git reset --soft <上記で取得した hash>
 ```
 
 これにより:
-- HEAD が merge-base（ブランチ分岐点）に戻る
-- index（staging area）はそのまま — WIP commits の全変更がステージ済みになる
-- working tree は不変
+- HEAD が直近の non-WIP commit に戻る
+- HEAD 側の連続する `wip:` commits の全変更がステージ済みになる
+- working tree および non-WIP commit は不変
 
-`wip:` commits がない場合はこのステップをスキップする（後方互換）。
-
-このステップは呼び出し元の状態に依存せず、**どのような状態で呼ばれても**正しく動作するための正規化である。
+このステップの責務は「HEAD から遡った連続する `wip:` commits のみを squash すること」である。それより先に `wip:` commits が存在しても、このステップのスコープ外であるため一切触れない。
 
 ### 3. ステージ済み diff の取得
 ```bash
