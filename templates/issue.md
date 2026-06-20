@@ -1,6 +1,6 @@
 # Issue Template
 
-<!-- Used by task.md (Step 0) and patch.md (escalation) -->
+<!-- Used by task.md (Step 2) and patch.md (escalation) -->
 <!-- Fill in the [ ] placeholders; remove lines that don't apply -->
 
 ## Overview
