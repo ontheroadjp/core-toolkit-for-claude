@@ -34,7 +34,9 @@
 
 PR branch 上で `git diff main...HEAD` を事実として docs と README を最小更新する。PR 存在確認、draft 状態確認、HARD STOP 判定、更新、commit/push、draft PR ready 化を行う。L0 は通常更新しない。
 
-根拠: `commands/docs-sync.md:1-165`
+Phase 3 では docs・README.md 更新に加え、L3 per-file doc の変更履歴セクションを自動更新する。`git diff --name-only` で取得したソースファイル（`docs/` 配下を除く）に対応する `docs/L3_implementation/<path>.md` が存在する場合、`git log --oneline -10 -- <file>` を実行し `## 変更履歴（git log より自動生成）` セクションを更新または末尾追加する。L3 doc が存在しないファイルはスキップ（L3 doc 新規作成は `/task` が担う）。
+
+根拠: `commands/docs-sync.md:1-180`
 
 ### `/init-docs` (`commands/init-docs.md`)
 
