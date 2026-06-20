@@ -90,7 +90,7 @@ CI runs `npm ci` and `npm run docs:build` in `site/` on push to `main` and on ma
 ## Design Principles
 
 - `git diff` is truth for docs sync; PR text is supplemental.
-- `/task` does not edit `docs/*`; `/docs-sync` handles implementation-driven docs updates.
+- `/task` creates and updates L3 per-file docs (`docs/L3_implementation/<source-path>.md`) as part of implementation; `/docs-sync` handles all other docs updates.
 - `/docs-sync` makes minimal updates and escalates to `/init-docs` when the structure can no longer be explained locally.
 - `~/.claude/` is symlink-only; this repository remains the source of truth.
 - Workspace cleanup uses stash; destructive git operations require explicit human control.

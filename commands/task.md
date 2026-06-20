@@ -4,7 +4,7 @@
 
 - 想像・憶測は一切禁止
 - すべての判断は docs/.ai/repo.profile.json および docs の記述に基づく
-- **docs/* の変更は行わない** — ドキュメント同期は /docs-sync が担う
+- **docs/* の変更は原則行わない** — ドキュメント同期は /docs-sync が担う。ただし L3 per-file doc（`docs/L3_implementation/<source-path>.md`）は実装フローの一部として Step 3.2 で作成・更新する
 - 全ての作業は issue と紐づく（issue がない場合は自動生成する）
 - ワークフローは 3 フェーズで構成される
 
@@ -53,6 +53,11 @@ Phase 3: 最終報告
 - `docs/.ai/repo.profile.json` および `docs/L3_implementation/specification_summary.md` は work フェーズで既に Read 済みのため、再度 Read しない
 - Step 2（プラン策定）に必要な情報が不足している場合のみ、差分を調査・補完する
 - 未確認事項が残る場合はユーザーに報告し、確定するまで Step 2 に進まない
+- 変更対象ファイルが確定したら、各ファイルに対応する L3 per-file doc を確認し、存在する場合は必ず Read する:
+    - 対応パス: `docs/L3_implementation/<変更対象ファイルのパス>.md`（例: `commands/task.md` → `docs/L3_implementation/commands/task.md`）
+    - L3 per-file doc はファイルの現状スナップショットと設計意図を記録したもの
+    - 存在する場合: Read して設計意図・現状仕様を把握してから Step 2 へ進む
+    - 存在しない場合: スキップ（Step 3.2 で新規作成する）
 
 ※ 事実が確定できない場合、ユーザーに理由を報告し、提案を提示して判断を仰ぐ
 
@@ -89,6 +94,7 @@ Phase 3: 最終報告
     - Write ツールで上記で取得したパスに session-approved ファイルを作成する。内容（1行1エントリ）:
         - 利用ツールカテゴリ（例: `tool:git_write`）
         - 新規作成・編集ファイルの絶対パス（例: `file:/abs/path/to/file.md`）
+        - Step 3.2 で作成・更新する L3 per-file doc の絶対パス（例: `file:/abs/path/to/docs/L3_implementation/commands/task.md`）
     - 注: `session-approved` はこの Step で 1 度だけ書き込む。実行中にスコープを追加しようとすると hook がブロックする。スコープ変更が必要な場合はこの Step に戻り、ユーザーの許可を得てから再書き込みすること。
     - **issue が未作成の場合**（Step 0 で issue 番号がなかった場合）:
         - `commands/new-issue.md` を Read し、**Step 4〜Step 5 のみ**実行して issue を作成する
@@ -113,6 +119,16 @@ Phase 3: 最終報告
         - Step 2（必要に応じて Step 1）へ戻る
         - ゲートは通過済みの前提で作業を続ける
     - ユーザーから OK が出た場合:
+        - 変更した各ソースファイルに対応する L3 per-file doc を作成または更新する:
+            - パス: `docs/L3_implementation/<変更したファイルのパス>.md`（例: `commands/task.md` → `docs/L3_implementation/commands/task.md`）
+            - 内容: **現時点のスナップショット**（changelogや作業履歴ではない）
+                - 目的・役割
+                - 動作の概要と主要な判定ロジック・フロー
+                - 重要な設計判断とその理由（なぜそうしたか — 非自明な選択に限る）
+                - 統合ポイント（呼び出し元・呼び出し先）
+                - 注意事項・既知の制限
+            - 過去の経緯は「なぜ現在の設計になっているか」を説明する場合にのみ含める
+            - 根拠コードへの参照を含める（例: `commands/task.md:42-100`）
         - `/git-commit` を実行する
             - パラメータ: `issue_number=<Step 0 で確定した issue 番号>`, `allowed_types=[feat, fix, refactor, chore, style, test, docs]`
         - 作業内容を対象 issue のコメントとして投稿する
