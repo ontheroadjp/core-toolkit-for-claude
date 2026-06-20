@@ -1,0 +1,123 @@
+# /task specification
+
+## 目的・役割
+
+`commands/task.md` は `commands/work.md` から委譲される、**docs 変更を伴う実装専用のワークフロー**である。issue の確認・自動生成、実装、L3 per-file doc 作成、ドラフト PR 作成、`/docs-sync` 自動実行を担う。
+
+ゲート確認・ルーティング判定・stash 管理は work.md が担うため、task.md 内では重複して行わない。
+
+根拠: `commands/task.md:1-15`
+
+## 動作の概要
+
+3 フェーズで構成される:
+
+```
+Phase 1: 実装（issue 確認/自動生成 → 調査補完 → プラン策定・承認 → 実装 → L3 doc 作成 → commit）
+Phase 2: ドラフト PR 作成 → /docs-sync 自動実行
+Phase 3: 最終報告
+```
+
+フェーズをまたいで遡ることはない（フェーズ内の Step を遡ることは許容）。
+
+根拠: `commands/task.md:11-17`
+
+## 主要なフロー
+
+### Phase 1
+
+#### Step 0: issue の確認
+
+以下の 3 ケースを処理する:
+
+1. `/patch` からのエスカレーション: patch 側で作成済みの issue 番号を引き継ぐ
+2. ユーザーが issue 番号を指定済み: `gh issue view` で内容確認し以降の起点とする
+3. issue がない: Step 2 のプラン承認後に自動作成する（`commands/new-issue.md` の Step 4-5 のみ実行）
+
+ケース 3 で自動作成する場合、確定済みプランの内容（完了条件・背景・変更対象・検証方法）を issue テンプレートに英語で埋める。ユーザー確認はスキップ（プラン承認で確定済みのため）。
+
+根拠: `commands/task.md:32-48`
+
+#### Step 1: 現状調査の引き継ぎと補完
+
+work.md の調査結果を引き継ぎ、プラン策定に必要な情報が不足している場合のみ補完する。
+
+**変更対象ファイルが確定したら、`docs/L3_implementation/<対象ファイルパス>.md` が存在する場合は必ず Read する。** 設計意図・現状仕様を把握してから Step 2 へ進む。存在しない場合はスキップ（Step 3.2 で新規作成する）。
+
+根拠: `commands/task.md:50-66`
+
+#### Step 2: プラン策定（必須・スキップ不可）
+
+以下を含む作業プランを確定し、ユーザーの明確な許可を得る:
+
+- 完了条件、Before/After、変更対象（最小単位）、影響とリスク、検証方法、ロールバック方針
+- 利用ツール（`tool:git_write` / `tool:gh_issue_write` / `tool:gh_pr_write`）
+- 新規作成・編集ファイルの絶対パス
+- Step 3.2 で作成・更新する L3 per-file doc の絶対パス（`docs/L3_implementation/<source-path>.md`）
+
+ユーザーから OK が出た後:
+1. `current-session-approved-path` を読み、session-approved ファイルに**ツールカテゴリ・実装ファイル・L3 doc パス**を一括書き込みする（1 度だけ）
+2. issue が未作成の場合は new-issue.md Step 4-5 で自動作成する
+3. issue が作成済みの場合は調査結果・作業プランを issue 本文に追記する
+
+session-approved はこの Step で 1 度だけ書き込む。スコープ変更が必要な場合はこの Step に戻りユーザーの許可を得てから再書き込みする。
+
+根拠: `commands/task.md:68-111`
+
+#### Step 3: 実行
+
+3.1: 作業プランに従って実装する。
+
+3.2: 実装完了後、ユーザーに報告して OK を得た後:
+
+1. **L3 per-file doc の作成/更新**: 変更した各ソースファイルに対して `docs/L3_implementation/<path>.md` を作成または更新する。内容は**現時点のスナップショット**（changelog ではない）:
+   - 目的・役割、動作概要、重要な設計判断とその理由、統合ポイント、注意事項
+   - 過去の経緯は「なぜ現在の設計になっているか」を説明する場合にのみ含める
+2. `/git-commit` を実行する（`issue_number=<N>`, `allowed_types=[feat, fix, refactor, chore, style, test, docs]`）
+3. 作業内容を issue のコメントとして投稿する
+4. ユーザー確認なしに即座に Phase 2 へ進む
+
+根拠: `commands/task.md:107-128`
+
+### Phase 2: ドラフト PR 作成
+
+ガード: main 以外のブランチ、コミットが 1 件以上存在、ワークスペースがクリーンであること。
+
+`~/.config/claude-code-kit/templates/pr.md` を使って英語で PR 本文を作成し、ドラフトとして作成する（`gh pr create --draft`）。
+
+作成後ユーザーに「追加の変更はありますか？」と確認し、なければ `/docs-sync` を自動実行する（docs 同期 → PR 公開まで完結）。
+
+根拠: `commands/task.md:122-154`
+
+## 設計上の決断
+
+### "docs/* 変更禁止" の例外として L3 per-file doc を認める理由
+
+従来の `docs/* の変更は行わない` ルールは、`/docs-sync` が git diff を事実として docs を更新するという分業を守るためのものである。
+
+L3 per-file doc の更新を task.md が担う理由: `/docs-sync` は diff-driven であり、「なぜそうしたか」の設計意図を知らない。設計意図の記録は実装フロー（task.md）がコンテキストを持っているタイミングにしか書けない。この目的に限り docs/* への書き込みを許容する。
+
+### プラン承認後に issue を自動作成する設計
+
+issue を先に作ると「ラフなアイデア段階の issue」が残るリスクがある。task フローでは work.md 現状調査とプラン策定を経てから issue を作るため、issue の質が保証される。
+
+ユーザーがプランを承認した時点で内容は確定しているため、issue 作成にユーザー確認を重ねる必要がない。
+
+根拠: `commands/task.md:93-101`
+
+### session-approved を Step 2 で 1 度だけ書き込む理由
+
+session-approved への追記を hook が block するため、全スコープを確定させてから 1 度だけ書き込む設計になっている。スコープ変更が生じた場合は Step 2 に戻ることで、ユーザーの再承認を必須にする（無断スコープ拡大の防止）。
+
+## 統合ポイント
+
+- 呼び出し元: `commands/work.md`（ルーティング判定後）、`commands/patch.md`（エスカレーション時）
+- 呼び出すもの: `commands/new-issue.md`（Step 4-5 のみ）、`/git-commit`、`commands/docs-sync.md`
+- PR テンプレート: `~/.config/claude-code-kit/templates/pr.md`
+- issue テンプレート: `~/.config/claude-code-kit/templates/issue.md`
+
+## 注意事項
+
+- ソースコードを修正する場合は修正前に言語対応の coding コマンド（`commands/coding-*.md`）を Read する
+- `session-approved` に L3 per-file doc パスを含めないと hook がブロックするため、Step 2 で必ず含める
+- task.md は docs-sync.md を自動実行する（Phase 2 Step 1）。docs-sync の HARD STOP 時はユーザーへ報告して終了する

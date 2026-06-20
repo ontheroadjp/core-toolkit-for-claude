@@ -17,6 +17,10 @@
 - work.md の現状調査結果を引き継ぐ
 - `docs/.ai/repo.profile.json` および `docs/L3_implementation/specification_summary.md` は work フェーズで既に Read 済みのため、再度 Read しない
 - Step 2（プラン確認）に必要な情報が不足している場合のみ、差分を調査・補完する
+- 変更対象ファイルが確定したら、各ファイルに対応する L3 per-file doc を確認し、存在する場合は必ず Read する:
+    - 対応パス: `docs/L3_implementation/<変更対象ファイルのパス>.md`（例: `commands/patch.md` → `docs/L3_implementation/commands/patch.md`）
+    - 存在する場合: Read して設計意図・現状仕様を把握してから Step 2 へ進む
+    - 存在しない場合: スキップ（patch フローは L3 per-file doc を作成しない。docs 変更が必要になった場合は task フローへエスカレーションする）
 
 #### Step 2: プラン確認（必須・スキップ不可）
 
