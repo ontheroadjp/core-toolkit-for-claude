@@ -72,3 +72,16 @@ Claude Code には `~/.claude/settings.json`、Codex には `~/.codex/hooks.json
 Codex hooks は installer が登録しただけでは信頼済みとは限らない。installer は `/hooks` で review/trust するよう案内する。
 
 根拠: `install.sh:148`
+
+## 変更履歴（git log より自動生成）
+
+- 8105003 fix(#173): fix tmux agent status transitions
+- 612b51e fix(#154): replace tmux-agent-status emojis for better terminal visibility
+- 544e1ad docs: sync documentation
+- fa587bc chore: restore notify-slack.sh and register in install.sh
+- 0b61b53 feat(#127): enable codex hook installation
+- d2aa807 fix(#113): address 10 bugs found by code-review in codex-review command
+- 07ae6ac docs: initialize project documentation (init-docs)
+- 83374dc feat(#108): add session-based approval to eliminate double-confirmation prompts
+- e160237 feat(#104): auto-configure settings.json hook entries in install.sh
+- 96e1efd fix(install): drop -h flag from ln when creating symlinks

@@ -66,7 +66,7 @@
 - `commands` は operation_model のローカル・CI コマンド表で説明済み。根拠: `docs/L2_development/operation_model.md`
 - `active_commands` は project_overview と specification_summary で説明済み。根拠: `docs/L1_project/project_overview.md`, `docs/L3_implementation/specification_summary.md`
 - `templates` は `templates/*.md` として docs/site docs に記述済み。根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `site/guide/installation.md`
-- `hooks` は現存 7 本に一致する。`install.sh` の Claude settings 登録と Codex hooks.json 登録も現存 hook のみを登録する。根拠: `hooks/` 実体一覧, `install.sh:119-146`
+- `hooks` は現存 9 本に一致する。`install.sh` の Claude settings 登録と Codex hooks.json 登録も現存 hook のみを登録する。根拠: `hooks/` 実体一覧, `install.sh:119-149`
 - `primary_docs.investigation` と `primary_docs.structure` は実在する。根拠: `docs/L3_implementation/specification_summary.md`, `docs/L1_project/repository_structure.md`
 
 ## 4-3. CI 定義との整合性

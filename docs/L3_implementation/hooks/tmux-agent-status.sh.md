@@ -56,3 +56,9 @@
 `tmux rename-window` の失敗は hook 全体の失敗として表に出さず、無音で終了する。status 表示は補助機能であり、AI tool 実行を止めるべきではないためである。
 
 根拠: `hooks/tmux-agent-status.sh:31-32`
+
+## 変更履歴（git log より自動生成）
+
+- 8105003 fix(#173): fix tmux agent status transitions
+- 612b51e fix(#154): replace tmux-agent-status emojis for better terminal visibility
+- 544e1ad docs: sync documentation
