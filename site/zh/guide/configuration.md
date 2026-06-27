@@ -21,6 +21,13 @@
           "type": "command",
           "command": "bash ~/.claude/hooks/guard-destructive-cmd.sh"
         }]
+      },
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
+        }]
       }
     ],
     "UserPromptSubmit": [
@@ -45,6 +52,13 @@
         "hooks": [{
           "type": "command",
           "command": "bash ~/.claude/hooks/log-access-tool.sh"
+        }]
+      },
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
         }]
       }
     ],
@@ -119,7 +133,9 @@
 
 | 事件 | 表情符号 | 含义 |
 |---|---|---|
-| `UserPromptSubmit` | 🔵 | 执行中 |
+| `UserPromptSubmit` | 🔵 | 新提示开始执行 |
+| `PreToolUse` | 🔵 | 工具执行开始或恢复 |
+| `PostToolUse` | 🔵 | 工具执行后 AI 仍在处理 |
 | `Notification` | 🔴 | 等待许可/输入 |
 | `Stop` | ✅ | 空闲 |
 

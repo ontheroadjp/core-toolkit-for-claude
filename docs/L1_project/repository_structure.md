@@ -39,7 +39,7 @@ Codex 用 skill wrapper を置く。各 `SKILL.md` は対応する command markd
 
 ### `hooks/`
 
-Claude Code / Codex hook scripts と共有 helper を置く。現在存在する hook は `auto-approve-readonly.sh`, `cleanup-session.sh`, `guard-destructive-cmd.sh`, `log-access-prompt.sh`, `log-access-stop.sh`, `log-access-tool.sh`, `log-token-usage.sh` の 7 本である。`hooks/lib/approval-safety.sh` は PreToolUse Bash safety checks を共有する helper である。
+Claude Code / Codex hook scripts と共有 helper を置く。現在存在する hook は `auto-approve-readonly.sh`, `cleanup-session.sh`, `guard-destructive-cmd.sh`, `log-access-prompt.sh`, `log-access-stop.sh`, `log-access-tool.sh`, `log-token-usage.sh`, `notify-slack.sh`, `tmux-agent-status.sh` の 9 本である。`hooks/lib/approval-safety.sh` は PreToolUse Bash safety checks を共有する helper である。
 
 根拠: `hooks/` 実体一覧, `hooks/lib/approval-safety.sh`, `install.sh:29-41`
 

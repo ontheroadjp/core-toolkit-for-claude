@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Hook helper: set a status emoji prefix on the current tmux window title.
 # Usage: tmux-agent-status.sh <emoji>
-# Called by Claude Code hooks (UserPromptSubmit / Notification / Stop).
+# Called by Claude Code / Codex hooks.
 # Silently exits when not running inside tmux.
 
 set -euo pipefail
@@ -10,16 +10,23 @@ EMOJI="${1:-}"
 [[ -z "$EMOJI" ]] && exit 0
 [[ -z "${TMUX:-}" ]] && exit 0
 
-CURRENT=$(tmux display-message -p '#W' 2>/dev/null) || exit 0
+TARGET=()
+if [[ -n "${TMUX_PANE:-}" ]]; then
+    TARGET=(-t "$TMUX_PANE")
+fi
 
-# Strip any existing status prefix (one of our known emojis followed by a space)
+CURRENT=$(tmux display-message "${TARGET[@]}" -p '#W' 2>/dev/null) || exit 0
+
 CLEAN="$CURRENT"
-for prefix in "✅ " "🔵 " "🔴 "; do
-    if [[ "$CURRENT" == "${prefix}"* ]]; then
-        CLEAN="${CURRENT#"${prefix}"}"
-        break
-    fi
+while :; do
+    PREVIOUS="$CLEAN"
+    case "$CLEAN" in
+        "✅ "*) CLEAN="${CLEAN#"✅ "}" ;;
+        "🔵 "*) CLEAN="${CLEAN#"🔵 "}" ;;
+        "🔴 "*) CLEAN="${CLEAN#"🔴 "}" ;;
+    esac
+    [[ "$CLEAN" == "$PREVIOUS" ]] && break
 done
 
-tmux rename-window "${EMOJI} ${CLEAN}"
+tmux rename-window "${TARGET[@]}" "${EMOJI} ${CLEAN}" >/dev/null 2>&1 || exit 0
 exit 0

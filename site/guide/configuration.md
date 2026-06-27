@@ -21,6 +21,13 @@ Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `i
           "type": "command",
           "command": "bash ~/.claude/hooks/guard-destructive-cmd.sh"
         }]
+      },
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
+        }]
       }
     ],
     "UserPromptSubmit": [
@@ -45,6 +52,13 @@ Add the following to `~/.claude/settings.json` to activate Claude Code hooks. `i
         "hooks": [{
           "type": "command",
           "command": "bash ~/.claude/hooks/log-access-tool.sh"
+        }]
+      },
+      {
+        "matcher": "",
+        "hooks": [{
+          "type": "command",
+          "command": "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
         }]
       }
     ],
@@ -119,7 +133,9 @@ Displays real-time AI agent status as an emoji prefix on the current tmux window
 
 | Event | Emoji | Meaning |
 |---|---|---|
-| `UserPromptSubmit` | 🔵 | Executing |
+| `UserPromptSubmit` | 🔵 | New prompt executing |
+| `PreToolUse` | 🔵 | Tool execution resuming or starting |
+| `PostToolUse` | 🔵 | Agent still executing after a tool |
 | `Notification` | 🔴 | Permission / input needed |
 | `Stop` | ✅ | Idle |
 
