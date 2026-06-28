@@ -75,6 +75,7 @@ Codex hooks は installer が登録しただけでは信頼済みとは限らな
 
 ## 変更履歴（git log より自動生成）
 
+- 3336009 fix(#177): add templates symlink creation to install.sh
 - 8105003 fix(#173): fix tmux agent status transitions
 - 612b51e fix(#154): replace tmux-agent-status emojis for better terminal visibility
 - 544e1ad docs: sync documentation
@@ -84,4 +85,3 @@ Codex hooks は installer が登録しただけでは信頼済みとは限らな
 - 07ae6ac docs: initialize project documentation (init-docs)
 - 83374dc feat(#108): add session-based approval to eliminate double-confirmation prompts
 - e160237 feat(#104): auto-configure settings.json hook entries in install.sh
-- 96e1efd fix(install): drop -h flag from ln when creating symlinks
