@@ -10,15 +10,15 @@ core-toolkit-for-claude/
 ├── install.sh                   # commands/hooks/skills symlink と Claude/Codex hook settings 登録
 ├── setup_statusline.sh          # status line symlink と settings 登録
 ├── .github/workflows/deploy.yml # VitePress site を GitHub Pages へ deploy
-├── commands/                    # Claude/Codex が読む Markdown command 仕様
+├── commands/                    # Claude/Codex が読む Markdown command 仕様（README.md あり）
 ├── docs/                        # /init-docs が管理する L0-L3 設計 docs
-├── hooks/                       # Claude Code / Codex hook scripts
+├── hooks/                       # Claude Code / Codex hook scripts（README.md あり）
 ├── partials/                    # commands から Read される共通手順
-├── scripts/                     # status line / token usage 表示 scripts
+├── scripts/                     # status line / token usage 表示 scripts（README.md あり）
 ├── site/                        # VitePress documentation site
-├── skills/                      # Codex skill wrappers
-├── tests/                       # hook などの検証 scripts
-└── templates/                   # issue / PR / README templates
+├── skills/                      # Codex skill wrappers（README.md あり）
+├── tests/                       # hook などの検証 scripts（README.md あり）
+└── templates/                   # issue / PR / README templates（README.md あり）
 ```
 
 根拠: `rg --files -uu`, `.github/workflows/deploy.yml:1-53`, `site/package.json:1-14`
@@ -29,31 +29,31 @@ core-toolkit-for-claude/
 
 Claude Code / Codex CLI が読む Markdown command 仕様を置く。`work.md` が通常入口で、`task.md` と `patch.md` は `work.md` から Read される委譲先である。`docs-sync.md`、`init-docs.md`、`new-issue.md`、`review-resolve.md`、`triage-issues.md`、`coding-*.md` も同じ command 群として管理される。
 
-根拠: `commands/work.md:1-4`, `commands/task.md:1-9`, `commands/patch.md:1-8`, `commands/new-issue.md:1-9`
+根拠: `commands/work.md:1-4`, `commands/task.md:1-9`, `commands/patch.md:1-8`, `commands/new-issue.md:1-9`, `commands/README.md`
 
 ### `skills/`
 
 Codex 用 skill wrapper を置く。各 `SKILL.md` は対応する command markdown を Source of Truth として読むことを指示する。
 
-根拠: `skills/init-docs/SKILL.md:1-14`, `skills/work/SKILL.md`
+根拠: `skills/init-docs/SKILL.md:1-14`, `skills/work/SKILL.md`, `skills/README.md`
 
 ### `hooks/`
 
 Claude Code / Codex hook scripts と共有 helper を置く。現在存在する hook は `auto-approve-readonly.sh`, `cleanup-session.sh`, `guard-destructive-cmd.sh`, `log-access-prompt.sh`, `log-access-stop.sh`, `log-access-tool.sh`, `log-token-usage.sh`, `notify-slack.sh`, `tmux-agent-status.sh` の 9 本である。`hooks/lib/approval-safety.sh` は PreToolUse Bash safety checks を共有する helper である。
 
-根拠: `hooks/` 実体一覧, `hooks/lib/approval-safety.sh`, `install.sh:29-41`
+根拠: `hooks/` 実体一覧, `hooks/lib/approval-safety.sh`, `install.sh:29-41`, `hooks/README.md`
 
 ### `tests/`
 
 hook などの検証 scripts を置く。`tests/hooks/test-approval-hooks.sh` は PreToolUse hook の block / approve / prompt fallback と JSON output を検証する。
 
-根拠: `tests/hooks/test-approval-hooks.sh`
+根拠: `tests/hooks/test-approval-hooks.sh`, `tests/README.md`
 
 ### `templates/`
 
 issue、PR、README scaffold の template を置く。commands は `~/.config/claude-code-kit/templates/*.md` を参照するため、運用上は `templates/` をその場所へ symlink する。
 
-根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`, `commands/new-issue.md:69-76`
+根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:131-138`, `commands/new-issue.md:69-76`, `templates/README.md`
 
 ### `partials/`
 
