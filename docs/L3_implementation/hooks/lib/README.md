@@ -20,3 +20,7 @@
 - 関連: `docs/L3_implementation/hooks/auto_approve_readonly.md`
 
 根拠: `hooks/lib/README.md:1-55`, `hooks/lib/approval-safety.sh:1-87`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory

@@ -26,3 +26,7 @@
 hook を追加した場合は、イベントマッピング表とファイル一覧テーブルを更新すること。
 
 根拠: `hooks/README.md:1-60`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory

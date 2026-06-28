@@ -21,3 +21,7 @@
 - CI での実行は現時点では定義されていない（手動実行のみ）
 
 根拠: `tests/README.md:1-50`, `tests/hooks/test-approval-hooks.sh:1-407`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory

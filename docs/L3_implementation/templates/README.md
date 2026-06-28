@@ -21,3 +21,7 @@
 - 関連: `templates/issue.md`、`templates/pr.md`、`templates/readme.md`
 
 根拠: `templates/README.md:1-50`, `templates/issue.md:1-25`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory

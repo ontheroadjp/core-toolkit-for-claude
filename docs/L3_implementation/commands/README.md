@@ -25,3 +25,7 @@
 コマンド一覧が増減した場合は、このファイルのテーブルも更新すること。
 
 根拠: `commands/README.md:1-50`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory

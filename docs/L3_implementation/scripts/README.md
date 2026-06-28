@@ -20,3 +20,7 @@
 - `show-token-usage.sh` データソース: `hooks/log-token-usage.sh`（Stop hook）→ `~/.claude/token-usage.log`
 
 根拠: `scripts/README.md:1-45`, `setup_statusline.sh:6-55`, `scripts/statusline.sh:10-83`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory

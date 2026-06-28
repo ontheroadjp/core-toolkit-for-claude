@@ -21,3 +21,7 @@
 - 関連: `skills/*/SKILL.md`（各 skill の実体）、`commands/*.md`
 
 根拠: `skills/README.md:1-58`, `skills/work/SKILL.md:1-23`
+
+## 変更履歴（git log より自動生成）
+
+- 3656e6e docs(#175): add README.md to each module directory
