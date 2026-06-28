@@ -1,0 +1,46 @@
+# tests/
+
+hook および各種スクリプトの動作検証スクリプトを置くディレクトリ。
+
+## ディレクトリ構造
+
+```
+tests/
+└── hooks/
+    └── test-approval-hooks.sh   ← PreToolUse hook の自動テストスクリプト
+```
+
+## test-approval-hooks.sh
+
+`hooks/auto-approve-readonly.sh`、`hooks/guard-destructive-cmd.sh`、
+`hooks/cleanup-session.sh` の動作を shell レベルで検証する。
+
+### テストケースの分類
+
+| カテゴリ | 内容 |
+|---|---|
+| 破壊的 Bash のブロック | `rm -rf /` などの破壊的コマンドが block decision を返すことを確認 |
+| session-approved があっても破壊的操作はブロック | session-approved を持っていても破壊的操作は通過しない |
+| 読み取り専用の承認 | `ls`・`git status` などが自動承認されることを確認 |
+| session-approved による承認 | 事前登録したツール・ファイルが自動承認されることを確認 |
+| session temp 配下の Write/Edit 承認 | セッション temp ディレクトリ内の書き込みが承認されることを確認 |
+| session temp 範囲外のフォールバック | temp 範囲外パスはユーザー確認へ戻ることを確認 |
+| symlink 解決 | symlink 先が temp 外の場合はフォールバックすることを確認 |
+| cleanup hook の動作 | Stop 時に `session-approved` が削除されることを確認 |
+| write-effect/ambiguous のフォールバック | 分類不能なコマンドがユーザー確認へ戻ることを確認 |
+| guard-destructive-cmd.sh の JSON 出力 | JSON block decision が正しく出力されることを確認 |
+| working repo 動的防御 | repo 内 Write/Edit/apply_patch・rm -rf が承認または WIP commit されることを確認 |
+
+### 実行方法
+
+```bash
+bash tests/hooks/test-approval-hooks.sh
+```
+
+全テスト PASS で終了コード 0 を返す。FAIL があると終了コード 1 で終了し、失敗したテストケース名を表示する。
+
+### 前提条件
+
+- `hooks/auto-approve-readonly.sh`、`hooks/guard-destructive-cmd.sh`、`hooks/cleanup-session.sh` が存在すること
+- `jq` がインストールされていること
+- git リポジトリ内で実行すること
