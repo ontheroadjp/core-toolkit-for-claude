@@ -2,7 +2,7 @@
 
 ## 目的・役割
 
-`install.sh` はこのリポジトリの commands, hooks, skills を Claude Code / Codex の実行環境へ symlink し、`jq` が利用可能な場合は Claude Code と Codex の hook 設定も登録する installer である。
+`install.sh` はこのリポジトリの commands, hooks, skills, templates を Claude Code / Codex の実行環境へ symlink し、`jq` が利用可能な場合は Claude Code と Codex の hook 設定も登録する installer である。
 
 このリポジトリを single source of truth とし、`~/.claude/` や `~/.codex/` 配下へ実体ファイルを複製しない。
 

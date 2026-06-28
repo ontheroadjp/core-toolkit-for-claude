@@ -38,17 +38,9 @@ A structured AI-driven development workflow toolkit for Claude Code and Codex CL
 - `hooks/*.sh` -> `~/.claude/hooks/`
 - `hooks/*.sh` -> `~/.codex/hooks/`
 - `skills/*/` -> `~/.codex/skills/`
+- `templates/*.md` -> `~/.config/claude-code-kit/templates/`
 
 It also updates `~/.claude/settings.json` and `~/.codex/hooks.json` when `jq` is available. Codex users should review and trust registered hooks with `/hooks` before relying on them.
-
-### Templates
-
-Commands reference templates through `~/.config/claude-code-kit/templates/`. Link the repository template directory there:
-
-```bash
-mkdir -p ~/.config/claude-code-kit
-ln -s /path/to/core-toolkit-for-claude/templates ~/.config/claude-code-kit/templates
-```
 
 ### Claude Global Instructions
 
@@ -108,7 +100,7 @@ docs/                         /init-docs generated L0-L3 design docs
 site/                         VitePress documentation site
 scripts/                      status line and token usage utilities
 tests/                        verification scripts for hooks and workflows
-install.sh                    symlink installer for commands/hooks/skills
+install.sh                    symlink installer for commands/hooks/skills/templates
 setup_statusline.sh           status line installer
 CLAUDE.md                     AI operating guidance source of truth
 AGENTS.md                     symlink to CLAUDE.md for Codex CLI

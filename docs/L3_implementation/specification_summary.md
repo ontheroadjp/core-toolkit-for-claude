@@ -154,7 +154,7 @@ codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command codex  "$@"; }
 
 ## Install and Status Line
 
-`install.sh` は `commands/*.md` を `~/.claude/commands/` と `~/.codex/commands/`、`hooks/*.sh` を `~/.claude/hooks/` と `~/.codex/hooks/`、`skills/*/` を `~/.codex/skills/` に symlink する。その後 `jq` があれば `~/.claude/settings.json` と `~/.codex/hooks.json` に hook entries を追加する。Codex hooks は `/hooks` で review/trust してから利用する前提で案内する。
+`install.sh` は `commands/*.md` を `~/.claude/commands/` と `~/.codex/commands/`、`hooks/*.sh` を `~/.claude/hooks/` と `~/.codex/hooks/`、`skills/*/` を `~/.codex/skills/`、`templates/*.md` を `~/.config/claude-code-kit/templates/` に symlink する。その後 `jq` があれば `~/.claude/settings.json` と `~/.codex/hooks.json` に hook entries を追加する。Codex hooks は `/hooks` で review/trust してから利用する前提で案内する。
 
 `setup_statusline.sh` は `scripts/statusline.sh` を `~/.claude/statusline.sh` に symlink し、settings に `statusLine` を追加する。`scripts/statusline.sh` は stdin JSON から context / five-hour / seven-day rate limit を抽出して表示する。
 
