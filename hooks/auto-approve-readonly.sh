@@ -461,6 +461,20 @@ if [ "$tool_name" = "apply_patch" ]; then
     exit 0
 fi
 
+# update_plan: Codex task-tracking metadata only — no side effects
+if [ "$tool_name" = "update_plan" ]; then
+    log_decision "approved" "update_plan" ""
+    emit_approval
+    exit 0
+fi
+
+# webrun: log payload for visibility before prompting
+if [ "$tool_name" = "webrun" ]; then
+    _webrun_payload=$(echo "$payload" | jq -c '.tool_input // {}' 2>/dev/null | cut -c1-200)
+    log_decision "user_prompt" "webrun" "$_webrun_payload"
+    exit 0
+fi
+
 if [ "$tool_name" != "Bash" ]; then
     log_decision "user_prompt" "${tool_name:-unknown}" ""
     exit 0
