@@ -126,7 +126,133 @@ normalize_git_directory_prefix() {
 }
 
 has_unsupported_expansion() {
-    printf '%s' "$1" | grep -qE '\$\(|`|[<>]\('
+    # $() is handled separately by _subshells_are_safe; only reject backtick and process substitution
+    printf '%s' "$1" | grep -qE '`|[<>]\('
+}
+
+# Extract the contents of each top-level $(...) group, one per line.
+# Handles nested parens and quoted strings inside the subshell.
+# Known limitation: single quotes at depth=0 are not tracked, so $() inside
+# a single-quoted literal at the outer level may be incorrectly extracted.
+# This is conservative (may over-block) rather than permissive.
+_extract_subshell_contents() {
+    local input="$1"
+    local i char depth=0 current="" quote="" saw_dollar=0
+    local n="${#input}"
+    for ((i = 0; i < n; i++)); do
+        char="${input:i:1}"
+
+        if [ "$depth" -eq 0 ]; then
+            if [ "$saw_dollar" = "1" ] && [ "$char" = '(' ]; then
+                depth=1; current=""; saw_dollar=0; continue
+            fi
+            [ "$char" = '$' ] && saw_dollar=1 || saw_dollar=0
+            continue
+        fi
+
+        # Inside $(...): handle nested $( using saw_dollar look-ahead
+        if [ "$saw_dollar" = "1" ] && [ "$char" = '(' ]; then
+            current+='('; depth=$((depth + 1)); saw_dollar=0; continue
+        fi
+        if [ "$char" = '$' ]; then
+            current+='$'; saw_dollar=1; continue
+        fi
+        saw_dollar=0
+
+        if [ "$quote" = "'" ]; then
+            current+="$char"; [ "$char" = "'" ] && quote=""; continue
+        fi
+        if [ "$quote" = '"' ]; then
+            current+="$char"; [ "$char" = '"' ] && quote=""; continue
+        fi
+
+        case "$char" in
+            "'") quote="'"; current+="$char" ;;
+            '"') quote='"'; current+="$char" ;;
+            '(') depth=$((depth + 1)); current+="$char" ;;
+            ')')
+                depth=$((depth - 1))
+                [ "$depth" -eq 0 ] && { printf '%s\n' "$current"; current=""; } || current+="$char"
+                ;;
+            *) current+="$char" ;;
+        esac
+    done
+}
+
+# Replace each top-level $(...) with __SUBSHELL_SAFE__ placeholder.
+# The caller must have already verified the subshell contents via _subshells_are_safe.
+_strip_subshells() {
+    local input="$1"
+    local i char depth=0 result="" quote=""
+    local n="${#input}"
+    for ((i = 0; i < n; i++)); do
+        char="${input:i:1}"
+
+        if [ "$depth" -eq 0 ]; then
+            # Look-ahead: $( starts a subshell to replace
+            if [ "$char" = '$' ] && [ "${input:i+1:1}" = '(' ]; then
+                result+='__SUBSHELL_SAFE__'; depth=1; i=$((i + 1)); continue
+            fi
+            result+="$char"; continue
+        fi
+
+        # Inside $(...): track nested $( and quotes to find the matching )
+        if [ "$char" = '$' ] && [ "${input:i+1:1}" = '(' ]; then
+            depth=$((depth + 1)); i=$((i + 1)); continue
+        fi
+        if [ "$quote" = "'" ]; then
+            [ "$char" = "'" ] && quote=""; continue
+        fi
+        if [ "$quote" = '"' ]; then
+            [ "$char" = '"' ] && quote=""; continue
+        fi
+        case "$char" in
+            "'") quote="'" ;;
+            '"') quote='"' ;;
+            '(') depth=$((depth + 1)) ;;
+            ')') depth=$((depth - 1)) ;;
+        esac
+    done
+    printf '%s' "$result"
+}
+
+# Return 0 if the segment looks like a pure variable assignment with no command execution.
+# Accepts: VAR=value, VAR="quoted string", VAR='quoted', VAR=__SUBSHELL_SAFE__
+# Rejects: VAR=value cmd arg  (env-var prefix — unquoted space after the value)
+_is_pure_assignment() {
+    local seg="$1"
+    printf '%s' "$seg" | grep -qE '^[A-Za-z_][A-Za-z0-9_]*=' || return 1
+    local value="${seg#*=}" i char q=""
+    for ((i = 0; i < ${#value}; i++)); do
+        char="${value:i:1}"
+        if [ "$q" = "'" ]; then [ "$char" = "'" ] && q=""; continue; fi
+        if [ "$q" = '"' ]; then [ "$char" = '"' ] && q=""; continue; fi
+        case "$char" in
+            "'") q="'" ;;
+            '"') q='"' ;;
+            ' '|$'\t') return 1 ;;
+        esac
+    done
+    return 0
+}
+
+# Return 0 if every $(...) in the input contains only read-only commands.
+# Recursively calls is_safe_segment on the content of each subshell.
+_subshells_are_safe() {
+    local input="$1"
+    printf '%s' "$input" | grep -qE '\$\(' || return 0
+    local content norm_content seg
+    while IFS= read -r content; do
+        [ -z "$content" ] && continue
+        norm_content=$(printf '%s' "$content" | \
+            sed 's/\\|/__ESCAPED_PIPE__/g; s/[0-9]*>>\/dev\/null//g; s/[0-9]*>\/dev\/null//g; s/&>>\/dev\/null//g; s/&>\/dev\/null//g')
+        while IFS= read -r seg; do
+            seg=$(printf '%s' "$seg" | sed 's/__ESCAPED_PIPE__/\\|/g; s/^[[:space:]]*//; s/[[:space:]]*$//')
+            [ -z "$seg" ] && continue
+            is_safe_segment "$seg" || return 1
+        done < <(split_shell_segments "$norm_content")
+    done < <(_extract_subshell_contents "$input")
+    return 0
 }
 
 is_safe_test_expression() {
@@ -534,6 +660,16 @@ is_safe_segment() {
     [ -z "$seg" ] && return 0
 
     has_unsupported_expansion "$seg" && return 1
+
+    # If the segment contains $(), validate each subshell's content recursively,
+    # then strip them out so the remaining command can be checked against the allowlist.
+    if printf '%s' "$seg" | grep -qE '\$\('; then
+        _subshells_are_safe "$seg" || return 1
+        seg=$(_strip_subshells "$seg")
+    fi
+
+    # Pure variable assignment with a safe RHS (e.g. VAR=$(safe_cmd), VAR="string")
+    _is_pure_assignment "$seg" && return 0
 
     case "$seg" in
         then|else|fi) return 0 ;;

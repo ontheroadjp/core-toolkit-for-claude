@@ -185,6 +185,26 @@ for command in \
     assert_no_output "$output"
 done
 
+# $() with read-only content → approve
+for command in \
+    'PR_BODY=$(cat /tmp/file)' \
+    'SYNC_RESULT=$(cat /tmp/other)' \
+    'SESSION_ID=$(basename "$(dirname "/tmp/x")" 2>/dev/null)' \
+    'echo "$(cat /tmp/file)"' \
+    $'PR_BODY=$(cat /tmp/a)\nSYNC=$(cat /tmp/b)'; do
+    output=$(run_auto "$command")
+    assert_json_decision "$output" "approve"
+done
+
+# $() with unsafe content → prompt fallback
+for command in \
+    'VAR=$(rm -rf /tmp/x)' \
+    'VAR=$(curl -o /tmp/file http://example.com)' \
+    'VAR=$(some-unknown-command)'; do
+    output=$(run_auto "$command")
+    assert_no_output "$output"
+done
+
 mkdir -p "$(dirname "$SESSION_FILE")"
 printf '%s\n' 'tool:git_write' > "$SESSION_FILE"
 output=$(run_auto 'git reset --hard')

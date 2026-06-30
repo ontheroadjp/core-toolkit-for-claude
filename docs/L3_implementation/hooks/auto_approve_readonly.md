@@ -119,15 +119,31 @@ destructive guard に該当する操作は category があっても block する
 
 newline、`;`、`|`、`||`、`&&` を引用符の外側だけで分割し、全 segment を個別評価する。single / double quote 内の `|` は正規表現等の文字として保持する。read-onlyな `if` / `then` / `else` / `fi` は各 body を個別評価する。
 
+### `$()` subshell の評価
+
+`is_safe_segment` は `$()` を含む segment を次の手順で評価する。
+
+1. `_extract_subshell_contents` で各トップレベル `$(...)` の中身を抽出する（文字単位でパース、ネスト・クォート追跡あり）
+2. `_subshells_are_safe` で各中身を `is_safe_segment` に再帰的に渡し、全て read-only であることを確認する
+3. 全て safe であれば `_strip_subshells` で `$(...)` を `__SUBSHELL_SAFE__` プレースホルダーに置換し、外側のコマンドをさらに評価する
+4. 外側コマンドが純粋な変数代入（`VAR=value` 形式で unquoted space を含まない）であれば safe と判定する
+
+結果として `PR_BODY=$(cat file)` や `SESSION_ID=$(basename "$(dirname "$P")")` は自動承認される。
+
+**既知の制限:** `_extract_subshell_contents` は depth=0 でシングルクォートを追跡しない。`grep -E 'pattern_with_$(foo)' file` のような single-quoted literal 内の `$(` は subshell として誤検出される。これは保守的（過剰ブロック）であり、許容できるトレードオフとして維持する。
+
+### 常時ブロックする構文
+
 次は安全に分類せず通常許可フローへ戻す。
 
 - 単独の background operator `&`
-- command substitution `$()` / backtick
-- process substitution `<()` / `>()`
+- backtick `` ` `` による command substitution（常時ブロック）
+- process substitution `<()` / `>()`（常時ブロック）
+- `$()` の中身に unsafe なコマンドが 1 つでも含まれる場合
 - 未対応のshell構文
 - 1つでも未許可のsegmentを含む複合command
 
-根拠: `hooks/auto-approve-readonly.sh:128-229`, `hooks/auto-approve-readonly.sh:397-617`
+根拠: `hooks/auto-approve-readonly.sh:128-260`, `hooks/auto-approve-readonly.sh:657-755`
 
 ## decision とログ
 
@@ -227,3 +243,16 @@ Bash ハンドラーの先頭で「全 segment が session-approved category に
 このhookは完全なshell parserではない。安全に分類できない構文を自動承認対象へ広げず、通常許可フローへ戻すことを互換動作とする。任意コードを実行するbuild/test commandも自動承認しない。
 
 根拠: `tests/hooks/test-approval-hooks.sh:1-407`
+
+## 変更履歴（git log より自動生成）
+
+- 975df69 feat(#183): allow $() subshells when content is read-only
+- b2320ec chore: auto-approve update_plan and log webrun payload
+- fc34db6 feat(#148): working repo dynamic defense — WIP commit before write ops (#149)
+- 8b28e5e fix(#146): tighten runtime version detection
+- 61b9658 fix(#146): restrict executable auto-approvals
+- e138c53 feat(#146): refine auto-approval safety rules
+- e02bd22 fix(#142): resolve conflicts with main
+- 39a5522 feat(#144): identify auto-approval log sessions
+- 4e96f9c feat(#142): add session-scoped temp hook access
+- c59275f fix: return allow for codex hook approvals
