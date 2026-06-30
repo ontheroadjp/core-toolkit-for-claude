@@ -126,13 +126,13 @@ Stop hook。現在の hook セッションに対応する `session-approved` を
 
 Standalone helper called by Claude Code / Codex hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one argument (✅, 🔵, or 🔴). Silently exits when `$TMUX` is unset (no-op outside tmux). Uses `$TMUX_PANE` when available to target the current pane's window, strips repeated known status prefixes before setting the new one, and treats `tmux rename-window` failure as a silent no-op. Registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
 
-Semantic mapping: `UserPromptSubmit` / `PreToolUse` / `PostToolUse` → 🔵 (executing or execution resuming), `Notification` → 🔴 (permission/input needed), `Stop` → ✅ (idle). `PreToolUse` and `PostToolUse` are included so permission/input acknowledgements that do not emit `UserPromptSubmit` can still return the tmux prefix to executing state. For startup ✅ (before any hook fires), add shell wrapper functions to `~/.zshrc`:
+Semantic mapping: `UserPromptSubmit` / `PreToolUse` / `PostToolUse` → 🔵 (executing or execution resuming), `Notification` → 🔴 (permission/input needed), `Stop` → 🔴 (turn ended, waiting for user input). `PreToolUse` and `PostToolUse` are included so permission/input acknowledgements that do not emit `UserPromptSubmit` can still return the tmux prefix to executing state. `Stop` maps to 🔴 rather than ✅ because it fires at the end of every Claude turn including mid-workflow user prompts — showing ✅ in that case would falsely indicate idle. ✅ is set exclusively by shell wrapper functions in `~/.zshrc` after the claude/codex process exits:
 ```bash
-claude() { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command claude "$@"; }
-codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command codex  "$@"; }
+claude() { command claude "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
+codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
 ```
 
-根拠: `hooks/tmux-agent-status.sh:1-32`, `install.sh:122-149`
+根拠: `hooks/tmux-agent-status.sh:1-32`, `install.sh:122-160`
 
 ### access / token log hooks
 

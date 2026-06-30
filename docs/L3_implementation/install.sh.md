@@ -49,11 +49,18 @@ Claude Code には `~/.claude/settings.json`、Codex には `~/.codex/hooks.json
 - `UserPromptSubmit`: `🔵`
 - `PostToolUse`: `🔵`
 - `Notification`: `🔴`
-- `Stop`: `✅`
+- `Stop`: `🔴`
 
 `PreToolUse` / `PostToolUse` にも `🔵` を登録することで、permission/input wait 後に新しい `UserPromptSubmit` が発火しない再開経路でも、次の tool execution に合わせて実行中表示へ戻せる。
 
-根拠: `install.sh:122-149`
+`Stop` は「Claude のターンが終わりユーザー入力待ち」を意味するため `🔴` を使う。`✅`（完全停止）は hook からは設定しない。claude / codex プロセスが完全終了した時点のみ `✅` にするため、`~/.zshrc` に shell wrapper 関数を追加する:
+
+```bash
+claude() { command claude "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
+codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
+```
+
+根拠: `install.sh:122-160`
 
 ## 統合ポイント
 
@@ -75,6 +82,7 @@ Codex hooks は installer が登録しただけでは信頼済みとは限らな
 
 ## 変更履歴（git log より自動生成）
 
+- 31702d1 fix(#179): map Stop hook to 🔴 and add process-exit ✅ via shell wrapper
 - 3336009 fix(#177): add templates symlink creation to install.sh
 - 8105003 fix(#173): fix tmux agent status transitions
 - 612b51e fix(#154): replace tmux-agent-status emojis for better terminal visibility
@@ -83,5 +91,4 @@ Codex hooks は installer が登録しただけでは信頼済みとは限らな
 - 0b61b53 feat(#127): enable codex hook installation
 - d2aa807 fix(#113): address 10 bugs found by code-review in codex-review command
 - 07ae6ac docs: initialize project documentation (init-docs)
-- 83374dc feat(#108): add session-based approval to eliminate double-confirmation prompts
 - e160237 feat(#104): auto-configure settings.json hook entries in install.sh
