@@ -128,6 +128,33 @@ add_codex_hook() {
     echo "  Added [Codex ${event}]: ${cmd}"
 }
 
+# Remove a hook entry by event+command (for migrations).
+remove_claude_hook() {
+    local event="$1" cmd="$2"
+    local current
+    current=$(cat "$SETTINGS_FILE")
+    printf '%s' "$current" | jq \
+        --arg e "$event" --arg c "$cmd" \
+        '.hooks[$e] = [(.hooks[$e] // [])[] | select(([.hooks[] | .command == $c] | any) | not)]' \
+        > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    echo "  Removed [${event}]: ${cmd} (if present)"
+}
+
+remove_codex_hook() {
+    local event="$1" cmd="$2"
+    local current
+    current=$(cat "$CODEX_HOOKS_FILE")
+    printf '%s' "$current" | jq \
+        --arg e "$event" --arg c "$cmd" \
+        '.hooks[$e] = [(.hooks[$e] // [])[] | select(([.hooks[] | .command == $c] | any) | not)]' \
+        > "${CODEX_HOOKS_FILE}.tmp" && mv "${CODEX_HOOKS_FILE}.tmp" "$CODEX_HOOKS_FILE"
+    echo "  Removed [Codex ${event}]: ${cmd} (if present)"
+}
+
+# Migrate Stop 🔴 → ✅
+remove_claude_hook "Stop" "bash ~/.claude/hooks/tmux-agent-status.sh 🔴"
+remove_codex_hook  "Stop" "bash ~/.codex/hooks/tmux-agent-status.sh 🔴"
+
 add_claude_hook "PreToolUse"       ""     "bash ~/.claude/hooks/auto-approve-readonly.sh"
 add_claude_hook "PreToolUse"       "Bash" "bash ~/.claude/hooks/guard-destructive-cmd.sh"
 add_claude_hook "PreToolUse"       ""     "bash ~/.claude/hooks/tmux-agent-status.sh 🔵"
@@ -141,7 +168,7 @@ add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/log-token-usage.
 add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/log-access-stop.sh"
 add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/cleanup-session.sh"
 add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/notify-slack.sh"
-add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/tmux-agent-status.sh 🔴"
+add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/tmux-agent-status.sh ✅"
 
 echo "Configuring ${CODEX_HOOKS_FILE}..."
 add_codex_hook "PreToolUse"       ""     "bash ~/.codex/hooks/auto-approve-readonly.sh"
@@ -157,7 +184,7 @@ add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/log-token-usage.sh
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/log-access-stop.sh"
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/cleanup-session.sh"
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/notify-slack.sh"
-add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/tmux-agent-status.sh 🔴"
+add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/tmux-agent-status.sh ✅"
 echo "  Review and trust Codex hooks with /hooks before relying on them."
 
 echo "Done."

@@ -7,7 +7,6 @@
 set -euo pipefail
 
 EMOJI="${1:-}"
-[[ -z "$EMOJI" ]] && exit 0
 [[ -z "${TMUX:-}" ]] && exit 0
 
 TARGET=()
@@ -28,5 +27,9 @@ while :; do
     [[ "$CLEAN" == "$PREVIOUS" ]] && break
 done
 
-tmux rename-window "${TARGET[@]}" "${EMOJI} ${CLEAN}" >/dev/null 2>&1 || exit 0
+if [[ -z "$EMOJI" ]]; then
+    tmux rename-window "${TARGET[@]}" "${CLEAN}" >/dev/null 2>&1 || exit 0
+else
+    tmux rename-window "${TARGET[@]}" "${EMOJI} ${CLEAN}" >/dev/null 2>&1 || exit 0
+fi
 exit 0
