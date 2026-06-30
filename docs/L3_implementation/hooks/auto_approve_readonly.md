@@ -243,3 +243,16 @@ Bash ハンドラーの先頭で「全 segment が session-approved category に
 このhookは完全なshell parserではない。安全に分類できない構文を自動承認対象へ広げず、通常許可フローへ戻すことを互換動作とする。任意コードを実行するbuild/test commandも自動承認しない。
 
 根拠: `tests/hooks/test-approval-hooks.sh:1-407`
+
+## 変更履歴（git log より自動生成）
+
+- 975df69 feat(#183): allow $() subshells when content is read-only
+- b2320ec chore: auto-approve update_plan and log webrun payload
+- fc34db6 feat(#148): working repo dynamic defense — WIP commit before write ops (#149)
+- 8b28e5e fix(#146): tighten runtime version detection
+- 61b9658 fix(#146): restrict executable auto-approvals
+- e138c53 feat(#146): refine auto-approval safety rules
+- e02bd22 fix(#142): resolve conflicts with main
+- 39a5522 feat(#144): identify auto-approval log sessions
+- 4e96f9c feat(#142): add session-scoped temp hook access
+- c59275f fix: return allow for codex hook approvals
