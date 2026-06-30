@@ -92,6 +92,7 @@ Codex hooks は installer が登録しただけでは信頼済みとは限らな
 
 ## 変更履歴（git log より自動生成）
 
+- 15e9c5c fix(#181): remap Stop hook to ✅ and add clear mode to tmux-agent-status.sh
 - 31702d1 fix(#179): map Stop hook to 🔴 and add process-exit ✅ via shell wrapper
 - 3336009 fix(#177): add templates symlink creation to install.sh
 - 8105003 fix(#173): fix tmux agent status transitions
