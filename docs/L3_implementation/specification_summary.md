@@ -124,15 +124,15 @@ Stop hook。現在の hook セッションに対応する `session-approved` を
 
 ### `hooks/tmux-agent-status.sh`
 
-Standalone helper called by Claude Code / Codex hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one argument (✅, 🔵, or 🔴). Silently exits when `$TMUX` is unset (no-op outside tmux). Uses `$TMUX_PANE` when available to target the current pane's window, strips repeated known status prefixes before setting the new one, and treats `tmux rename-window` failure as a silent no-op. Registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
+Standalone helper called by Claude Code / Codex hooks to display AI agent status as an emoji prefix on the current tmux window title. Takes one optional argument (🔵, 🔴, or ✅); when called with no argument, enters clear mode — strips the emoji prefix and renames the window to the clean name without adding a new emoji. Silently exits when `$TMUX` is unset (no-op outside tmux). Uses `$TMUX_PANE` when available to target the current pane's window, strips repeated known status prefixes before setting the new one, and treats `tmux rename-window` failure as a silent no-op. Registered as independent entries in `install.sh` via `add_claude_hook` / `add_codex_hook`.
 
-Semantic mapping: `UserPromptSubmit` / `PreToolUse` / `PostToolUse` → 🔵 (executing or execution resuming), `Notification` → 🔴 (permission/input needed), `Stop` → 🔴 (turn ended, waiting for user input). `PreToolUse` and `PostToolUse` are included so permission/input acknowledgements that do not emit `UserPromptSubmit` can still return the tmux prefix to executing state. `Stop` maps to 🔴 rather than ✅ because it fires at the end of every Claude turn including mid-workflow user prompts — showing ✅ in that case would falsely indicate idle. ✅ is set exclusively by shell wrapper functions in `~/.zshrc` after the claude/codex process exits:
+Semantic mapping: `UserPromptSubmit` / `PreToolUse` / `PostToolUse` → 🔵 (executing or execution resuming), `Notification` → 🔴 (permission/input needed), `Stop` → ✅ (turn complete, ready for next input). `PreToolUse` and `PostToolUse` are included so permission/input acknowledgements that do not emit `UserPromptSubmit` can still return the tmux prefix to executing state. When the claude/codex process itself exits, the shell wrapper calls the script with no argument to clear the prefix entirely:
 ```bash
-claude() { command claude "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
-codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
+claude() { command claude "$@"; bash ~/.claude/hooks/tmux-agent-status.sh 2>/dev/null; }
+codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh 2>/dev/null; }
 ```
 
-根拠: `hooks/tmux-agent-status.sh:1-32`, `install.sh:122-160`
+根拠: `hooks/tmux-agent-status.sh:1-35`, `install.sh:155-187`
 
 ### access / token log hooks
 
@@ -154,11 +154,11 @@ codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>
 
 ## Install and Status Line
 
-`install.sh` は `commands/*.md` を `~/.claude/commands/` と `~/.codex/commands/`、`hooks/*.sh` を `~/.claude/hooks/` と `~/.codex/hooks/`、`skills/*/` を `~/.codex/skills/`、`templates/*.md` を `~/.config/claude-code-kit/templates/` に symlink する。その後 `jq` があれば `~/.claude/settings.json` と `~/.codex/hooks.json` に hook entries を追加する。Codex hooks は `/hooks` で review/trust してから利用する前提で案内する。
+`install.sh` は `commands/*.md` を `~/.claude/commands/` と `~/.codex/commands/`、`hooks/*.sh` を `~/.claude/hooks/` と `~/.codex/hooks/`、`skills/*/` を `~/.codex/skills/`、`templates/*.md` を `~/.config/claude-code-kit/templates/` に symlink する。その後 `jq` があれば migration helper（`remove_claude_hook` / `remove_codex_hook`）で旧 hook entry を除去してから `add_claude_hook` / `add_codex_hook` で新 entry を追加する。idempotent な設計のため複数回実行しても重複しない。Codex hooks は `/hooks` で review/trust してから利用する前提で案内する。
 
 `setup_statusline.sh` は `scripts/statusline.sh` を `~/.claude/statusline.sh` に symlink し、settings に `statusLine` を追加する。`scripts/statusline.sh` は stdin JSON から context / five-hour / seven-day rate limit を抽出して表示する。
 
-根拠: `install.sh:15-149`, `setup_statusline.sh:6-55`, `scripts/statusline.sh:10-83`
+根拠: `install.sh:15-163`, `setup_statusline.sh:6-55`, `scripts/statusline.sh:10-83`
 
 ## VitePress Site and CI
 
