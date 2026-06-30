@@ -45,15 +45,20 @@
 
 - `UserPromptSubmit` / `PreToolUse` / `PostToolUse`: `🔵`
 - `Notification`: `🔴`
-- `Stop`: `✅`
+- `Stop`: `🔴`（Claude ターン終了 = ユーザー入力待ち）
+- プロセス終了: `✅`（hook ではなく shell wrapper が設定）
 
-根拠: `install.sh:122-149`
+`Stop` は mid-workflow のユーザー判断待ちでも発火するため、`✅` を設定すると「作業中なのに idle 表示」になる。`✅` は claude/codex プロセスが完全終了した時のみ正確であり、`~/.zshrc` の shell wrapper で設定する。
+
+根拠: `install.sh:122-160`
 
 ## 注意事項・既知の制限
 
 `tmux rename-window` を使うため、window 名は hook 実行時点で更新される。tmux の window 名を常時自動追従させる仕組みではない。
 
 `tmux rename-window` の失敗は hook 全体の失敗として表に出さず、無音で終了する。status 表示は補助機能であり、AI tool 実行を止めるべきではないためである。
+
+`✅` は hook では設定しない。claude/codex を Ctrl+C で中断した場合、shell wrapper の後続コマンドが走らないことがあり、`✅` にならずに 🔵/🔴 が残ることがある。
 
 根拠: `hooks/tmux-agent-status.sh:31-32`
 

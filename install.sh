@@ -141,7 +141,7 @@ add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/log-token-usage.
 add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/log-access-stop.sh"
 add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/cleanup-session.sh"
 add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/notify-slack.sh"
-add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/tmux-agent-status.sh ✅"
+add_claude_hook "Stop"             ""     "bash ~/.claude/hooks/tmux-agent-status.sh 🔴"
 
 echo "Configuring ${CODEX_HOOKS_FILE}..."
 add_codex_hook "PreToolUse"       ""     "bash ~/.codex/hooks/auto-approve-readonly.sh"
@@ -157,7 +157,7 @@ add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/log-token-usage.sh
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/log-access-stop.sh"
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/cleanup-session.sh"
 add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/notify-slack.sh"
-add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/tmux-agent-status.sh ✅"
+add_codex_hook "Stop"             ""     "bash ~/.codex/hooks/tmux-agent-status.sh 🔴"
 echo "  Review and trust Codex hooks with /hooks before relying on them."
 
 echo "Done."

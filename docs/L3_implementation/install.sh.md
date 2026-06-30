@@ -49,11 +49,18 @@ Claude Code には `~/.claude/settings.json`、Codex には `~/.codex/hooks.json
 - `UserPromptSubmit`: `🔵`
 - `PostToolUse`: `🔵`
 - `Notification`: `🔴`
-- `Stop`: `✅`
+- `Stop`: `🔴`
 
 `PreToolUse` / `PostToolUse` にも `🔵` を登録することで、permission/input wait 後に新しい `UserPromptSubmit` が発火しない再開経路でも、次の tool execution に合わせて実行中表示へ戻せる。
 
-根拠: `install.sh:122-149`
+`Stop` は「Claude のターンが終わりユーザー入力待ち」を意味するため `🔴` を使う。`✅`（完全停止）は hook からは設定しない。claude / codex プロセスが完全終了した時点のみ `✅` にするため、`~/.zshrc` に shell wrapper 関数を追加する:
+
+```bash
+claude() { command claude "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
+codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh ✅ 2>/dev/null; }
+```
+
+根拠: `install.sh:122-160`
 
 ## 統合ポイント
 
