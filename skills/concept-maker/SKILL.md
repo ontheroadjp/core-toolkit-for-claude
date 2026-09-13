@@ -7,7 +7,7 @@ description: Execute the repository concept-maker workflow by loading and follow
 
 ## Source Of Truth
 
-`~/.codex/commands/concept-maker.md` is the single authoritative definition of the concept-maker workflow.
+`.codex/commands/concept-maker.md` is the single authoritative definition of the concept-maker workflow.
 
 ## Required Behavior
 

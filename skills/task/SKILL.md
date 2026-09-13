@@ -7,7 +7,7 @@ description: Execute the shared ordinary or delegated repository task workflow b
 
 ## Source Of Truth
 
-`~/.codex/commands/task.md` is the single authoritative definition of the task workflow.
+`.codex/commands/task.md` is the single authoritative definition of the task workflow.
 
 ## Required Behavior
 

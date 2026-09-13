@@ -4,7 +4,7 @@ Claude Code および Codex CLI が読む Markdown 形式のコマンド仕様�
 
 ## 仕組み
 
-`install.sh` が各 `.md` ファイルを `~/.claude/commands/` と `~/.codex/commands/` に symlink する。
+`install.sh` は選択した agent の対象リポジトリにある `.claude/commands/` または `.codex/commands/` へ各 `.md` ファイルを symlink する。
 Claude Code では `/コマンド名` で、Codex CLI では対応 skill を通じて同じ specification を利用する。`commands/` は workflow definition の Source of Truth であり、Codex skill は手順を複製しない adapter である。
 
 ## Invocation authority

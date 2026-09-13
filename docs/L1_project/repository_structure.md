@@ -6,9 +6,9 @@
 core-toolkit-for-claude/
 ├── AGENTS.md                    # CLAUDE.md（project-local）への symlink（Codex CLI 向け入口）
 ├── CLAUDE.md                    # このリポジトリ自身の project-local な AI 運用指示（配布物ではない）
-├── global/CLAUDE.md             # 配布用フレームワークファイル。~/.claude/CLAUDE.md・~/.codex/AGENTS.md の symlink 元（issue #365）
+├── global/CLAUDE.md             # 旧 global framework file（installer は配布しない）
 ├── README.md                    # 人間向け概要、インストール、利用手順
-├── install.sh                   # symlink、hook settings、Codex status line 登録
+├── install.sh                   # agent 選択、repository-local symlink、global status line 登録
 ├── .github/workflows/deploy.yml     # VitePress site を GitHub Pages へ deploy
 ├── .github/workflows/shellcheck.yml # 全 *.sh に ShellCheck を実行
 ├── commands/                    # Claude/Codex が読む Markdown command 仕様（README.md あり）
@@ -52,7 +52,7 @@ shell 検証 scripts と Python の pytest suite を置く。command testsには
 
 ### `templates/`
 
-issue、PR、README scaffold の template 実体を置く。`install.sh` は各ファイルを Claude Code 用の `~/.claude/templates/` と Codex CLI 用の `~/.codex/templates/` の両方へ symlink し、commands は実行 agent に応じた installed path を参照する。
+issue、PR、README scaffold の template 実体を置く。`install.sh` は選択した agent の対象 repository 内 `.claude/templates/` または `.codex/templates/` へ symlink し、commands は実行 agent に応じた local path を参照する。
 
 根拠: `templates/issue.md:1-25`, `templates/pr.md:1-32`, `commands/task.md:11-18`, `commands/new-issue.md:11-18`, `install.sh:10-19`, `install.sh:56-63`, `templates/README.md`
 
@@ -70,7 +70,7 @@ VitePress の公開サイトを置く。`site/package.json` に npm scripts と�
 
 ### `scripts/` と status line setup
 
-`scripts/setup_statusline_for_claude.sh` は `scripts/statusline.sh` を `~/.claude/statusline.sh` に symlink し、`~/.claude/settings.json` に `statusLine` を追加する。`scripts/setup_statusline_for_codex.sh` は `~/.codex/config.toml` の `[tui].status_line` を4項目へ冪等更新し、`install.sh` からも呼ばれる。`scripts/statusline.sh` は `jq` と `bc` を使って Claude Code の context / rate limit 情報を表示する。`work-run-events.sh` はlogical `/work` lifecycleをper-run JSONLへ記録し、Python解析scriptsはrepository-local logsを集計してJSONを標準出力へ出力する。
+`scripts/setup_statusline_for_claude.sh` は `scripts/statusline.sh` を `~/.claude/statusline.sh` に symlink し、`~/.claude/settings.json` に `statusLine` を追加する。`scripts/setup_statusline_for_codex.sh` は `~/.codex/config.toml` の `[tui].status_line` を4項目へ冪等更新する。`scripts/setup_statusline_for_agy.sh` は Agy が利用する rate-limit renderer で、installer は `~/.local/bin/agy-rate-status` へ symlink する。これら status line 以外の assets は対象 repository に local install される。
 
 根拠: `scripts/setup_statusline_for_claude.sh:6-57`, `scripts/setup_statusline_for_codex.sh:6-93`, `install.sh:108-109`, `scripts/statusline.sh:10-83`
 
@@ -84,18 +84,12 @@ access、auto-approval、token usage の月次ログと、`logs/work-runs/<YYYY-
 
 | 対象 | source | target | 方法 | 根拠 |
 |---|---|---|---|---|
-| Claude commands | `commands/*.md` | `~/.claude/commands/*.md` | `install.sh` が symlink | `install.sh:21-26` |
-| Codex commands | `commands/*.md` | `~/.codex/commands/*.md` | `install.sh` が symlink | `install.sh:28-33` |
-| Claude hooks | `hooks/*.sh` | `~/.claude/hooks/*.sh` | `install.sh` が symlink | `install.sh:35-40` |
-| Codex hooks | `hooks/*.sh` | `~/.codex/hooks/*.sh`, `~/.codex/hooks.json` | `install.sh` が symlink と hooks.json 登録 | `install.sh:42-47`, `install.sh:72-194` |
-| Codex skills | `skills/*/` | `~/.codex/skills/*` | `install.sh` が symlink | `install.sh:49-54` |
-| Claude templates | `templates/*.md` | `~/.claude/templates/*.md` | `install.sh` が個別 symlink | `install.sh:10-19`, `install.sh:56-63` |
-| Codex templates | `templates/*.md` | `~/.codex/templates/*.md` | `install.sh` が個別 symlink | `install.sh:10-19`, `install.sh:56-63` |
+| Claude assets | commands/hooks/scripts/skills/templates | `<project>/.claude/` | `install.sh` が symlink と local settings 登録 | `install.sh` |
+| Codex assets | commands/hooks/scripts/skills/templates | `<project>/.codex/` | `install.sh` が symlink と local hooks 登録 | `install.sh` |
 | Claude statusline | `scripts/statusline.sh` | `~/.claude/statusline.sh` | `scripts/setup_statusline_for_claude.sh` が symlink | `scripts/setup_statusline_for_claude.sh:6-28` |
-| Codex statusline | `scripts/setup_statusline_for_codex.sh` | `~/.codex/config.toml` | `install.sh` が専用 installer を実行 | `install.sh:108-109`, `scripts/setup_statusline_for_codex.sh:6-93` |
+| Codex statusline | `scripts/setup_statusline_for_codex.sh` | `~/.codex/config.toml` | Codex installer が専用 script を実行 | `scripts/setup_statusline_for_codex.sh:1-93` |
+| Agy statusline | `scripts/setup_statusline_for_agy.sh` | `~/.local/bin/agy-rate-status` | Agy installer が symlink | `install.sh` |
 | site | `site/.vitepress/dist` | GitHub Pages | GitHub Actions | `.github/workflows/deploy.yml:39-52` |
-| Claude global instructions | `global/CLAUDE.md` | `~/.claude/CLAUDE.md` | `install.sh` が symlink | `install.sh`, `docs/.ai/repo.profile.json`（`deploy.claude_md`）, issue #365, issue #367 |
-| Codex global instructions | `global/CLAUDE.md` | `~/.codex/AGENTS.md` | `install.sh` が symlink | `install.sh`, `docs/.ai/repo.profile.json`（`deploy.codex_agents_md`）, issue #365, issue #367 |
 
 ## 補足
 

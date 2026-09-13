@@ -32,7 +32,7 @@ SOURCE_DIR="${TMP_DIR}/source"
 WORKTREE_DIR="${TMP_DIR}/workspace/.claude/worktrees/test"
 HOME_DIR="${TMP_DIR}/home"
 SESSION_TMP_DIR="${TMP_DIR}/session-tmp"
-mkdir -p "$SOURCE_DIR" "$WORKTREE_DIR" "${HOME_DIR}/.codex/hooks/lib" "$SESSION_TMP_DIR"
+mkdir -p "$SOURCE_DIR" "$WORKTREE_DIR" "${WORKTREE_DIR}/.codex/hooks/lib" "$SESSION_TMP_DIR"
 
 (
     cd "$SOURCE_DIR"
@@ -62,11 +62,11 @@ mkdir -p "$SOURCE_DIR" "$WORKTREE_DIR" "${HOME_DIR}/.codex/hooks/lib" "$SESSION_
     printf 'changed\n' > tracked.txt
 )
 
-cat > "${HOME_DIR}/.codex/hooks/lib/session-paths.sh" <<EOF
+cat > "${WORKTREE_DIR}/.codex/hooks/lib/session-paths.sh" <<EOF
 #!/usr/bin/env bash
 printf '%s\\n' "${SESSION_TMP_DIR}"
 EOF
-chmod +x "${HOME_DIR}/.codex/hooks/lib/session-paths.sh"
+chmod +x "${WORKTREE_DIR}/.codex/hooks/lib/session-paths.sh"
 printf 'linked.txt\n.pytest_cache/.gitignore\n' > "${SESSION_TMP_DIR}/worktree-untracked-symlinks.txt"
 
 filtered_status="$(cd "$WORKTREE_DIR" && HOME="$HOME_DIR" bash "$SCRIPT")"

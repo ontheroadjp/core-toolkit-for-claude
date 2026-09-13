@@ -7,7 +7,7 @@ description: Execute the git-commit workflow by loading and following commands/g
 
 ## Source Of Truth
 
-`~/.codex/commands/git-commit.md` is the single authoritative definition of the git-commit workflow.
+`.codex/commands/git-commit.md` is the single authoritative definition of the git-commit workflow.
 
 ## Required Behavior
 

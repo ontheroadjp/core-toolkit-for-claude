@@ -7,7 +7,7 @@ description: Execute the repository triage-issues workflow by loading and follow
 
 ## Source Of Truth
 
-`~/.codex/commands/triage-issues.md` is the single authoritative definition of the triage-issues workflow.
+`.codex/commands/triage-issues.md` is the single authoritative definition of the triage-issues workflow.
 
 ## Required Behavior
 

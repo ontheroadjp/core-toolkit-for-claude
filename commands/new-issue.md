@@ -10,8 +10,8 @@
 - 複数 issue に親子関係を持たせる際は、GitHub の native sub-issue で進捗を追跡する親（tracking）issue を作成します（Step 3 参照）
 
 template 参照時の `TEMPLATES_DIR` は実行 agent に応じて決定する:
-- Claude Code: `~/.claude/templates`
-- Codex CLI: `~/.codex/templates`
+- Claude Code: `.claude/templates`
+- Codex CLI: `.codex/templates`
 
 ---
 
@@ -109,8 +109,8 @@ standalone 起動（`/new-issue` を直接呼んだ場合）はここで以下�
     - `gh issue create` の実行
 
 承認を得た場合、以下の Bash コマンドで session-approved ファイルの正確なパスを解決する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す）:
-- Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-approved`
-- Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-approved`
+- Claude Code: `bash .claude/hooks/lib/session-paths.sh session-approved`
+- Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-approved`
 
 出力された1行の絶対パスに、Write ツールで以下を書き込む（1行1エントリ）:
 - `tool:gh_issue_write:0`（N は `gh issue create` を承認させるためのプレースホルダ。`create` は対象番号を持たず N の値を検査しないため、issue 番号が未確定なこの時点でも機能する）

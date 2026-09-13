@@ -7,7 +7,7 @@ description: Aggregate logs/access/*.log via scripts/analyze_access.py and produ
 
 ## Source Of Truth
 
-`~/.codex/commands/analyze-access.md` is the single authoritative definition of the analyze-access workflow.
+`.codex/commands/analyze-access.md` is the single authoritative definition of the analyze-access workflow.
 
 ## Required Behavior
 

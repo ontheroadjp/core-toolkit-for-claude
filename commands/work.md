@@ -17,7 +17,7 @@
 1. **best-effort のみ。** helper の失敗・空出力・emit 失敗はすべて無視し、gate・routing・approval・validation・merge・completion・停止判断を一切変更せず、追加の確認も求めない。
 2. **content を入れない。** event に prompt・response・body・diff・source・tool input/output・commit message・conflict/check output・自由記述を渡さない。
 3. **context がある時だけ emit。** caller から `work_run_id`（work-run context）を渡された場合のみ emit する。standalone 起動（context なし）では emit しない。
-4. **helper のパスは受け取った literal を使う。** delegated payload の `Work-run events helper`、なければ実行 agent の installed path（Claude Code: `~/.claude/scripts/work-run-events.sh`、Codex CLI: `~/.codex/scripts/work-run-events.sh`）。ファイルシステム探索はしない。値が `unavailable` なら emit を省略する。emit 形式は `bash <helper> emit <event> key=value ... || true`。
+4. **helper のパスは受け取った literal を使う。** delegated payload の `Work-run events helper`、なければ project-local installed path（Claude Code: `.claude/scripts/work-run-events.sh`、Codex CLI: `.codex/scripts/work-run-events.sh`）。ファイルシステム探索はしない。値が `unavailable` なら emit を省略する。emit 形式は `bash <helper> emit <event> key=value ... || true`。
 5. **schema は helper が所有。** event 名と key の正準定義は `scripts/work-run-events.sh` の `allowed_event()` / `allowed_key()`。JSONL の sequence・serialization・aggregation も helper が所有し、command spec は実装しない。
 6. **自分が所有する遷移だけ emit。** telemetry 用の別 state machine を持たない。
 
@@ -26,8 +26,8 @@
 invocation の最初に、実行 agent に対応する installed helper を1回だけ呼ぶ。
 
 ```text
-Claude Code: bash ~/.claude/scripts/work-run-events.sh start || true
-Codex CLI:   bash ~/.codex/scripts/work-run-events.sh start || true
+Claude Code: bash .claude/scripts/work-run-events.sh start || true
+Codex CLI:   bash .codex/scripts/work-run-events.sh start || true
 ```
 
 helper が返す `work_run_id` は logical run の相関 ID として保持し、委譲 payload に渡す。
@@ -86,7 +86,7 @@ label に `agenda` はないが `hazard-candidate` が完全一致で含まれ�
 
 ### G-1: workspace ownership
 
-Claude Code は `bash ~/.claude/scripts/worktree-status.sh`、Codex CLI は `bash ~/.codex/scripts/worktree-status.sh` を実行する。helper は current session manifest に記録された自己作成 symlink または venv の完全一致・親 directory entry だけを除外する。
+Claude Code は `bash .claude/scripts/worktree-status.sh`、Codex CLI は `bash .codex/scripts/worktree-status.sh` を実行する。helper は current session manifest に記録された自己作成 symlink または venv の完全一致・親 directory entry だけを除外する。
 
 除外後も差分がある場合、ユーザーに次を確認する。
 

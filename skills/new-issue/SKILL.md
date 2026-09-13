@@ -7,7 +7,7 @@ description: Execute the repository new-issue workflow by loading and following 
 
 ## Source Of Truth
 
-`~/.codex/commands/new-issue.md` is the single authoritative definition of the new-issue workflow.
+`.codex/commands/new-issue.md` is the single authoritative definition of the new-issue workflow.
 
 ## Required Behavior
 

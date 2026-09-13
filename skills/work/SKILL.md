@@ -7,7 +7,7 @@ description: Execute the unified single-issue or multi-issue repository work wor
 
 ## Source Of Truth
 
-`~/.codex/commands/work.md` is the single authoritative definition of the work workflow.
+`.codex/commands/work.md` is the single authoritative definition of the work workflow.
 
 ## Required Behavior
 

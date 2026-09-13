@@ -3,8 +3,8 @@
 set -euo pipefail
 
 WORKTREE_PATH_FRAGMENT='.claude/worktrees/'
-CLAUDE_SESSION_PATHS="${HOME}/.claude/hooks/lib/session-paths.sh"
-CODEX_SESSION_PATHS="${HOME}/.codex/hooks/lib/session-paths.sh"
+CLAUDE_SESSION_PATHS=".claude/hooks/lib/session-paths.sh"
+CODEX_SESSION_PATHS=".codex/hooks/lib/session-paths.sh"
 
 repo_root="$(git rev-parse --show-toplevel)"
 if [[ "$repo_root" != *"$WORKTREE_PATH_FRAGMENT"* ]]; then

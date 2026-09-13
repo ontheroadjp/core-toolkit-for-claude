@@ -7,7 +7,7 @@ description: Apply language-agnostic coding principles to any implementation tas
 
 ## Source Of Truth
 
-`~/.codex/commands/coding-general.md` is the single authoritative definition of the coding principles.
+`.codex/commands/coding-general.md` is the single authoritative definition of the coding principles.
 
 ## Required Behavior
 

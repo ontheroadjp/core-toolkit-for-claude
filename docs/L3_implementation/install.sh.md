@@ -2,119 +2,41 @@
 
 ## 目的・役割
 
-`install.sh` はこのリポジトリの commands, hooks, scripts, skills, templates を Claude Code / Codex の実行環境へ symlinkし、Codex native status line を設定する。`jq` が利用可能な場合は Claude Code と Codex の hook 設定も登録する installer である。
+`install.sh` は、対象リポジトリの root で実行する対話式 installer である。Claude Code、Codex CLI、Agy のいずれかを選択し、agent 固有の repository-local assets と必要な global status line を設定する。
 
-このリポジトリを single source of truth とし、`~/.claude/` や `~/.codex/` 配下へ実体ファイルを複製しない。
-
-根拠: `install.sh:1-60`
+根拠: `install.sh:1-170`
 
 ## 動作概要
 
-1. repository root を解決する。
-2. `~/.claude/commands`, `~/.codex/commands`, `~/.claude/hooks`, `~/.codex/hooks`, `~/.claude/hooks/lib`, `~/.codex/hooks/lib`, `~/.claude/scripts`, `~/.codex/scripts`, `~/.codex/skills`, `~/.claude/templates`, `~/.codex/templates` などの target directory を作成する。
-3. `keybindings.json` を symlink した直後に、`global/CLAUDE.md` を `~/.claude/CLAUDE.md` と `~/.codex/AGENTS.md` の両方へ symlink する（issue #367。以前は README 記載の手動 `ln -s` に依存していた）。
-4. repository 内の commands / hooks / hooks/lib / scripts / skills を対応 target へ、templates を Claude/Codex 両 target へ symlink する。`hooks/lib/*.sh` は `commands/*.md` が `bash ~/.claude/hooks/lib/session-paths.sh <mode>` のように直接実行するために symlink する（issue #316）。`scripts/*.sh` も agent 別の installed path から直接実行できるよう両 target に symlink する（issue #324）。存在しないファイルに対する glob 展開を避けるため hooks/lib の loop は `[ -e "$src" ] || continue` で空展開をスキップする。
-5. `scripts/setup_statusline_for_codex.sh` を実行して `~/.codex/config.toml` の status line を設定する。
-6. `jq` がない場合は JSON settings 更新をスキップして終了する。
-7. `~/.claude/settings.json` と `~/.codex/hooks.json` がない場合は空 JSON として作成する。
-8. migration helper でバージョン間の hook 変更を適用する。
-9. idempotent な helper で hook entries を追加する。
+1. `git rev-parse --show-toplevel` と現在ディレクトリを照合し、Git repository root 以外では変更せず失敗する。
+2. この toolkit を指す既存の global symlink、global hook registration、Claude/Codex の toolkit 管理 status line だけを除去する。認証情報、履歴、他者の設定は対象外である。
+3. Claude を選ぶと `<project>/.claude/`、Codex を選ぶと `<project>/.codex/` に commands、hooks、hooks/lib、scripts、skills、templates の symlink を作る。
+4. `jq` がある場合、同じ project-local settings file へ hook registration を冪等に追加する。
+5. Claude/Codex は各 native status line setup script を実行する。Agy は `~/.local/bin/agy-rate-status` を `scripts/setup_statusline_for_agy.sh` へ symlink し、`~/.gemini/antigravity-cli/settings.json` の `statusLine` を command として設定する。
 
-根拠: `install.sh:3-109`, `install.sh:111-202`, issue #367
-
-### Codex status line 設定の委譲
-
-installer は `scripts/setup_statusline_for_codex.sh` を呼び出すだけとし、TOML の検出・追加・置換・冪等性は専用 script に委譲する。この呼び出しは `jq` availability gate より前にあるため、JSON hook settings を自動更新できない環境でも Codex status line は設定される。
-
-根拠: `install.sh:108-109`, `install.sh:132-138`, `scripts/setup_statusline_for_codex.sh:1-93`
+根拠: `install.sh:5-170`, `scripts/setup_statusline_for_claude.sh:1-57`, `scripts/setup_statusline_for_codex.sh:1-93`, `scripts/setup_statusline_for_agy.sh:1-28`
 
 ## 主要な判定ロジック
 
-### symlink-only installer
+`remove_managed_link` は link target が toolkit root 配下である場合だけ global link を削除する。JSON の解除も、過去の global hook command prefix または Claude status-line command が toolkit 由来の既知値である場合だけ行う。Codex の status line は toolkit が設定する4項目を含むものだけを解除する。
 
-installer は `ln -sf` で repository 内ファイルへの symlink を作成する。hook、command、script、template の実体は repository 側に残るため、変更は symlink 経由で反映される。template は同じ source file を `~/.claude/templates` と `~/.codex/templates` の両方へ link する。script も同じ source file を `~/.claude/scripts` と `~/.codex/scripts` の両方へ link するため、consumer repo 側に toolkit script を追跡させずに command specification から利用できる。
+`add_hook` は event 内に同じ command があるとき再登録しない。Claude hook command は実行時の `$CLAUDE_PROJECT_DIR` を使用し、Codex hook command は repository root からの `.codex/...` 相対 path を使用する。
 
-根拠: `install.sh:5-83`
-
-### template の agent 別 installed path
-
-Claude Code と Codex CLI がそれぞれ自身の設定 root 配下から template を解決できるよう、template target を分離する。旧 `~/.config/claude-code-kit/templates` は新規作成も削除もせず、既存ユーザー状態を破壊しない。
-
-根拠: `install.sh:10-19`, `install.sh:56-63`
-
-### jq がない場合の設定更新スキップ
-
-hook 設定 JSON の安全な更新には `jq` を使う。`jq` が見つからない場合、symlink 作成後に warning を出して settings 更新だけをスキップする。
-
-根拠: `install.sh:62-69`
-
-### idempotent hook registration
-
-`add_claude_hook` と `add_codex_hook` は、同じ command が既に対象 event に登録されている場合は追加しない。これにより installer を複数回実行しても同一 hook entry が重複しない。
-
-根拠: `install.sh:74-120`
-
-### migration helpers（remove_claude_hook / remove_codex_hook）
-
-`remove_claude_hook` と `remove_codex_hook` は、event + command の組み合わせで既存 hook entry を除去する。`add_*` の前に呼んで旧エントリを削除することで、hook の意味が変わったときに idempotent な移行を実現する。
-
-現在の migration:
-- Stop イベントの `tmux-agent-status.sh 🔴` → 除去（`✅` として再登録）
-- Codex の `auto-approve-readonly.sh` を `PreToolUse` から除去し、`PermissionRequest` に再登録
-
-根拠: `install.sh:132-156`
-
-## Hook 登録
-
-Claude Code には `~/.claude/settings.json`、Codex には `~/.codex/hooks.json` へ hook event 構造を登録する。共有 auto-approve hook は Claude では `PreToolUse`、Codex では `PermissionRequest` に登録する。Codex の destructive-command guard は引き続き `PreToolUse` の `Bash` matcher に登録する。
-
-`tmux-agent-status.sh` は以下の event に登録される。
-
-- `PreToolUse`: `🔵`
-- `UserPromptSubmit`: `🔵`
-- `PostToolUse`: `🔵`
-- `Notification`: `🔴`
-- `Stop`: `✅`
-
-`PreToolUse` / `PostToolUse` にも `🔵` を登録することで、permission/input wait 後に新しい `UserPromptSubmit` が発火しない再開経路でも、次の tool execution に合わせて実行中表示へ戻せる。
-
-`Stop` は「Claude のターンが完了し次の入力待ち」を意味するため `✅` を使う。claude / codex プロセスが完全終了したときはアイコンを消す（プレフィックスクリア）ため、`~/.zshrc` 相当のシェル設定に shell wrapper 関数を追加する:
-
-```bash
-claude() { command claude "$@"; bash ~/.claude/hooks/tmux-agent-status.sh 2>/dev/null; }
-codex()  { command codex  "$@"; bash ~/.claude/hooks/tmux-agent-status.sh 2>/dev/null; }
-```
-
-根拠: `install.sh:195-245`
+根拠: `install.sh:20-140`
 
 ## 統合ポイント
 
-- `global/CLAUDE.md`: `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` の symlink 元（issue #367）
-- `hooks/auto-approve-readonly.sh`: safe/read-only tool approval
-- `hooks/guard-destructive-cmd.sh`: destructive Bash guard
-- `hooks/log-access-prompt.sh`, `hooks/log-access-tool.sh`, `hooks/log-access-stop.sh`: access logging
-- `hooks/log-token-usage.sh`: token usage logging
-- `hooks/cleanup-session.sh`: session approval cleanup
-- `hooks/notify-slack.sh`: wait/stop notification
-- `hooks/tmux-agent-status.sh`: tmux window status prefix
+- Claude local assets: `<project>/.claude/`
+- Codex local assets: `<project>/.codex/`
+- Claude global status line: `~/.claude/statusline.sh`, `~/.claude/settings.json`
+- Codex global status line: `~/.codex/config.toml`
+- Agy global status command: `~/.local/bin/agy-rate-status`
+- regression test: `tests/install/test-local-install.sh`
 
-根拠: `install.sh:155-187`
+## 検証
 
-## 注意事項・既知の制限
-
-Codex hooks は installer が登録しただけでは信頼済みとは限らない。installer は `/hooks` で review/trust するよう案内する。
-
-根拠: `install.sh:188`
-
-## 変更履歴（git log より自動生成）
-
-- abf4f53 chore(#372): move status line setup scripts
-- 3fa2055 #370 Add idempotent Codex status line setup (#371)
-- 396533d #367 Automate CLAUDE.md/AGENTS.md global symlinks in install.sh (#368)
-- d5359f7 #340 Approve Codex permission requests (#341)
-- 4f4aab8 #324 Install the worktree linker for consumer repositories (#325)
-- e7d5698 fix(#316): resolve session paths via hooks/lib/session-paths.sh to survive worktree-isolated harness guard
-- 214011d fix: correct keybindings.json symlink path in install.sh
-- 25a8151 fix: sync self-referential skill symlinks to .gitignore in install.sh
-- bfc5f9f feat(install): add keybindings.json and symlink it during install
-- 27f1861 feat(#76): install templates for claude and codex
+```bash
+bash tests/install/test-local-install.sh
+bash tests/install/test-setup-statusline-for-codex.sh
+shellcheck -x install.sh scripts/setup_statusline_for_agy.sh
+```

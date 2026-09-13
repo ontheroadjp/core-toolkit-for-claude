@@ -7,7 +7,7 @@ description: List hazard-candidate labeled open issues, disclose each source-spe
 
 ## Source Of Truth
 
-`~/.codex/commands/triage-issues-for-hazard.md` is the single authoritative definition of the triage-issues-for-hazard workflow.
+`.codex/commands/triage-issues-for-hazard.md` is the single authoritative definition of the triage-issues-for-hazard workflow.
 
 ## Required Behavior
 

@@ -7,7 +7,7 @@ description: Execute the git-pr workflow by loading and following commands/git-p
 
 ## Source Of Truth
 
-`~/.codex/commands/git-pr.md` is the single authoritative definition of the git-pr workflow.
+`.codex/commands/git-pr.md` is the single authoritative definition of the git-pr workflow.
 
 ## Required Behavior
 

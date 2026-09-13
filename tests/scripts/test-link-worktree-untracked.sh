@@ -64,11 +64,12 @@ mkdir -p "$SRC_DIR" "$DST_DIR" "${HOME_DIR}/.codex/hooks/lib"
     printf 'pkg\n' > site/node_modules/pkg.js
 )
 
-cat > "${HOME_DIR}/.codex/hooks/lib/session-paths.sh" <<EOF
+mkdir -p "${DST_DIR}/.codex/hooks/lib"
+cat > "${DST_DIR}/.codex/hooks/lib/session-paths.sh" <<EOF
 #!/usr/bin/env bash
 printf '%s\\n' "${SESSION_TMP_DIR}"
 EOF
-chmod +x "${HOME_DIR}/.codex/hooks/lib/session-paths.sh"
+chmod +x "${DST_DIR}/.codex/hooks/lib/session-paths.sh"
 
 (
     cd "$DST_DIR"

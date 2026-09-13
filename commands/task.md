@@ -9,8 +9,8 @@
 - ワークフローは 3 フェーズで構成される
 
 template 参照時の `TEMPLATES_DIR` は実行 agent に応じて決定する:
-- Claude Code: `~/.claude/templates`
-- Codex CLI: `~/.codex/templates`
+- Claude Code: `.claude/templates`
+- Codex CLI: `.codex/templates`
 
 ```
 Phase 1: 実装（コード変更を完結させる）
@@ -140,8 +140,8 @@ ordinary mode では親 `/work` と同じ session context を読む。delegated 
         - 注: この `gh issue create` 呼び出しの時点では session-approved がまだ存在しないため、通常の確認プロンプトに従う（1 回限り。番号スコープ化のトレードオフ）
     - **issue が作成済みの場合**（ユーザーから issue 番号を受け取っていた場合）: Step 0 で確定した issue 番号を N とする
     - 以下の Bash コマンドで session-approved ファイルの正確なパスを解決する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す。共有ファイル経由では取得しない — 複数セッション同時実行時の混線を避けるため。brace expansion や代入への command substitution をコマンド自体に含めないことで worktree 隔離セッションでの harness 拒否を避ける、issue #316）:
-        - Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-approved`
-        - Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-approved`
+        - Claude Code: `bash .claude/hooks/lib/session-paths.sh session-approved`
+        - Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-approved`
 
       出力された1行の絶対パスを以降 `SESSION_APPROVED_FILE` として扱う。コマンドが失敗した場合（hook が未実行でセッション ID が解決できないケース）はスキップして Step 3 へ進む。
     - Write ツールで上記で取得したパスに session-approved ファイルを作成する。内容（1行1エントリ）:
@@ -154,7 +154,7 @@ ordinary mode では親 `/work` と同じ session context を読む。delegated 
     - 作業ブランチ切替後、Claude Code だけが Git の返した branch name を使い、`/rename <作業ブランチ名>` と同じ結果になるよう更新する。Codex CLI はスキップし、失敗しても実装を止めない:
       ```bash
       branch_name=$(git branch --show-current)
-      bash ~/.claude/scripts/rename-thread.sh "$branch_name" || true
+      bash .claude/scripts/rename-thread.sh "$branch_name" || true
       ```
     - Step 3 へ進む
 
@@ -194,7 +194,7 @@ ordinary mode では親 `/work` と同じ session context を読む。delegated 
 - main ブランチ以外にいること
 - `git log main..HEAD --oneline` の出力が 1 件以上あること（実装コミットが存在すること）
 - ワークスペースがクリーンであること
-    - Claude Code では `bash ~/.claude/scripts/worktree-status.sh`、Codex CLI では `bash ~/.codex/scripts/worktree-status.sh` の出力を使用する。ヘルパーは worktree 隔離セッションの current session manifest に記録された自己作成 symlink（完全一致または親ディレクトリ一致）のみを自動除外し、それ以外の差分はそのまま返す
+    - Claude Code では `bash .claude/scripts/worktree-status.sh`、Codex CLI では `bash .codex/scripts/worktree-status.sh` の出力を使用する。ヘルパーは worktree 隔離セッションの current session manifest に記録された自己作成 symlink（完全一致または親ディレクトリ一致）のみを自動除外し、それ以外の差分はそのまま返す
     - 除外後もクリーンでない場合: `git stash push -m "task-phase2: auto stash"` で退避してから進む
 
 #### Step 1. PR 本文・タイトルの準備
@@ -202,8 +202,8 @@ ordinary mode では親 `/work` と同じ session context を読む。delegated 
 セッション temp ディレクトリを特定する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す）。`mkdir -p` の対象に変数参照を残すと `hooks/auto-approve-readonly.sh` が静的判定できず確認プロンプトに落ちるため、また brace expansion や代入への command substitution を含む解決ステップ自体が worktree 隔離セッションで harness に拒否されるため（issue #316）、CLAUDE.md の resolve-then-embed 規約に従い、解決ステップとリテラル値埋め込みを別の Bash 呼び出しに分ける。
 
 解決ステップ（read-only）:
-- Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-tmp-dir`
-- Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-tmp-dir`
+- Claude Code: `bash .claude/hooks/lib/session-paths.sh session-tmp-dir`
+- Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-tmp-dir`
 
 出力された絶対パスを以降 `SESSION_TMP_DIR` として使用する。実行ステップでは変数ではなくリテラル文字列として埋め込む:
 ```bash

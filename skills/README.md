@@ -4,7 +4,7 @@ Codex CLI 向けの skill wrapper を置くディレクトリ。
 
 ## 仕組み
 
-`install.sh` が各 `skills/<name>/` ディレクトリを `~/.codex/skills/<name>/` に symlink する。
+`install.sh` が各 `skills/<name>/` ディレクトリを、選択した対象リポジトリの `.codex/skills/<name>/` に symlink する。
 各 skill ディレクトリには `SKILL.md` が1ファイルあり、Codex CLI が `/skill-name` で呼び出したときに読み込まれる。
 
 `SKILL.md` は対応する `commands/*.md` を **Source of Truth** として Read するよう指示するだけの薄い wrapper。

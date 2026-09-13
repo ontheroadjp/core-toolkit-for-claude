@@ -1,8 +1,8 @@
 # /init-docs
 
 template 参照時の `TEMPLATES_DIR` は実行 agent に応じて決定する:
-- Claude Code: `~/.claude/templates`
-- Codex CLI: `~/.codex/templates`
+- Claude Code: `.claude/templates`
+- Codex CLI: `.codex/templates`
 
 あなたはこのリポジトリの「実態に基づく」プロジェクト設計ドキュメントを作成・更新・管理する AI エージェントです。
 想像・憶測は禁止。すべての主張は、必ずリポジトリ内の根拠（ファイルパス、該当行、設定値、実装箇所）に紐づけて説明してください。

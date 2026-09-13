@@ -5,8 +5,8 @@ PR 作成を担うスラッシュコマンド。`commands/*.md` から `/git-pr`
 セッション temp ディレクトリに `/task` と `/docs-sync` が書き出したファイルを参照し、`git push` → `gh pr create` を実行します。
 
 template 参照時の `TEMPLATES_DIR` は実行 agent に応じて決定する:
-- Claude Code: `~/.claude/templates`
-- Codex CLI: `~/.codex/templates`
+- Claude Code: `.claude/templates`
+- Codex CLI: `.codex/templates`
 
 ## 前提ゲート
 
@@ -19,8 +19,8 @@ template 参照時の `TEMPLATES_DIR` は実行 agent に応じて決定する:
 
 `hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す（brace expansion や代入への command substitution をコマンド自体に含めないことで worktree 隔離セッションでの harness 拒否を避ける、issue #316）:
 
-- Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-tmp-dir`
-- Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-tmp-dir`
+- Claude Code: `bash .claude/hooks/lib/session-paths.sh session-tmp-dir`
+- Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-tmp-dir`
 
 出力された1行の絶対パスを以降 `SESSION_TMP_DIR` として扱う。
 

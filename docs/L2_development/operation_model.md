@@ -128,7 +128,7 @@ branch、Issue、commit、PR、L3 per-file documentation、session temp artifact
 
 | コマンド | 用途 | 根拠 |
 |---|---|---|
-| `./install.sh` | symlink、Claude/Codex hook settings、Codex status line 登録 | `install.sh:13-202` |
+| `./install.sh` | agent 選択、repository-local symlink/hook settings、選択 agent の global status line 登録 | `install.sh` |
 | `./scripts/setup_statusline_for_claude.sh` | Claude statusline symlink と settings 登録 | `scripts/setup_statusline_for_claude.sh:6-57` |
 | `./scripts/setup_statusline_for_codex.sh` | Codex TUI status line の冪等設定 | `scripts/setup_statusline_for_codex.sh:6-93` |
 | `cd site && npm ci` | CI と同じ lockfile-based install | `.github/workflows/deploy.yml:31-33` |
@@ -149,7 +149,7 @@ branch、Issue、commit、PR、L3 per-file documentation、session temp artifact
 | `bash tests/commands/test-task-manager.sh` | task-manager batch orchestration contract | `tests/commands/test-task-manager.sh` |
 | `bash tests/commands/test-git-pr-merge.sh` | reviewed PR delivery safety contract | `tests/commands/test-git-pr-merge.sh` |
 | `bash tests/commands/test-hazard-workflows.sh` | hazard scan / triage / work routing contract | `tests/commands/test-hazard-workflows.sh` |
-| `bash tests/install/test-install.sh` | Claude/Codex template symlink と installer idempotency contract | `tests/install/test-install.sh` |
+| `bash tests/install/test-local-install.sh` | repository-root gate、local assets、managed global cleanup の installer contract | `tests/install/test-local-install.sh` |
 | `bash tests/install/test-setup-statusline-for-codex.sh` | Codex config の追加・置換・設定維持・冪等性 contract | `tests/install/test-setup-statusline-for-codex.sh` |
 | `bash tests/scripts/test-link-worktree-untracked.sh` | worktree lazy linker contract | `tests/scripts/test-link-worktree-untracked.sh` |
 | `bash tests/scripts/test-rename-thread.sh` | Claude transcript title update contract | `tests/scripts/test-rename-thread.sh` |

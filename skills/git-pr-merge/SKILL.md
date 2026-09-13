@@ -7,7 +7,7 @@ description: Deliver one explicitly reviewed pull request on top of the latest m
 
 ## Source Of Truth
 
-`~/.codex/commands/git-pr-merge.md` is the single authoritative definition of the reviewed PR delivery workflow.
+`.codex/commands/git-pr-merge.md` is the single authoritative definition of the reviewed PR delivery workflow.
 
 ## Required Behavior
 

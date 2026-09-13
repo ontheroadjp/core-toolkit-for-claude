@@ -7,7 +7,7 @@ description: Orchestrate delegated task workers only when commands/work.md route
 
 ## Source Of Truth
 
-`~/.codex/commands/task-manager.md` is the single authoritative definition of the internal multi-issue orchestrator.
+`.codex/commands/task-manager.md` is the single authoritative definition of the internal multi-issue orchestrator.
 
 ## Required Behavior
 
