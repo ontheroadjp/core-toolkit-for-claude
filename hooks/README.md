@@ -4,8 +4,8 @@ Claude Code および Codex CLI の hook scripts を置くディレクトリ。
 
 ## 仕組み
 
-`install.sh` が各 `.sh` ファイルを `~/.claude/hooks/` と `~/.codex/hooks/` に symlink し、
-`~/.claude/settings.json`（Claude 用）と `~/.codex/hooks.json`（Codex 用）に hook エントリを登録する。
+`install.sh` が選択した agent の対象リポジトリにある `.claude/hooks/` または `.codex/hooks/` に各 `.sh` ファイルを symlink し、
+同じ対象リポジトリの `.claude/settings.json`（Claude 用）または `.codex/hooks.json`（Codex 用）に hook エントリを登録する。
 
 Claude Code は hook イベント発生時に登録された script を実行し、script の JSON 出力によって
 ツール呼び出しの承認・ブロック・ユーザー確認フォールバックを制御する。
@@ -64,9 +64,10 @@ PreToolUse イベント
 bash tests/hooks/test-approval-hooks.sh
 ```
 
-tmux ステータス表示を有効にするには `~/.zshrc` に以下を追加する:
+tmux ステータス表示を手動で呼ぶ場合は、対象リポジトリ root で次を実行する:
 
 ```bash
-claude() { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command claude "$@"; }
-codex()  { bash ~/.claude/hooks/tmux-agent-status.sh ✅; command codex  "$@"; }
+bash .claude/hooks/tmux-agent-status.sh ✅
+# Codex CLI:
+bash .codex/hooks/tmux-agent-status.sh ✅
 ```

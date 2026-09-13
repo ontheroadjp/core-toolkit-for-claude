@@ -28,8 +28,8 @@ gh issue list --label hazard-candidate --state open --json number,title,body,url
 
 1 件以上の候補が取得できた場合、Step 2 開始前に以下で session-approved ファイルの正確なパスを解決する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す。brace expansion や代入への command substitution をコマンド自体に含めないことで worktree 隔離セッションでの harness 拒否を避ける、issue #316）:
 
-- Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-approved`
-- Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-approved`
+- Claude Code: `bash .claude/hooks/lib/session-paths.sh session-approved`
+- Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-approved`
 
 出力された1行の絶対パスを以降 `SESSION_APPROVED_FILE` として扱う。コマンドが失敗した場合（hook が未実行でセッション ID が解決できないケース）はスキップして Step 2 へ進む。
 

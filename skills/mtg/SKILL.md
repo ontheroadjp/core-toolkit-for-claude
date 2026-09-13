@@ -7,7 +7,7 @@ description: Facilitate a human-led discussion for an agenda-labeled GitHub issu
 
 ## Source Of Truth
 
-`~/.codex/commands/mtg.md` is the single authoritative definition of the mtg workflow.
+`.codex/commands/mtg.md` is the single authoritative definition of the mtg workflow.
 
 ## Required Behavior
 

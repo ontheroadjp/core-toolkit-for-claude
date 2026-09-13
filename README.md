@@ -96,27 +96,13 @@ The platform-independent philosophy is defined in `docs/L0_concept/`. Its system
 ./install.sh
 ```
 
-`install.sh` creates target directories and symlinks:
+Run the installer from the root of the repository where you want to use an agent. It rejects a subdirectory or a non-Git directory, then displays a Claude Code / Codex CLI / Agy menu.
 
-- `commands/*.md` -> `~/.claude/commands/`
-- `commands/*.md` -> `~/.codex/commands/`
-- `hooks/*.sh` -> `~/.claude/hooks/`
-- `hooks/*.sh` -> `~/.codex/hooks/`
-- `hooks/lib/*.sh` -> `~/.claude/hooks/lib/`
-- `hooks/lib/*.sh` -> `~/.codex/hooks/lib/`
-- `scripts/*.sh` -> `~/.claude/scripts/`
-- `scripts/*.sh` -> `~/.codex/scripts/`
-- `skills/*/` -> `~/.codex/skills/`
-- `templates/*.md` -> `~/.claude/templates/`
-- `templates/*.md` -> `~/.codex/templates/`
-- `global/CLAUDE.md` -> `~/.claude/CLAUDE.md`
-- `global/CLAUDE.md` -> `~/.codex/AGENTS.md`
+For Claude Code or Codex CLI, commands, hooks, scripts, skills, and templates are symlinked into that repository's `.claude/` or `.codex/` directory. Hook settings are written there when `jq` is available. The selected agent's status line is the sole global configuration: Claude uses `~/.claude/statusline.sh`, and Codex uses `~/.codex/config.toml`.
 
-It also configures the native Codex TUI status line in `~/.codex/config.toml`, and updates `~/.claude/settings.json` and `~/.codex/hooks.json` when `jq` is available. Codex users should review and trust registered hooks with `/hooks` before relying on them.
+For Agy, the installer creates only the global `~/.local/bin/agy-rate-status` symlink. Configure Agy itself to invoke that command from its status-line configuration.
 
-### Global AI Instructions
-
-`global/CLAUDE.md` is the distributed framework file (single source of truth), symlinked by `install.sh` to `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`. The repo-root `CLAUDE.md` is this repository's own project-local file and is not distributed.
+Before installing, the script removes global symlinks and hook/status-line registrations that point to this toolkit. It preserves credentials, history, and unrelated user configuration.
 
 ### Status Lines
 
@@ -135,6 +121,8 @@ For Codex, `./install.sh` automatically runs the idempotent `scripts/setup_statu
 ```
 
 Codex omits status items whose current values are unavailable. Restart the relevant CLI after changing its status line configuration.
+
+For Agy, the installed `agy-rate-status` command reads `~/.cache/agy/rate_limit.json` when available and prints a placeholder when the cache is unavailable.
 
 ## Usage
 
@@ -244,7 +232,7 @@ tests/                        verification scripts for hooks, workflows, and ins
 install.sh                    symlink installer for commands/hooks/skills/templates
 scripts/setup_statusline_for_claude.sh  Claude Code status line installer
 scripts/setup_statusline_for_codex.sh   Codex TUI status line installer
-global/CLAUDE.md              distributed framework file (symlinked to ~/.claude/CLAUDE.md and ~/.codex/AGENTS.md)
+global/CLAUDE.md              legacy global framework file
 CLAUDE.md                     this repository's own project-local AI operating guidance
 AGENTS.md                     symlink to CLAUDE.md (project-local) for Codex CLI
 ```

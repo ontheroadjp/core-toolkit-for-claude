@@ -1,52 +1,9 @@
 # test-install.sh specification
 
-## 目的・役割
+`tests/install/test-install.sh` は、現在の local installer contract を実装する `test-local-install.sh` への互換 entry point である。
 
-`tests/install/test-install.sh` は `install.sh` の symlink contract、Codex native status line setup、Codex auto-approve hook migration を実ユーザー環境へ副作用を与えずに検証する shell test である。
+根拠: `tests/install/test-install.sh:1-6`
 
-根拠: `tests/install/test-install.sh:1-19`
+`test-local-install.sh` は isolated HOME と temporary Git repository を使い、repository root 以外での拒否、Codex local assets、local hook settings、global Codex status line、toolkit 管理の旧 global Claude assets/status line の除去を検証する。
 
-## 動作の概要
-
-fixture repository と一時 HOME を作成し、fixture の `scripts/` にコピーした Codex status line setup script と installer を使って installer を2回実行する。各実行後、Claude/Codex 両 target の symlink、Codex config の4つの status item、および auto-approve hook migration を検証する。
-
-根拠: `tests/install/test-install.sh:9-55`, `tests/install/test-install.sh:127-176`
-
-## 主要な判定ロジック・フロー
-
-- `assert_symlink` は link の存在と `readlink` の完全一致を確認する
-- `assert_template_links` は repository 内4 template を target ごとに検証する
-- `assert_hooks_lib_links` は fixture の `hooks/lib/example-lib.sh` が `~/.claude/hooks/lib/` と `~/.codex/hooks/lib/` の両方へ symlink されることを検証する（issue #316: `install.sh` に追加した `hooks/lib/*.sh` symlink ループの回帰防止）
-- `assert_script_links` は fixture の `scripts/example.sh` が `~/.claude/scripts/` と `~/.codex/scripts/` の両方へ symlink されることを検証する（issue #324: command specification が consumer repo 内の script を仮定しない配布契約の回帰防止）
-- `assert_global_claude_links` は fixture の `global/CLAUDE.md` が `~/.claude/CLAUDE.md` と `~/.codex/AGENTS.md` の両方へ symlink されることを検証する（issue #367: CLAUDE.md/AGENTS.md 配布の手動 symlink から自動化への回帰防止）
-- `assert_codex_status_line` は installer が `~/.codex/config.toml` に4つの status item を正しい順序で設定したことを検証する
-- fresh HOME に legacy template target が作られないことを確認する
-- installer 再実行後も同じ contract が成立することを確認する
-- Codex auto-approve hook が legacy `PreToolUse` から `PermissionRequest` へ移行され、再実行でも重複・復活しないことを確認する
-
-根拠: `tests/install/test-install.sh:58-157`
-
-## 重要な設計判断
-
-installer 全体を fixture で実行することで、静的文字列検査だけでなく実際の symlink 動作と idempotence を検証する。HOME を隔離するため利用者の `~/.claude` / `~/.codex` は変更しない。
-
-## 統合ポイント
-
-- test target: `install.sh`
-- execution: `bash tests/install/test-install.sh`
-- dependencies: Bash, standard Unix tools, optional `jq` behavior inherited from installer
-
-## 注意事項・既知の制限
-
-- template 内容自体は検証せず、配置と symlink target の契約だけを検証する
-- legacy target は削除動作ではなく、fresh HOME で新規作成されないことを検証する
-
-## 変更履歴（git log より自動生成）
-
-- abf4f53 chore(#372): move status line setup scripts
-- 3fa2055 #370 Add idempotent Codex status line setup (#371)
-- 396533d #367 Automate CLAUDE.md/AGENTS.md global symlinks in install.sh (#368)
-- d5359f7 #340 Approve Codex permission requests (#341)
-- 4f4aab8 #324 Install the worktree linker for consumer repositories (#325)
-- e7d5698 fix(#316): resolve session paths via hooks/lib/session-paths.sh to survive worktree-isolated harness guard
-- 27f1861 feat(#76): install templates for claude and codex
+根拠: `tests/install/test-local-install.sh:1-34`

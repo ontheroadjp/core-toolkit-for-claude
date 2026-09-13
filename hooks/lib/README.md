@@ -43,7 +43,7 @@ SESSION_ID="$(session_id_resolve "$payload")"
 
 ### commands/*.md での扱い
 
-`commands/task.md` / `patch.md` / `review-resolve.md` / `docs-sync.md` / `git-pr.md` / `triage-issues-for-hazard.md` の Bash スニペットは、この repo の外（ユーザーの任意のプロジェクトディレクトリ）で実行されるため、このファイルを `source` しない。以前は同じ解決式（`CLAUDE_CODE_KIT_SESSION_ID` → `CLAUDE_CODE_SESSION_ID` → `CODEX_THREAD_ID` のハッシュ）を各ファイルへインライン展開していたが、この式自体が brace expansion（`${VAR}`）と代入への command substitution（`$(...)`）を含むため、worktree 隔離セッション（`/work-multi`）では Claude Code harness の worktree 隔離ガードに拒否されていた（issue #316）。現在は `session-paths.sh` 経由で `session_id_resolve` を再利用し、各ファイルは `bash ~/.claude/hooks/lib/session-paths.sh <session-approved|session-tmp-dir>` という単一のプレーンな呼び出しのみを埋め込む。
+`commands/task.md` / `patch.md` / `review-resolve.md` / `docs-sync.md` / `git-pr.md` / `triage-issues-for-hazard.md` の Bash スニペットは、この repo の外（ユーザーの任意のプロジェクトディレクトリ）で実行されるため、このファイルを `source` しない。以前は同じ解決式（`CLAUDE_CODE_KIT_SESSION_ID` → `CLAUDE_CODE_SESSION_ID` → `CODEX_THREAD_ID` のハッシュ）を各ファイルへインライン展開していたが、この式自体が brace expansion（`${VAR}`）と代入への command substitution（`$(...)`）を含むため、worktree 隔離セッション（`/work-multi`）では Claude Code harness の worktree 隔離ガードに拒否されていた（issue #316）。現在は `session-paths.sh` 経由で `session_id_resolve` を再利用し、各ファイルは `bash .claude/hooks/lib/session-paths.sh <session-approved|session-tmp-dir>` という単一のプレーンな呼び出しのみを埋め込む。
 
 ## session-paths.sh
 
@@ -59,8 +59,8 @@ SESSION_ID="$(session_id_resolve "$payload")"
 ### commands/*.md からの呼び出し例
 
 ```bash
-bash ~/.claude/hooks/lib/session-paths.sh session-approved
-# Codex CLI: bash ~/.codex/hooks/lib/session-paths.sh session-approved
+bash .claude/hooks/lib/session-paths.sh session-approved
+# Codex CLI: bash .codex/hooks/lib/session-paths.sh session-approved
 ```
 
 brace expansion も代入への command substitution も含まないため、worktree 隔離セッションでも harness に拒否されない。出力された絶対パスは resolve-then-embed 規約に従い、リテラル文字列として次の Bash 呼び出しに埋め込む。

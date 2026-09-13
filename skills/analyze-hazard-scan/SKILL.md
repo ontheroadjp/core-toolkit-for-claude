@@ -7,7 +7,7 @@ description: Analyze auto-approve and access logs for evidence-based hazard cand
 
 ## Source Of Truth
 
-`~/.codex/commands/analyze-hazard-scan.md` is the single authoritative definition of the analyze-hazard-scan workflow.
+`.codex/commands/analyze-hazard-scan.md` is the single authoritative definition of the analyze-hazard-scan workflow.
 
 ## Required Behavior
 

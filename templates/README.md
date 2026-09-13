@@ -6,20 +6,10 @@ issue・PR・README の Markdown テンプレートを置くディレクトリ�
 
 template の実体はこのディレクトリに保持する。コマンド仕様（`commands/*.md`）は実行 agent に応じた installed path を参照する。
 
-- Claude Code: `~/.claude/templates/*.md`
-- Codex CLI: `~/.codex/templates/*.md`
+- Claude Code: `<target-repository>/.claude/templates/*.md`
+- Codex CLI: `<target-repository>/.codex/templates/*.md`
 
-通常は repository root で `./install.sh` を実行し、両方の installed path に symlink を作成する。手動で設定する場合:
-
-```bash
-REPO_DIR="$(pwd)"
-mkdir -p ~/.claude/templates ~/.codex/templates
-for target in ~/.claude/templates ~/.codex/templates; do
-  for src in "$REPO_DIR"/templates/*.md; do
-    ln -sf "$src" "$target/$(basename "$src")"
-  done
-done
-```
+通常は対象 repository root で `./install.sh` を実行し、選択した agent の installed path に symlink を作成する。手動設定は不要である。
 
 ## ファイル一覧
 

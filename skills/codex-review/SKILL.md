@@ -7,7 +7,7 @@ description: Review a GitHub PR using the Codex CLI non-interactively, post the 
 
 ## Source Of Truth
 
-`~/.codex/commands/codex-review.md` is the single authoritative definition of the codex-review workflow.
+`.codex/commands/codex-review.md` is the single authoritative definition of the codex-review workflow.
 
 ## Required Behavior
 

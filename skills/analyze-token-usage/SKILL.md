@@ -7,7 +7,7 @@ description: Aggregate logs/token-usage/*.log via scripts/analyze_token_usage.py
 
 ## Source Of Truth
 
-`~/.codex/commands/analyze-token-usage.md` is the single authoritative definition of the analyze-token-usage workflow.
+`.codex/commands/analyze-token-usage.md` is the single authoritative definition of the analyze-token-usage workflow.
 
 ## Required Behavior
 

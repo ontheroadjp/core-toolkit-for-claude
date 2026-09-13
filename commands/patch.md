@@ -7,8 +7,8 @@
 - ドキュメント変更が必要になった場合は task フローへエスカレーションする
 
 template 参照時の `TEMPLATES_DIR` は実行 agent に応じて決定する:
-- Claude Code: `~/.claude/templates`
-- Codex CLI: `~/.codex/templates`
+- Claude Code: `.claude/templates`
+- Codex CLI: `.codex/templates`
 
 ---
 
@@ -39,8 +39,8 @@ work-run event の共有契約は `commands/work.md` の「Work-run observabilit
 
 ユーザーから OK が出た場合:
     - 以下の Bash コマンドで session-approved ファイルの正確なパスを解決する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す。共有ファイル経由では取得しない — 複数セッション同時実行時の混線を避けるため。brace expansion や代入への command substitution をコマンド自体に含めないことで worktree 隔離セッションでの harness 拒否を避ける、issue #316）:
-        - Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-approved`
-        - Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-approved`
+        - Claude Code: `bash .claude/hooks/lib/session-paths.sh session-approved`
+        - Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-approved`
 
       出力された1行の絶対パスを以降 `SESSION_APPROVED_FILE` として扱う。コマンドが失敗した場合（hook が未実行でセッション ID が解決できないケース）はスキップして Step 3 へ進む。
     - Write ツールで上記で取得したパスに session-approved ファイルを作成する。内容（1行1エントリ）:
@@ -62,7 +62,7 @@ work-run event の共有契約は `commands/work.md` の「Work-run observabilit
 
     ```bash
     branch_name="$(git branch --show-current)"
-    bash ~/.claude/scripts/rename-thread.sh "$branch_name" || true
+    bash .claude/scripts/rename-thread.sh "$branch_name" || true
     ```
 - ソースコードを修正する場合は、修正前に対象ファイルの言語に応じたコマンドを Read し、記載された原則を適用すること:
     - Python (.py): `commands/coding-py.md`

@@ -2,8 +2,8 @@
 # Lazily symlink explicitly requested untracked or ignored paths into a worktree.
 set -euo pipefail
 
-CLAUDE_SESSION_PATHS="${HOME}/.claude/hooks/lib/session-paths.sh"
-CODEX_SESSION_PATHS="${HOME}/.codex/hooks/lib/session-paths.sh"
+CLAUDE_SESSION_PATHS=".claude/hooks/lib/session-paths.sh"
+CODEX_SESSION_PATHS=".codex/hooks/lib/session-paths.sh"
 MANIFEST_NAME='worktree-untracked-symlinks.txt'
 SOURCE_NAME='worktree-untracked-source.txt'
 

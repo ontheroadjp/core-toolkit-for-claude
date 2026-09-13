@@ -58,8 +58,8 @@ Base SHA: <full latest origin/main SHA at this worker's launch — worker の br
 Input position: <k>/<batch size>
 Project-wide context: <complete /work handoff>
 Work run ID: <work_run_id or unavailable>
-Command root: <absolute installed commands dir for the executing agent: ~/.claude/commands or ~/.codex/commands>
-Work-run events helper: <absolute installed work-run-events.sh path for the executing agent: ~/.claude/scripts/work-run-events.sh or ~/.codex/scripts/work-run-events.sh, or unavailable>
+Command root: <absolute project-local commands dir for the executing agent: .claude/commands or .codex/commands>
+Work-run events helper: <absolute project-local work-run-events.sh path for the executing agent: .claude/scripts/work-run-events.sh or .codex/scripts/work-run-events.sh, or unavailable>
 L3 doc root: <Repository root>/docs/L3_implementation
 
 Required:

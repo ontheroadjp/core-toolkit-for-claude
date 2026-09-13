@@ -7,7 +7,7 @@ description: Execute the repository work workflow inside an isolated EnterWorktr
 
 ## Source Of Truth
 
-`~/.codex/commands/work-multi.md` is the single authoritative definition of the worktree-isolated work workflow.
+`.codex/commands/work-multi.md` is the single authoritative definition of the worktree-isolated work workflow.
 
 ## Required Behavior
 

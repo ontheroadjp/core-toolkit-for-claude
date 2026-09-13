@@ -7,7 +7,7 @@ description: Aggregate logs/auto-approve/*.log via scripts/analyze_auto_approve.
 
 ## Source Of Truth
 
-`~/.codex/commands/analyze-auto-approve.md` is the single authoritative definition of the analyze-auto-approve workflow.
+`.codex/commands/analyze-auto-approve.md` is the single authoritative definition of the analyze-auto-approve workflow.
 
 ## Required Behavior
 

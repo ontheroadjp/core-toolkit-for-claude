@@ -35,8 +35,8 @@ gh pr view <PR番号> --json number,url,title,headRefName
 
 - OK の場合:
     - 以下の Bash コマンドで session-approved ファイルの正確なパスを解決する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す。共有ファイル経由では取得しない — 複数セッション同時実行時の混線を避けるため。brace expansion や代入への command substitution をコマンド自体に含めないことで worktree 隔離セッションでの harness 拒否を避ける、issue #316）:
-        - Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-approved`
-        - Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-approved`
+        - Claude Code: `bash .claude/hooks/lib/session-paths.sh session-approved`
+        - Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-approved`
 
       出力された1行の絶対パスを以降 `SESSION_APPROVED_FILE` として扱う。コマンドが失敗した場合（hook が未実行でセッション ID が解決できないケース）はスキップして Step 1.6 へ進む。
     - Write ツールで上記パスに session-approved ファイルを作成する。内容: `tool:git_write`

@@ -38,8 +38,8 @@
 #### Step 2. セッション temp からの補助情報取得
 
 セッション temp ディレクトリを特定する（`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す。brace expansion や代入への command substitution をコマンド自体に含めないことで worktree 隔離セッションでの harness 拒否を避ける、issue #316）:
-- Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-tmp-dir`
-- Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-tmp-dir`
+- Claude Code: `bash .claude/hooks/lib/session-paths.sh session-tmp-dir`
+- Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-tmp-dir`
 
 出力された1行の絶対パスを以降 `SESSION_TMP_DIR` として扱う。
 
@@ -201,8 +201,8 @@ Step 2 で変更履歴を更新した各 L3 doc について、`git diff main...
 **セッション temp への書き出し（常に実行）:**
 
 セッション temp ディレクトリを特定する（Step 2 で取得済みの場合は再利用。`hooks/lib/session-paths.sh` が `hooks/lib/session-id.sh` の `session_id_resolve` を再利用して1行で絶対パスを返す。issue #316）:
-- Claude Code: `bash ~/.claude/hooks/lib/session-paths.sh session-tmp-dir`
-- Codex CLI: `bash ~/.codex/hooks/lib/session-paths.sh session-tmp-dir`
+- Claude Code: `bash .claude/hooks/lib/session-paths.sh session-tmp-dir`
+- Codex CLI: `bash .codex/hooks/lib/session-paths.sh session-tmp-dir`
 
 出力された1行の絶対パスを以降 `SESSION_TMP_DIR` として扱う。
 
