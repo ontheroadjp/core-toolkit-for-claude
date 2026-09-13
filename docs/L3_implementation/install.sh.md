@@ -12,7 +12,7 @@
 2. この toolkit を指す既存の global symlink、global hook registration、Claude/Codex の toolkit 管理 status line だけを除去する。認証情報、履歴、他者の設定は対象外である。
 3. Claude を選ぶと `<project>/.claude/`、Codex を選ぶと `<project>/.codex/` に commands、hooks、hooks/lib、scripts、skills、templates の symlink を作る。
 4. `jq` がある場合、同じ project-local settings file へ hook registration を冪等に追加する。
-5. Claude/Codex は各 native status line setup script を実行する。Agy は `~/.local/bin/agy-rate-status` だけを `scripts/setup_statusline_for_agy.sh` へ symlink する。
+5. Claude/Codex は各 native status line setup script を実行する。Agy は `~/.local/bin/agy-rate-status` を `scripts/setup_statusline_for_agy.sh` へ symlink し、`~/.gemini/antigravity-cli/settings.json` の `statusLine` を command として設定する。
 
 根拠: `install.sh:5-170`, `scripts/setup_statusline_for_claude.sh:1-57`, `scripts/setup_statusline_for_codex.sh:1-93`, `scripts/setup_statusline_for_agy.sh:1-28`
 

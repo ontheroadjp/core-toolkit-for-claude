@@ -34,5 +34,7 @@ grep -Fq '"context-used"' "$TEST_HOME/.codex/config.toml"
 printf '3\n' | (cd "$PROJECT_ROOT" && HOME="$TEST_HOME" bash "$TOOLKIT_ROOT/install.sh" >/dev/null)
 test -L "$TEST_HOME/.local/bin/agy-rate-status"
 test "$(readlink "$TEST_HOME/.local/bin/agy-rate-status")" = "$TOOLKIT_ROOT/scripts/setup_statusline_for_agy.sh"
+test "$(jq -r '.statusLine.type' "$TEST_HOME/.gemini/antigravity-cli/settings.json")" = command
+test "$(jq -r '.statusLine.command' "$TEST_HOME/.gemini/antigravity-cli/settings.json")" = 'bash ~/.local/bin/agy-rate-status'
 
 printf 'Local installer tests passed.\n'

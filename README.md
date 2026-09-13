@@ -100,7 +100,7 @@ Run the installer from the root of the repository where you want to use an agent
 
 For Claude Code or Codex CLI, commands, hooks, scripts, skills, and templates are symlinked into that repository's `.claude/` or `.codex/` directory. Hook settings are written there when `jq` is available. The selected agent's status line is the sole global configuration: Claude uses `~/.claude/statusline.sh`, and Codex uses `~/.codex/config.toml`.
 
-For Agy, the installer creates only the global `~/.local/bin/agy-rate-status` symlink. Configure Agy itself to invoke that command from its status-line configuration.
+For Agy, the installer creates the global `~/.local/bin/agy-rate-status` symlink and configures the command in `~/.gemini/antigravity-cli/settings.json`.
 
 Before installing, the script removes global symlinks and hook/status-line registrations that point to this toolkit. It preserves credentials, history, and unrelated user configuration.
 

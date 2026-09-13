@@ -85,12 +85,25 @@ remove_codex_status_line() {
   fi
 }
 
+remove_agy_status_line() {
+  local settings_file="$HOME/.gemini/antigravity-cli/settings.json" tmp
+  [ -f "$settings_file" ] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+  if ! jq -e '.statusLine.command == "bash ~/.local/bin/agy-rate-status"' "$settings_file" >/dev/null; then
+    return 0
+  fi
+  tmp="${settings_file}.tmp"
+  jq 'del(.statusLine)' "$settings_file" >"$tmp"
+  mv "$tmp" "$settings_file"
+}
+
 remove_global_configuration() {
   remove_global_links
   remove_hook_registrations "$HOME/.claude/settings.json" 'bash ~/.claude/hooks/'
   remove_hook_registrations "$HOME/.codex/hooks.json" 'bash ~/.codex/hooks/'
   remove_claude_status_line
   remove_codex_status_line
+  remove_agy_status_line
 }
 
 add_hook() {
@@ -165,10 +178,19 @@ install_codex() {
 }
 
 install_agy() {
-  local target="$HOME/.local/bin/agy-rate-status"
+  local target="$HOME/.local/bin/agy-rate-status" settings_file="$HOME/.gemini/antigravity-cli/settings.json" tmp
   mkdir -p "$(dirname "$target")"
   ln -sfn "$TOOLKIT_ROOT/scripts/setup_statusline_for_agy.sh" "$target"
   printf '  %s -> %s\n' "$target" "$TOOLKIT_ROOT/scripts/setup_statusline_for_agy.sh"
+  if ! command -v jq >/dev/null 2>&1; then
+    printf '%s\n' 'Warning: jq not found; configure the Agy statusLine command manually.' >&2
+    return
+  fi
+  mkdir -p "$(dirname "$settings_file")"
+  [ -f "$settings_file" ] || printf '{}\n' >"$settings_file"
+  tmp="${settings_file}.tmp"
+  jq '.statusLine = {type: "command", command: "bash ~/.local/bin/agy-rate-status", enabled: true}' "$settings_file" >"$tmp"
+  mv "$tmp" "$settings_file"
 }
 
 printf '%s\n' 'Select an agent to install:' '  1) Claude Code' '  2) Codex CLI' '  3) Agy'
