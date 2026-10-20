@@ -72,7 +72,7 @@ bash tests/commands/test-hazard-workflows.sh
 
 ## Installer contract test
 
-`tests/install/test-local-install.sh` は temporary fixture repository と isolated HOME を作成する。repository root 外で installer が失敗すること、Codex assets と hook settings が project-local `.codex/` に作られること、toolkit が作った旧 global Claude assets/status line が除去されること、Codex status line が `~/.codex/config.toml` に設定されることを検証する。
+`tests/install/test-local-install.sh` は temporary fixture repository と isolated HOME を作成する。repository root 外で installer が失敗すること、Codex assets と hook settings が project-local `.codex/` に作られること、`.gitignore` へ生成物が重複なく追記されること（Agy では変更しないこと）、Claude hook が `.claude/settings.local.json` に登録され旧 `settings.json` の toolkit hook だけが除去されること、toolkit が作った旧 global Claude assets/status line が除去されること、Codex status line が `~/.codex/config.toml` に設定されることを検証する。
 
 ```bash
 bash tests/install/test-local-install.sh
@@ -84,7 +84,7 @@ bash tests/install/test-local-install.sh
 bash tests/install/test-setup-statusline-for-codex.sh
 ```
 
-根拠: `tests/install/test-local-install.sh:1-34`, `tests/install/test-setup-statusline-for-codex.sh:1-122`
+根拠: `tests/install/test-local-install.sh:1-88`, `tests/install/test-setup-statusline-for-codex.sh:1-122`
 
 ## Shell script functional tests
 

@@ -98,9 +98,9 @@ The platform-independent philosophy is defined in `docs/L0_concept/`. Its system
 
 Run the installer from the root of the repository where you want to use an agent. It rejects a subdirectory or a non-Git directory, then displays a Claude Code / Codex CLI / Agy menu.
 
-For Claude Code or Codex CLI, commands, hooks, scripts, skills, and templates are symlinked into that repository's `.claude/` or `.codex/` directory. Hook settings are written there when `jq` is available. The selected agent's status line is the sole global configuration: Claude uses `~/.claude/statusline.sh`, and Codex uses `~/.codex/config.toml`.
+For Claude Code or Codex CLI, commands, hooks, scripts, skills, and templates are symlinked into that repository's `.claude/` or `.codex/` directory. Hook settings are written to `.claude/settings.local.json` or `.codex/hooks.json` when `jq` is available; a Claude reinstall removes toolkit hooks that earlier versions registered in the shared `.claude/settings.json`. The installer also appends these generated directories and the hook settings file to the repository's `.gitignore`, skipping exact duplicates and paths that are already ignored. The selected agent's status line is the sole global configuration: Claude uses `~/.claude/statusline.sh`, and Codex uses `~/.codex/config.toml`.
 
-For Agy, the installer creates the global `~/.local/bin/agy-rate-status` symlink and configures the command in `~/.gemini/antigravity-cli/settings.json`.
+For Agy, the installer creates the global `~/.local/bin/agy-rate-status` symlink and configures the command in `~/.gemini/antigravity-cli/settings.json`. It creates nothing in the repository and does not update `.gitignore`.
 
 Before installing, the script removes global symlinks and hook/status-line registrations that point to this toolkit. It preserves credentials, history, and unrelated user configuration.
 

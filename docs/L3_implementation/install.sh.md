@@ -46,3 +46,16 @@ bash tests/install/test-local-install.sh
 bash tests/install/test-setup-statusline-for-codex.sh
 shellcheck -x install.sh scripts/setup_statusline_for_agy.sh tests/install/test-local-install.sh
 ```
+
+## 変更履歴（git log より自動生成）
+
+- ee19232 feat(#418): ignore installed toolkit assets in the project .gitignore
+- 4e52078 feat: install agent assets per project (#417)
+- 0bfdaf3 #372 Move status line setup scripts into scripts directory (#373)
+- 3fa2055 #370 Add idempotent Codex status line setup (#371)
+- 396533d #367 Automate CLAUDE.md/AGENTS.md global symlinks in install.sh (#368)
+- d5359f7 #340 Approve Codex permission requests (#341)
+- 4f4aab8 #324 Install the worktree linker for consumer repositories (#325)
+- e7d5698 fix(#316): resolve session paths via hooks/lib/session-paths.sh to survive worktree-isolated harness guard
+- 214011d fix: correct keybindings.json symlink path in install.sh
+- 25a8151 fix: sync self-referential skill symlinks to .gitignore in install.sh
