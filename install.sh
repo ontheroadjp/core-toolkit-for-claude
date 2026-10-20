@@ -114,8 +114,11 @@ add_hook() {
 }
 
 configure_claude_hooks() {
-  local settings_file="$PROJECT_ROOT/.claude/settings.json"
+  local settings_file="$PROJECT_ROOT/.claude/settings.local.json"
   command -v jq >/dev/null 2>&1 || { printf '%s\n' 'Warning: jq not found; skipped Claude hook registration.' >&2; return; }
+  # Earlier installs registered hooks in the shared settings.json; drop only those to avoid double execution.
+  # shellcheck disable=SC2016 # Match the literal $CLAUDE_PROJECT_DIR prefix earlier installs wrote.
+  remove_hook_registrations "$PROJECT_ROOT/.claude/settings.json" 'bash "$CLAUDE_PROJECT_DIR/.claude/hooks/'
   [ -f "$settings_file" ] || printf '{}\n' >"$settings_file"
   add_hook "$settings_file" PreToolUse '' "bash \"\$CLAUDE_PROJECT_DIR/.claude/hooks/auto-approve-readonly.sh\""
   add_hook "$settings_file" PreToolUse Bash "bash \"\$CLAUDE_PROJECT_DIR/.claude/hooks/guard-destructive-cmd.sh\""
@@ -153,6 +156,21 @@ configure_codex_hooks() {
   add_hook "$settings_file" Stop '' 'bash .codex/hooks/tmux-agent-status.sh ✅'
 }
 
+ensure_gitignore_entries() {
+  local agent_dir=$1 settings_name=$2 gitignore="$PROJECT_ROOT/.gitignore" marker='# core-toolkit-for-claude (install.sh)' path entry
+  for path in "$agent_dir/commands" "$agent_dir/hooks" "$agent_dir/scripts" "$agent_dir/skills" "$agent_dir/templates" "$agent_dir/$settings_name"; do
+    entry="$path"
+    [ -d "$PROJECT_ROOT/$path" ] && entry="$path/"
+    # Skip exact duplicates and paths an existing rule already ignores.
+    if [ -f "$gitignore" ] && grep -qxF "$entry" "$gitignore"; then continue; fi
+    if git -C "$PROJECT_ROOT" check-ignore -q "$path"; then continue; fi
+    if [ -s "$gitignore" ] && [ -n "$(tail -c 1 "$gitignore")" ]; then printf '\n' >>"$gitignore"; fi
+    if [ ! -f "$gitignore" ] || ! grep -qxF "$marker" "$gitignore"; then printf '%s\n' "$marker" >>"$gitignore"; fi
+    printf '%s\n' "$entry" >>"$gitignore"
+    printf '  Added to .gitignore: %s\n' "$entry"
+  done
+}
+
 install_claude() {
   local target="$PROJECT_ROOT/.claude"
   link_directory "$TOOLKIT_ROOT/commands" "$target/commands" '*.md'
@@ -161,6 +179,7 @@ install_claude() {
   link_directory "$TOOLKIT_ROOT/scripts" "$target/scripts" '*.sh'
   link_directory "$TOOLKIT_ROOT/skills" "$target/skills" '*'
   link_directory "$TOOLKIT_ROOT/templates" "$target/templates" '*.md'
+  ensure_gitignore_entries .claude settings.local.json
   configure_claude_hooks
   bash "$TOOLKIT_ROOT/scripts/setup_statusline_for_claude.sh"
 }
@@ -173,6 +192,7 @@ install_codex() {
   link_directory "$TOOLKIT_ROOT/scripts" "$target/scripts" '*.sh'
   link_directory "$TOOLKIT_ROOT/skills" "$target/skills" '*'
   link_directory "$TOOLKIT_ROOT/templates" "$target/templates" '*.md'
+  ensure_gitignore_entries .codex hooks.json
   configure_codex_hooks
   bash "$TOOLKIT_ROOT/scripts/setup_statusline_for_codex.sh"
 }
@@ -193,7 +213,7 @@ install_agy() {
   mv "$tmp" "$settings_file"
 }
 
-printf '%s\n' 'Select an agent to install:' '  1) Claude Code' '  2) Codex CLI' '  3) Agy'
+printf '%s\n' 'Select an agent to install:' '  1) Claude Code' '  2) Codex CLI' '  3) Agy (status line only; .gitignore 未対応)'
 read -r -p 'Selection: ' selection
 case "$selection" in
   1) remove_global_configuration; install_claude ;;
