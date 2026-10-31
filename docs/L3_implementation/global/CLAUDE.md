@@ -17,7 +17,9 @@
 
 command catalogには、review済み単一PRをowned worktreeでdeliveryする `/git-pr-merge` と、approved source PRを同workflowへ逐次委譲する `/task-manager` を掲載する。
 
-根拠: `global/CLAUDE.md:14-34`
+`install.sh` は Claude/Codex インストール時、この内容を対象 repo の `CLAUDE.md` / `AGENTS.md` にマーカー付きブロックとして追記する（#420）。そのため command routing の記述は現行の `CLAUDE.md` に合わせて保つ。
+
+根拠: `global/CLAUDE.md:14-34`, `install.sh:174-225`
 
 ## 主要な判定ロジック・フロー
 
