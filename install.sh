@@ -171,6 +171,28 @@ ensure_gitignore_entries() {
   done
 }
 
+ensure_agent_instructions() {
+  local file_name=$1 target="$PROJECT_ROOT/$1" source="$TOOLKIT_ROOT/global/CLAUDE.md" tmp
+  local begin='<!-- BEGIN core-toolkit-for-claude (install.sh) -->' end='<!-- END core-toolkit-for-claude (install.sh) -->'
+  [ -f "$source" ] || { printf 'Warning: %s not found; skipped %s.\n' "$source" "$file_name" >&2; return; }
+  tmp="$(mktemp)"
+  if [ -f "$target" ] && grep -qxF "$begin" "$target"; then
+    # Replace only the managed block, keeping everything around it.
+    awk -v begin="$begin" -v end="$end" -v src="$source" '
+      $0 == begin { print; while ((getline line < src) > 0) print line; skipping = 1; next }
+      skipping && $0 == end { skipping = 0 }
+      !skipping { print }
+    ' "$target" >"$tmp"
+  else
+    if [ -s "$target" ]; then cat "$target" >"$tmp"; [ -z "$(tail -c 1 "$target")" ] || printf '\n' >>"$tmp"; printf '\n' >>"$tmp"; fi
+    { printf '%s\n' "$begin"; cat "$source"; printf '%s\n' "$end"; } >>"$tmp"
+  fi
+  # Write in place (not mv) so a symlinked CLAUDE.md/AGENTS.md keeps pointing at its target.
+  cat "$tmp" >"$target"
+  rm -f "$tmp"
+  printf '  Updated %s (managed block)\n' "$target"
+}
+
 install_claude() {
   local target="$PROJECT_ROOT/.claude"
   link_directory "$TOOLKIT_ROOT/commands" "$target/commands" '*.md'
@@ -180,6 +202,7 @@ install_claude() {
   link_directory "$TOOLKIT_ROOT/skills" "$target/skills" '*'
   link_directory "$TOOLKIT_ROOT/templates" "$target/templates" '*.md'
   ensure_gitignore_entries .claude settings.local.json
+  ensure_agent_instructions CLAUDE.md
   configure_claude_hooks
   bash "$TOOLKIT_ROOT/scripts/setup_statusline_for_claude.sh"
 }
@@ -193,6 +216,7 @@ install_codex() {
   link_directory "$TOOLKIT_ROOT/skills" "$target/skills" '*'
   link_directory "$TOOLKIT_ROOT/templates" "$target/templates" '*.md'
   ensure_gitignore_entries .codex hooks.json
+  ensure_agent_instructions AGENTS.md
   configure_codex_hooks
   bash "$TOOLKIT_ROOT/scripts/setup_statusline_for_codex.sh"
 }

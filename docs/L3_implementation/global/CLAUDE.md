@@ -17,7 +17,9 @@
 
 command catalogには、review済み単一PRをowned worktreeでdeliveryする `/git-pr-merge` と、approved source PRを同workflowへ逐次委譲する `/task-manager` を掲載する。
 
-根拠: `global/CLAUDE.md:14-34`
+`install.sh` は Claude/Codex インストール時、この内容を対象 repo の `CLAUDE.md` / `AGENTS.md` にマーカー付きブロックとして追記する（#420）。そのため command routing の記述は現行の `CLAUDE.md` に合わせて保つ。
+
+根拠: `global/CLAUDE.md:14-34`, `install.sh:174-225`
 
 ## 主要な判定ロジック・フロー
 
@@ -40,5 +42,7 @@ command catalogには、review済み単一PRをowned worktreeでdeliveryする `
 
 ## 変更履歴（git log より自動生成）
 
+- 7d11243 feat(#420): append agent instructions to the target repo's CLAUDE.md/AGENTS.md in install.sh
+- a23fda3 #389 Add reusable reviewed PR delivery workflow (#391)
 - 57dce6c feat(#389): add reviewed PR delivery workflow
 - c4b0aeb chore(#365): split distributed CLAUDE.md from this repo's project-local CLAUDE.md

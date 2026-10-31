@@ -86,3 +86,31 @@ printf '1\n' | (cd "$IGNORED_PROJECT" && HOME="$TEST_HOME" bash "$TOOLKIT_ROOT/i
 test "$(cat "$IGNORED_PROJECT/.gitignore")" = '.claude/'
 
 printf 'Local installer tests passed.\n'
+
+# Agent instructions: create, append to an existing file, stay idempotent, keep symlinks.
+BEGIN_MARK='<!-- BEGIN core-toolkit-for-claude (install.sh) -->'
+END_MARK='<!-- END core-toolkit-for-claude (install.sh) -->'
+INSTR_PROJECT="$TMP_DIR/instructions-project"
+git init -q "$INSTR_PROJECT"
+printf '# Existing rules\nkeep me\n' >"$INSTR_PROJECT/CLAUDE.md"
+printf '1\n' | (cd "$INSTR_PROJECT" && HOME="$TEST_HOME" bash "$TOOLKIT_ROOT/install.sh" >/dev/null)
+printf '1\n' | (cd "$INSTR_PROJECT" && HOME="$TEST_HOME" bash "$TOOLKIT_ROOT/install.sh" >/dev/null)
+assert_line_count "$INSTR_PROJECT/CLAUDE.md" '# Existing rules' 1
+assert_line_count "$INSTR_PROJECT/CLAUDE.md" 'keep me' 1
+assert_line_count "$INSTR_PROJECT/CLAUDE.md" "$BEGIN_MARK" 1
+assert_line_count "$INSTR_PROJECT/CLAUDE.md" "$END_MARK" 1
+grep -Fq '/work' "$INSTR_PROJECT/CLAUDE.md"
+test ! -e "$INSTR_PROJECT/AGENTS.md"
+
+# Codex writes AGENTS.md; a symlinked AGENTS.md must stay a symlink to CLAUDE.md.
+ln -s CLAUDE.md "$INSTR_PROJECT/AGENTS.md"
+printf '2\n' | (cd "$INSTR_PROJECT" && HOME="$TEST_HOME" bash "$TOOLKIT_ROOT/install.sh" >/dev/null)
+test -L "$INSTR_PROJECT/AGENTS.md"
+assert_line_count "$INSTR_PROJECT/CLAUDE.md" "$BEGIN_MARK" 1
+
+# A new project without any instruction file gets one created.
+NEW_PROJECT="$TMP_DIR/new-instructions-project"
+git init -q "$NEW_PROJECT"
+printf '2\n' | (cd "$NEW_PROJECT" && HOME="$TEST_HOME" bash "$TOOLKIT_ROOT/install.sh" >/dev/null)
+assert_line_count "$NEW_PROJECT/AGENTS.md" "$BEGIN_MARK" 1
+test ! -e "$NEW_PROJECT/CLAUDE.md"

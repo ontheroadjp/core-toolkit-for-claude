@@ -100,6 +100,8 @@ Run the installer from the root of the repository where you want to use an agent
 
 For Claude Code or Codex CLI, commands, hooks, scripts, skills, and templates are symlinked into that repository's `.claude/` or `.codex/` directory. Hook settings are written to `.claude/settings.local.json` or `.codex/hooks.json` when `jq` is available; a Claude reinstall removes toolkit hooks that earlier versions registered in the shared `.claude/settings.json`. The installer also appends these generated directories and the hook settings file to the repository's `.gitignore`, skipping exact duplicates and paths that are already ignored. The selected agent's status line is the sole global configuration: Claude uses `~/.claude/statusline.sh`, and Codex uses `~/.codex/config.toml`.
 
+Claude Code and Codex CLI installs also write `global/CLAUDE.md` into the repository's `CLAUDE.md` (Claude Code) or `AGENTS.md` (Codex CLI) inside `<!-- BEGIN/END core-toolkit-for-claude (install.sh) -->` markers. A missing file is created, an existing file keeps its content and gets the block appended, and a reinstall replaces only the marked block. Symlinked files stay symlinks. These files are meant to be committed, so they are not added to `.gitignore`.
+
 For Agy, the installer creates the global `~/.local/bin/agy-rate-status` symlink and configures the command in `~/.gemini/antigravity-cli/settings.json`. It creates nothing in the repository and does not update `.gitignore`.
 
 Before installing, the script removes global symlinks and hook/status-line registrations that point to this toolkit. It preserves credentials, history, and unrelated user configuration.
@@ -232,7 +234,7 @@ tests/                        verification scripts for hooks, workflows, and ins
 install.sh                    symlink installer for commands/hooks/skills/templates
 scripts/setup_statusline_for_claude.sh  Claude Code status line installer
 scripts/setup_statusline_for_codex.sh   Codex TUI status line installer
-global/CLAUDE.md              legacy global framework file
+global/CLAUDE.md              generic agent instructions written into a target repo's CLAUDE.md/AGENTS.md by install.sh
 CLAUDE.md                     this repository's own project-local AI operating guidance
 AGENTS.md                     symlink to CLAUDE.md (project-local) for Codex CLI
 ```
