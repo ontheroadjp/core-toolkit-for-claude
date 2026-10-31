@@ -53,6 +53,7 @@ shellcheck -x install.sh scripts/setup_statusline_for_agy.sh tests/install/test-
 
 ## 変更履歴（git log より自動生成）
 
+- 7d11243 feat(#420): append agent instructions to the target repo's CLAUDE.md/AGENTS.md in install.sh
 - ee19232 feat(#418): ignore installed toolkit assets in the project .gitignore
 - 4e52078 feat: install agent assets per project (#417)
 - 0bfdaf3 #372 Move status line setup scripts into scripts directory (#373)
